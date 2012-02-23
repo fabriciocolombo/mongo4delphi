@@ -21,7 +21,7 @@ unit MongoEncoder;
 
 interface
 
-uses BSONStream;
+uses BSONStream, BSONTypes;
 
 type
   TMongoEncoder = class
@@ -39,11 +39,14 @@ type
     procedure putFloat(AName: String; AValue: Extended);
     procedure putString(AName: String; AValue: String);
     procedure putBoolean(AName: String; AValue: Boolean);
+    procedure putObjectId(AName: String; const AValue: IObjectId);
+
+    procedure PutInterfaceField(name: String; const val: IUnknown);
   public
     procedure BeginEncode;
     procedure EndEncode;
 
-    procedure PutObjectField(name: String; val: Variant);
+    procedure PutObjectField(name: String; val: OleVariant);
 
     constructor Create(ABuffer: TBSONStream);
   end;
@@ -115,7 +118,7 @@ begin
   put(BSON_NULL, AName);
 end;
 
-procedure TMongoEncoder.PutObjectField(name: String; val: Variant);
+procedure TMongoEncoder.PutObjectField(name: String; val: OleVariant);
 var
   valueType: TVarType;
 begin
@@ -131,13 +134,20 @@ begin
   end;
 
   case valueType and varTypeMask of
-    varNull, varEmpty: putNull(name);
+    varEmpty, varNull: putNull(name);
     varDate: putDate( name , VarToDateTime(val));
     varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord: putInt(name, val);
     varInt64: putInt64(name, val);
     varSingle,varDouble,varCurrency: putFloat(name, val);
     varOleStr, varString: putString(name, val);
     varBoolean: putBoolean(name, val);
+    varDispatch, varUnknown: PutInterfaceField(name, IUnknown(val));
+    varError,
+    varAny,
+    varTypeMask,
+    varArray,
+    varByRef: ;
+    varVariant:;
 //  if ( val instanceof ObjectId )
 //      putObjectId(name, (ObjectId)val );
 //  else if ( val instanceof BSONObject )
@@ -204,6 +214,27 @@ procedure TMongoEncoder.EndEncode;
 begin
   FBuffer.WriteByte(BSON_EOF);
   FBuffer.WriteInt(FStart, FBuffer.Size - FStart);
+end;
+
+procedure TMongoEncoder.PutInterfaceField(name: String; const val: IInterface);
+var
+  vObjectId: IObjectId;
+begin
+  if Supports(val, IObjectId, vObjectId) then
+  begin
+    putObjectId(name, vObjectId);
+  end;
+end;
+
+procedure TMongoEncoder.putObjectId(AName: String; const AValue: IObjectId);
+var
+  OID: TObjectIdByteArray;
+begin
+  put(BSON_OBJECTID, AName);
+
+  OID := AValue.AsByteArray;
+
+  FBuffer.Write(OID[0], 12);
 end;
 
 end.

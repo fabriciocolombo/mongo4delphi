@@ -15,11 +15,12 @@ type
   published
     procedure EncodeTwoSimplePair;
     procedure EncodeAllSimpleTypes;
+    procedure EncodeTObjectReference;
   end;
 
 implementation
 
-uses Variants, SysUtils;
+uses Variants, SysUtils, BSONTypes;
 
 { TTestEncoder }
 
@@ -71,6 +72,21 @@ begin
   CheckEquals(159, FStream.Size); 
   FEncoder.EndEncode; //1
   CheckEquals(160, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeTObjectReference;
+begin
+  FEncoder.BeginEncode;
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'idç' size 5 in UTF8
+  //Write oid size 12
+  //Write EOO size 1
+  FEncoder.PutObjectField('idç', TObjectId.NewFrom);
+
+  FEncoder.EndEncode;
+
+  CheckEquals(23, FStream.Size, 'Fail after write second element');
 end;
 
 procedure TTestEncoder.EncodeTwoSimplePair;

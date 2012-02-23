@@ -68,8 +68,9 @@ const
   //special prefix with unassigned(?) unicode symbols from the Special range
   bsonJavaScriptCodePrefix:WideString=#$FFF1'bsonJavaScriptCode'#$FFF2;
   bsonRegExPrefix:WideString=#$FFF1'bsonRegEx'#$FFF2;
-  bsonObjectIDPrefix:WideString='ObjectID("';
-  bsonObjectIDSuffix:WideString='")';
+
+  BSON_OBJECTID_PREFIX = 'ObjectId("';
+  BSON_OBJECTID_SUFIX = '")';
 
 type
   TMongoMsgHeader = packed record

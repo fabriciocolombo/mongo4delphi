@@ -18,13 +18,19 @@ type
   published
     procedure InsertSinglePairDocumentForSimplesType;
     procedure InsertTwoPairDocument;
+    procedure InsertObjectID;
   end;
 
 implementation
 
-uses Variants, SysUtils, Math;
+uses Variants, SysUtils, Math, BSONTypes;
 
 { TTestMongoCollection }
+
+procedure TTestMongoCollection.InsertObjectID;
+begin
+  FCollection.Insert(['id', 123, '_id', TObjectId.NewFrom]);
+end;
 
 procedure TTestMongoCollection.InsertSinglePairDocumentForSimplesType;
 var
