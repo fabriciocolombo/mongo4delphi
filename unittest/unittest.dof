@@ -134,3 +134,28 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+[HistoryLists\hlConditionals]
+Count=1
+Item0=FASTMM
+[HistoryLists\hlUnitAliases]
+Count=1
+Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=6
+Item0=D:\Desenvolvimento\OpenSource\delphi\TMongoWire
+Item1=sdk;..\public;FastMM
+Item2=sdk;..\public;FastMM4
+Item3=sdk;..\public
+Item4=C:\Program Files\Indy9
+Item5=..\..\public
+[HistoryLists\hlUnitOutputDirectory]
+Count=2
+Item0=dcu
+Item1=..\dcu
+[HistoryLists\hlOutputDirectorry]
+Count=5
+Item0=setup\xxmGeckoDev\platform\WINNT\components
+Item1=..\bin
+Item2=C:\Program Files\Mozilla Firefox\components
+Item3=C:\Inetpub\xxm
+Item4=..\

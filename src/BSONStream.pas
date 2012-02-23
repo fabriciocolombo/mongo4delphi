@@ -26,11 +26,12 @@ uses Classes;
 type
   TBSONStream = class(TMemoryStream)
   public
-    procedure WriteUTF8String(value: AnsiString);
+    function WriteUTF8String(value: AnsiString): Integer;
     procedure WriteInt(value: Integer);overload;
     procedure WriteInt(pos, value: Integer);overload;
     procedure WriteInt64(value: Int64);
     procedure WriteByte(value: Byte);
+    procedure WriteDouble(value: Double);
   end;
 
 implementation
@@ -45,6 +46,16 @@ end;
 procedure TBSONStream.WriteInt(value: Integer);
 begin
   Write(value, SizeOf(value));
+end;
+
+procedure TBSONStream.WriteDouble(value: Double);
+var
+  pDouble: array[0..11] of byte;
+  vDouble: Double absolute pDouble;
+begin
+  vDouble := value;
+
+  Write(vDouble, SizeOf(Double));
 end;
 
 procedure TBSONStream.WriteInt(pos, value: Integer);
@@ -62,14 +73,14 @@ begin
   Write(value, SizeOf(value));
 end;
 
-procedure TBSONStream.WriteUTF8String(value: AnsiString);
+function TBSONStream.WriteUTF8String(value: AnsiString): Integer;
 var
   vUTF8: UTF8String;
   vSize: Integer;
 begin
   vUTF8 := UTF8Encode(value);
   vSize := Length(vUTF8);
-  Write(PChar(vUTF8)^, vSize + 1);
+  Result := Write(PChar(vUTF8)^, vSize + 1);
 end;
 
 end.

@@ -1,5 +1,5 @@
 *.dcu
 *.~pas
-dunit.init
+dunit.ini
 *.~dpr
 *.exe

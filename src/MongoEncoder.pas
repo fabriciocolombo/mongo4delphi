@@ -27,26 +27,30 @@ type
   TMongoEncoder = class
   private
     FBuffer: TBSONStream;
-    
+    FStart: Integer;
+
     procedure put(AType: Byte; AName: String);overload;
     function put(AValue: String): Integer;overload;
     procedure putValueString(AValue: String);
     procedure putNull(AName: String);
     procedure putDate(AName: String; AValue: TDateTime);
-    procedure putInt(AName: String; AValue: Integer);
-    procedure putInt64(AName: String; AValue: Integer);
+    procedure putInt(AName: String; AValue: LongWord);
+    procedure putInt64(AName: String; AValue: Int64);
     procedure putFloat(AName: String; AValue: Extended);
     procedure putString(AName: String; AValue: String);
     procedure putBoolean(AName: String; AValue: Boolean);
   public
-    function PutObjectField(name: String; val: Variant): Integer;
+    procedure BeginEncode;
+    procedure EndEncode;
+
+    procedure PutObjectField(name: String; val: Variant);
 
     constructor Create(ABuffer: TBSONStream);
   end;
 
 implementation
 
-uses DateUtils, SysUtils, Variants, BSON, MongoException, Classes;
+uses DateUtils, SysUtils, Variants, BSON, MongoException, Classes, Math;
 
 { TMongoEncoder }
 
@@ -64,7 +68,7 @@ end;
 
 function TMongoEncoder.put(AValue: String): Integer;
 begin
-  FBuffer.WriteUTF8String(AValue);  
+  Result := FBuffer.WriteUTF8String(AValue);  
 end;
 
 procedure TMongoEncoder.putBoolean(AName: String; AValue: Boolean);
@@ -78,24 +82,29 @@ begin
 end;
 
 procedure TMongoEncoder.putDate(AName: String; AValue: TDateTime);
+var
+  vUTCDate: Int64;
 begin
   put(BSON_DATETIME, AName);
-//  FBuffer.writeDouble(AValue);
+
+  vUTCDate := Round((AValue - UnixDateDelta) * MSecsPerDay);
+
+  FBuffer.WriteInt64(vUTCDate);
 end;
 
 procedure TMongoEncoder.putFloat(AName: String; AValue: Extended);
 begin
   put(BSON_FLOAT, AName);
-  //_buf.writeDouble( n.doubleValue() );
+  FBuffer.writeDouble(AValue);
 end;
 
-procedure TMongoEncoder.putInt(AName: String; AValue: Integer);
+procedure TMongoEncoder.putInt(AName: String; AValue: LongWord);
 begin
   put(BSON_INT32, AName);
   FBuffer.writeInt(AValue);
 end;
 
-procedure TMongoEncoder.putInt64(AName: String; AValue: Integer);
+procedure TMongoEncoder.putInt64(AName: String; AValue: Int64);
 begin
   put(BSON_INT64, AName);
   FBuffer.WriteInt64(AValue);
@@ -106,17 +115,12 @@ begin
   put(BSON_NULL, AName);
 end;
 
-function TMongoEncoder.PutObjectField(name: String; val: Variant): Integer;
+procedure TMongoEncoder.PutObjectField(name: String; val: Variant);
 var
   valueType: TVarType;
-  vStart: Int64;
 begin
-  vStart := FBuffer.Position;
-  
-  FBuffer.WriteInt(0);//Reserved space for length
-
   valueType := VarType(val);
-  
+
   if SameText(name, '_transientFields') then Exit;
 
   if SameText(name, '$where') and (valueType = vtString) then
@@ -125,7 +129,6 @@ begin
       putValueString(val.toString() );
       Exit;
   end;
-
 
   case valueType and varTypeMask of
     varNull, varEmpty: putNull(name);
@@ -173,9 +176,6 @@ begin
   else
     raise EIllegalArgumentException('can''t serialize ' + VarToStrDef(val, EmptyStr));
   end;
-
-  FBuffer.WriteByte(BSON_EOF);
-  FBuffer.WriteInt(vStart, FBuffer.Size - vStart);
 end;
 
 procedure TMongoEncoder.putString(AName, AValue: String);
@@ -189,9 +189,21 @@ var
   lenPos, strLen: Int64;
 begin
   lenPos := FBuffer.Position;
-  FBuffer.WriteInt(0); // making space for size
+  FBuffer.WriteInt(0); // making space for length
   strLen := put(AValue);
   FBuffer.writeInt(lenPos, strLen);
+end;
+
+procedure TMongoEncoder.BeginEncode;
+begin
+  FStart := FBuffer.Position;
+  FBuffer.WriteInt(0); // making space for length
+end;
+
+procedure TMongoEncoder.EndEncode;
+begin
+  FBuffer.WriteByte(BSON_EOF);
+  FBuffer.WriteInt(FStart, FBuffer.Size - FStart);
 end;
 
 end.

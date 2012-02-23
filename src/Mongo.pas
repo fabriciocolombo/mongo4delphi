@@ -195,6 +195,7 @@ begin
   FStream.WriteInt(0);//Flagss
   FStream.WriteUTF8String(FullCollection);
 
+  FEncoder.BeginEncode;
   i := Low(Doc);
   while i < High(Doc) do
   begin
@@ -202,7 +203,8 @@ begin
 
     Inc(i, 2);
   end;
-
+  FEncoder.EndEncode;
+  
   vLength := FStream.Size;
   FStream.WriteInt(0, vLength);
 
