@@ -1,0 +1,58 @@
+unit TestBSONStream;
+
+interface
+
+uses TestFramework, BSONStream;
+
+type
+  TTestBSONStream = class(TTestCase)
+  private
+    FStream: TBSONStream;
+  protected
+    procedure SetUp; override;
+    procedure TearDown; override;
+  published
+    procedure WriteSimpleTypes;
+  end;
+
+implementation
+
+{ TTestBSONStream }
+
+procedure TTestBSONStream.SetUp;
+begin
+  inherited;
+  FStream := TBSONStream.Create;
+end;
+
+procedure TTestBSONStream.TearDown;
+begin
+  FStream.Free;
+  inherited;
+end;
+
+procedure TTestBSONStream.WriteSimpleTypes;
+begin
+  //Write string 'idç' size 5 in UTF8
+  //Write int '123' size 4
+  //Write string 'a' size 2 in UTF8
+  //Write int64 '123' size 8
+  //Write string 'b' size 2 in UTF8
+  //Write byte 9 size 1
+  //Total size 22
+
+  FStream.WriteUTF8String('idç');
+  FStream.WriteInt(123);
+  FStream.WriteUTF8String('a');
+  FStream.WriteInt64(123);
+  FStream.WriteUTF8String('b');
+  FStream.WriteByte(9);
+
+  CheckEquals(22, FStream.Size);
+  CheckEquals(22, FStream.Position);
+end;
+
+initialization
+  RegisterTest(TTestBSONStream.Suite);
+
+end.
