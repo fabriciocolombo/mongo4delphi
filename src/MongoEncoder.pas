@@ -48,6 +48,8 @@ type
 
     procedure PutObjectField(name: String; val: OleVariant);
 
+    procedure Encode(const ABSONObject: IBSONBasicObject);
+
     constructor Create(ABuffer: TBSONStream);
   end;
 
@@ -184,7 +186,7 @@ begin
 //  else if ( putSpecial( name , val ) )
 //      // no-op
   else
-    raise EIllegalArgumentException('can''t serialize ' + VarToStrDef(val, EmptyStr));
+    raise EIllegalArgumentException.CreateResFmt(@sInvalidVariantValueType, [VarToStrDef(val, EmptyStr)]);
   end;
 end;
 
@@ -213,14 +215,26 @@ end;
 procedure TMongoEncoder.EndEncode;
 begin
   FBuffer.WriteByte(BSON_EOF);
-  FBuffer.WriteInt(FStart, FBuffer.Size - FStart);
+  FBuffer.WriteInt(FStart, FBuffer.Position - FStart);
 end;
 
 procedure TMongoEncoder.PutInterfaceField(name: String; const val: IInterface);
 var
+  vBSONObject: IBSONObject;
+  vBSONArray: IBSONArray;
   vObjectId: IObjectId;
 begin
-  if Supports(val, IObjectId, vObjectId) then
+  if Supports(val, IBSONArray, vBSONArray) then
+  begin
+    put(BSON_ARRAY, name);
+    Encode(vBSONArray);
+  end
+  else if Supports(val, IBSONObject, vBSONObject) then
+  begin
+    put(BSON_DOC, name);
+    Encode(vBSONObject);
+  end
+  else if Supports(val, IObjectId, vObjectId) then
   begin
     putObjectId(name, vObjectId);
   end;
@@ -236,5 +250,24 @@ begin
 
   FBuffer.Write(OID[0], 12);
 end;
+
+procedure TMongoEncoder.Encode(const ABSONObject: IBSONBasicObject);
+var
+  i: Integer;
+  vStart: Integer;
+  vItem: TBSONItem;
+begin
+  vStart := FBuffer.Position;
+  FBuffer.WriteInt(0); // making space for length
+  for i := 0 to ABSONObject.Count-1 do
+  begin
+    vItem := ABSONObject.Item[i];
+    
+    PutObjectField(vItem.Name, vItem.Value);
+  end;
+  FBuffer.WriteByte(BSON_EOF);
+  FBuffer.WriteInt(vStart, FBuffer.Position - vStart);
+end;
+
 
 end.

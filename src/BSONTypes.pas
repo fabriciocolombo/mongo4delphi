@@ -2,11 +2,13 @@ unit BSONTypes;
 
 interface
 
+uses Contnrs, Classes;
+
 type
   TObjectIdByteArray = array[0..11] of byte;
 
   IObjectId = interface
-  ['{B666B7F9-2E6A-45EA-A686-BCF212821AAA}']
+    ['{B666B7F9-2E6A-45EA-A686-BCF212821AAA}']
     function AsByteArray: TObjectIdByteArray;
     function ToStringMongo: String;
   end;
@@ -23,11 +25,93 @@ type
 
     function AsByteArray: TObjectIdByteArray;
     function ToStringMongo: String;
-   end;
+  end;
+
+  TBSONItem = class
+  private
+    FName: String;
+    FValue: OleVariant;
+    FValueType: Integer;
+    procedure SetValue(const Value: OleVariant);
+  public
+    property Name: String read FName;
+    property Value: OleVariant read FValue write SetValue;
+    property ValueType: Integer read FValueType;
+
+    class function NewFrom(AName: String; AValue: OleVariant): TBSONItem;
+  end;
+
+  TDuplicatesAction = (daUpdateValue, daError);
+
+  IBSONBasicObject = interface
+    ['{FF4178D1-D45B-480D-9704-85ACD5BA02E9}']
+    function GetItem(AIndex: Integer): TBSONItem;
+
+    property Item[AIndex: Integer]: TBSONItem read GetItem;default;
+
+    function Count: Integer;
+  end;
+
+  IBSONObject = interface(IBSONBasicObject)
+    ['{BC5F07D7-0A81-40AF-9F09-E8DA38BC446C}']
+
+    function GetItems(AKey: String): TBSONItem;
+    function GetDuplicatesAction: TDuplicatesAction;
+
+    procedure SetDuplicatesAction(const Value: TDuplicatesAction);
+
+    property DuplicatesAction: TDuplicatesAction read GetDuplicatesAction write SetDuplicatesAction;
+    property Items[AKey: String]: TBSONItem read GetItems;
+
+    function Put(const AKey: String; Value: OleVariant): IBSONObject;
+    function Find(const AKey: String): TBSONItem;overload;
+    function Find(const AKey: String;var AIndex: Integer): TBSONItem;overload;
+  end;
+
+  IBSONArray = interface(IBSONBasicObject)
+    ['{ADA231EC-9BD6-4FEB-BCB7-56D88580319E}']
+
+    function Put(Value: OleVariant): IBSONObject;
+  end;
+
+  TBSONObject = class(TInterfacedObject, IBSONObject)
+  private
+    FMap: TStringList;
+    FDuplicatesAction: TDuplicatesAction;
+
+    procedure PushItem(AItem: TBSONItem);
+    function GetItems(AKey: String): TBSONItem;
+    function GetItem(AIndex: Integer): TBSONItem;
+    procedure SetDuplicatesAction(const Value: TDuplicatesAction);
+    function GetDuplicatesAction: TDuplicatesAction;
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    class function NewFrom(const AKey: String; Value: OleVariant): IBSONObject;
+
+    property DuplicatesAction: TDuplicatesAction read GetDuplicatesAction write SetDuplicatesAction default daUpdateValue;
+
+    property Items[AKey: String]: TBSONItem read GetItems;
+    property Item[AIndex: Integer]: TBSONItem read GetItem;default;
+
+    function Put(const AKey: String; Value: OleVariant): IBSONObject;
+    function Find(const AKey: String): TBSONItem;overload;
+    function Find(const AKey: String;var AIndex: Integer): TBSONItem;overload;
+    function Count: Integer;
+  end;
+
+  TBSONArray = class(TBSONObject, IBSONArray)
+  public
+    function Put(Value: OleVariant): IBSONObject;
+
+    class function NewFrom(Value: OleVariant): IBSONArray;
+  end;
 
 implementation
 
-uses BSON, windows, Registry, SysUtils;
+uses BSON, windows, Registry, SysUtils, Variants, MongoUtils,
+  MongoException;
 
 var
   _mongoObjectID_MachineID: Integer;
@@ -148,6 +232,142 @@ end;
 function TObjectId.ToStringMongo: String;
 begin
   Result := Format('%s%s%s', [BSON_OBJECTID_PREFIX, FOID, BSON_OBJECTID_SUFIX]);
+end;
+
+{ TBSONObject }
+
+function TBSONObject.Count: Integer;
+begin
+  Result := FMap.Count;
+end;
+
+constructor TBSONObject.Create;
+begin
+  FMap := TStringList.Create;
+  FDuplicatesAction := daUpdateValue;
+end;
+
+destructor TBSONObject.Destroy;
+begin
+  TListUtils.FreeObjects(FMap);
+  FMap.Free;
+  inherited;
+end;
+
+function TBSONObject.Find(const AKey: String): TBSONItem;
+var
+  vIndex: Integer;
+begin
+  Result := Find(AKey, vIndex);
+end;
+
+function TBSONObject.Find(const AKey: String;var AIndex: Integer): TBSONItem;
+begin
+  Result := nil;
+
+  AIndex := FMap.IndexOf(AKey);
+
+  if (AIndex >= 0) then
+  begin
+    Result := TBSONItem(FMap.Objects[AIndex]);
+  end;
+end;
+
+function TBSONObject.GetDuplicatesAction: TDuplicatesAction;
+begin
+  Result := FDuplicatesAction;
+end;
+
+function TBSONObject.GetItem(AIndex: Integer): TBSONItem;
+begin
+  Result := TBSONItem(FMap.Objects[AIndex]);
+end;
+
+function TBSONObject.GetItems(AKey: String): TBSONItem;
+begin
+  Result := Find(AKey);
+
+  if (Result = nil) then
+  begin
+    Result := TBSONItem.NewFrom(AKey, Null);
+
+    PushItem(Result);
+  end;
+end;
+
+class function TBSONObject.NewFrom(const AKey: String;Value: OleVariant): IBSONObject;
+begin
+  Result := TBSONObject.Create;
+  Result.Put(AKey, Value);
+end;
+
+procedure TBSONObject.PushItem(AItem: TBSONItem);
+begin
+  FMap.AddObject(AItem.Name, AItem);
+end;
+
+function TBSONObject.Put(const AKey: String; Value: OleVariant): IBSONObject;
+var
+  vItem: TBSONItem;
+begin
+  vItem := Find(AKey);
+
+  if Assigned(vItem) then
+  begin
+    if (FDuplicatesAction = daError) then
+      raise EBSONDuplicateKeyInList.CreateResFmt(@sBSONDuplicateKeyInList, [AKey]);
+
+    vItem.Value := Value;
+  end
+  else
+  begin
+    PushItem(TBSONItem.NewFrom(AKey, Value));
+  end;
+
+  Result := Self;
+end;
+
+procedure TBSONObject.SetDuplicatesAction(const Value: TDuplicatesAction);
+begin
+  if (FDuplicatesAction <> Value) then
+  begin
+    if (FMap.Count > 0) then
+      raise EBSONCannotChangeDuplicateAction.CreateRes(@sBSONCannotChangeDuplicateAction);
+
+    FDuplicatesAction := Value;
+  end;
+end;
+
+{ TBSONItem }
+
+class function TBSONItem.NewFrom(AName: String; AValue: OleVariant): TBSONItem;
+begin
+  Result := TBSONItem.Create;
+  Result.FName := AName;
+  Result.SetValue(AValue);
+end;
+
+procedure TBSONItem.SetValue(const Value: OleVariant);
+begin
+  FValue := Value;
+  FValueType := VarType(FValue) and varTypeMask;
+end;
+
+{ TBSONArray }
+
+class function TBSONArray.NewFrom(Value: OleVariant): IBSONArray;
+begin
+  Result := TBSONArray.Create;
+  Result.Put(Value);
+end;
+
+function TBSONArray.Put(Value: OleVariant): IBSONObject;
+var
+  vKey: String;
+begin
+  vKey := IntToStr(Count);
+
+  Result := inherited Put(vKey, Value);
 end;
 
 initialization

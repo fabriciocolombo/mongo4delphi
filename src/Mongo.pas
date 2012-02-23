@@ -21,7 +21,7 @@ unit Mongo;
 
 interface
 
-uses Sockets, MongoEncoder, BSONStream;
+uses Sockets, MongoEncoder, BSONStream, BSONTypes;
 
 const
   DEFAULT_HOST = 'localhost';
@@ -38,7 +38,8 @@ type
     FStream: TBSONStream;
     FRequestId: Integer;
 
-    procedure Insert(FullCollection: String; Doc: Array of Variant);
+    procedure Insert(FullCollection: String; Doc: Array of Variant);overload;
+    procedure Insert(FullCollection: String; const BSONObject: IBSONObject);overload;
   public
     constructor Create;
     destructor Destroy; override;
@@ -85,7 +86,8 @@ type
     function CreateIndex(KeyFields: IBSONDocument; AIndexName: String = ''): IBSONDocument;
     function DropIndex(AIndexName: String): Boolean;
     *)
-    procedure Insert(Doc: Array of Variant);
+    procedure Insert(Doc: Array of Variant);overload;
+    procedure Insert(const BSONObject: IBSONObject);overload;
 
     //TODO Map/Reduce
     //TODO remove
@@ -211,6 +213,28 @@ begin
   FSocket.SendBuf(FStream.Memory^, vLength);
 end;
 
+procedure TMongo.Insert(FullCollection: String;const BSONObject: IBSONObject);
+var
+  vLength: Integer;
+begin
+  Inc(FRequestId);
+
+  FStream.Clear;
+  FStream.WriteInt(0); //length
+  FStream.WriteInt(FRequestId);
+  FStream.WriteInt(0);//ResponseTo
+  FStream.WriteInt(OP_INSERT);
+  FStream.WriteInt(0);//Flagss
+  FStream.WriteUTF8String(FullCollection);
+
+  FEncoder.Encode(BSONObject);
+
+  vLength := FStream.Size;
+  FStream.WriteInt(0, vLength);
+
+  FSocket.SendBuf(FStream.Memory^, vLength);
+end;
+
 procedure TMongo.Open(AHost: String; APort: Integer);
 begin
   FSocket.Close;
@@ -218,7 +242,7 @@ begin
   FSocket.RemotePort := IntToStr(APort);
   FSocket.Open;
   if not FSocket.Connected then
-    raise EMongoConnectionException.CreateFmt('%s: failed to connect to "%s:%d"', [ClassName, AHost, APort]);
+    raise EMongoConnectionFailureException.CreateResFmt(@sMongoConnectionFailureException, [AHost, APort]);
 end;
 
 { TMongoDB }
@@ -261,6 +285,11 @@ end;
 procedure TMongoCollection.Insert(Doc: array of Variant);
 begin
   FMongoDatabase.FMongo.Insert(FullName, Doc);
+end;
+
+procedure TMongoCollection.Insert(const BSONObject: IBSONObject);
+begin
+  FMongoDatabase.FMongo.Insert(FullName, BSONObject);
 end;
 
 end.

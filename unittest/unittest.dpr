@@ -13,7 +13,10 @@ uses
   BSONStream in '..\src\BSONStream.pas',
   Mongo in '..\src\Mongo.pas',
   TestMongoCollection in 'TestMongoCollection.pas',
-  BSONTypes in '..\src\BSONTypes.pas';
+  BSONTypes in '..\src\BSONTypes.pas',
+  MongoUtils in '..\src\MongoUtils.pas',
+  TestBSONObject in 'TestBSONObject.pas',
+  TestBSONItem in 'TestBSONItem.pas';
 
 {$R *.res}
 
