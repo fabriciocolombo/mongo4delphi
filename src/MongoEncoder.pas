@@ -24,10 +24,15 @@ interface
 uses BSONStream, BSONTypes;
 
 type
-  TMongoEncoder = class
+  IMongoEncoder = interface
+    ['{F6711577-18CC-4E99-88AA-8B0E8E78C9B2}']
+    procedure SetBuffer(ABuffer: TBSONStream);
+    procedure Encode(const ABSONObject: IBSONBasicObject);
+  end;
+
+  TDefaultMongoEncoder = class(TInterfacedObject, IMongoEncoder)
   private
     FBuffer: TBSONStream;
-    FStart: Integer;
 
     procedure put(AType: Byte; AName: String);overload;
     function put(AValue: String): Integer;overload;
@@ -40,43 +45,40 @@ type
     procedure putString(AName: String; AValue: String);
     procedure putBoolean(AName: String; AValue: Boolean);
     procedure putObjectId(AName: String; const AValue: IObjectId);
+    procedure putUUID(AName: String; AValue: TGUID);
 
     procedure PutInterfaceField(name: String; const val: IUnknown);
-  public
-    procedure BeginEncode;
-    procedure EndEncode;
 
     procedure PutObjectField(name: String; val: OleVariant);
-
+  public
+    procedure SetBuffer(ABuffer: TBSONStream);
     procedure Encode(const ABSONObject: IBSONBasicObject);
+  end;
 
-    constructor Create(ABuffer: TBSONStream);
+  TMongoEncoderFactory = class
+  public
+    class function DefaultEncoder(): IMongoEncoder;
   end;
 
 implementation
 
-uses DateUtils, SysUtils, Variants, BSON, MongoException, Classes, Math;
+uses DateUtils, SysUtils, Variants, BSON, MongoException, Classes, Math,
+  MongoUtils;
 
-{ TMongoEncoder }
+{ TDefaultMongoEncoder }
 
-procedure TMongoEncoder.put(AType: Byte; AName: String);
+procedure TDefaultMongoEncoder.put(AType: Byte; AName: String);
 begin
   FBuffer.WriteByte(AType);
   put(AName);
 end;
 
-constructor TMongoEncoder.Create(ABuffer: TBSONStream);
-begin
-  FBuffer := ABuffer;
-  FBuffer.Clear;
-end;
-
-function TMongoEncoder.put(AValue: String): Integer;
+function TDefaultMongoEncoder.put(AValue: String): Integer;
 begin
   Result := FBuffer.WriteUTF8String(AValue);  
 end;
 
-procedure TMongoEncoder.putBoolean(AName: String; AValue: Boolean);
+procedure TDefaultMongoEncoder.putBoolean(AName: String; AValue: Boolean);
 begin
   put(BSON_BOOLEAN, AName);
 
@@ -86,7 +88,7 @@ begin
     FBuffer.WriteByte(BSON_BOOL_FALSE);
 end;
 
-procedure TMongoEncoder.putDate(AName: String; AValue: TDateTime);
+procedure TDefaultMongoEncoder.putDate(AName: String; AValue: TDateTime);
 var
   vUTCDate: Int64;
 begin
@@ -97,32 +99,33 @@ begin
   FBuffer.WriteInt64(vUTCDate);
 end;
 
-procedure TMongoEncoder.putFloat(AName: String; AValue: Extended);
+procedure TDefaultMongoEncoder.putFloat(AName: String; AValue: Extended);
 begin
   put(BSON_FLOAT, AName);
   FBuffer.writeDouble(AValue);
 end;
 
-procedure TMongoEncoder.putInt(AName: String; AValue: LongWord);
+procedure TDefaultMongoEncoder.putInt(AName: String; AValue: LongWord);
 begin
   put(BSON_INT32, AName);
   FBuffer.writeInt(AValue);
 end;
 
-procedure TMongoEncoder.putInt64(AName: String; AValue: Int64);
+procedure TDefaultMongoEncoder.putInt64(AName: String; AValue: Int64);
 begin
   put(BSON_INT64, AName);
   FBuffer.WriteInt64(AValue);
 end;
 
-procedure TMongoEncoder.putNull(AName: String);
+procedure TDefaultMongoEncoder.putNull(AName: String);
 begin
   put(BSON_NULL, AName);
 end;
 
-procedure TMongoEncoder.PutObjectField(name: String; val: OleVariant);
+procedure TDefaultMongoEncoder.PutObjectField(name: String; val: OleVariant);
 var
   valueType: TVarType;
+  vGUID: TGUID;
 begin
   valueType := VarType(val);
 
@@ -141,33 +144,29 @@ begin
     varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord: putInt(name, val);
     varInt64: putInt64(name, val);
     varSingle,varDouble,varCurrency: putFloat(name, val);
-    varOleStr, varString: putString(name, val);
+    varOleStr, varString: begin
+                            if TGUIDUtils.TryStringToGuid(VarToWideStr(val), vGUID) then
+                              putUUID(name, vGUID)
+                            else
+                              putString(name, VarToStr(val));
+                          end;
     varBoolean: putBoolean(name, val);
     varDispatch, varUnknown: PutInterfaceField(name, IUnknown(val));
-    varError,
+{    varError,
     varAny,
     varTypeMask,
     varArray,
     varByRef: ;
     varVariant:;
-//  if ( val instanceof ObjectId )
-//      putObjectId(name, (ObjectId)val );
-//  else if ( val instanceof BSONObject )
-//      putObject(name, (BSONObject)val );
+}
 //  if ( val instanceof Pattern )
 //      putPattern(name, (Pattern)val );
-//  else if ( val instanceof Map )
-//      putMap( name , (Map)val );
-//  else if ( val instanceof Iterable)
-//      putIterable( name , (Iterable)val );
 //  else if ( val instanceof byte[] )
 //      putBinary( name , (byte[])val );
 //  else if ( val instanceof Binary )
 //      putBinary( name , (Binary)val );
 //  else if ( val instanceof UUID )
 //      putUUID( name , (UUID)val );
-//  else if ( val.getClass().isArray() )
-//    putArray( name , val );
 //  else if (val instanceof Symbol)
 //      putSymbol(name, (Symbol) val);
 //  else if (val instanceof CodeWScope)
@@ -183,20 +182,18 @@ begin
 //      putMinKey( name );
 //  else if ( val instanceof MaxKey )
 //      putMaxKey( name );
-//  else if ( putSpecial( name , val ) )
-//      // no-op
   else
     raise EIllegalArgumentException.CreateResFmt(@sInvalidVariantValueType, [VarToStrDef(val, EmptyStr)]);
   end;
 end;
 
-procedure TMongoEncoder.putString(AName, AValue: String);
+procedure TDefaultMongoEncoder.putString(AName, AValue: String);
 begin
   put(BSON_STRING, AName);
   putValueString(AValue);
 end;
 
-procedure TMongoEncoder.putValueString(AValue: String);
+procedure TDefaultMongoEncoder.putValueString(AValue: String);
 var
   lenPos, strLen: Int64;
 begin
@@ -206,19 +203,7 @@ begin
   FBuffer.writeInt(lenPos, strLen);
 end;
 
-procedure TMongoEncoder.BeginEncode;
-begin
-  FStart := FBuffer.Position;
-  FBuffer.WriteInt(0); // making space for length
-end;
-
-procedure TMongoEncoder.EndEncode;
-begin
-  FBuffer.WriteByte(BSON_EOF);
-  FBuffer.WriteInt(FStart, FBuffer.Position - FStart);
-end;
-
-procedure TMongoEncoder.PutInterfaceField(name: String; const val: IInterface);
+procedure TDefaultMongoEncoder.PutInterfaceField(name: String; const val: IInterface);
 var
   vBSONObject: IBSONObject;
   vBSONArray: IBSONArray;
@@ -240,7 +225,7 @@ begin
   end;
 end;
 
-procedure TMongoEncoder.putObjectId(AName: String; const AValue: IObjectId);
+procedure TDefaultMongoEncoder.putObjectId(AName: String; const AValue: IObjectId);
 var
   OID: TObjectIdByteArray;
 begin
@@ -251,12 +236,15 @@ begin
   FBuffer.Write(OID[0], 12);
 end;
 
-procedure TMongoEncoder.Encode(const ABSONObject: IBSONBasicObject);
+procedure TDefaultMongoEncoder.Encode(const ABSONObject: IBSONBasicObject);
 var
   i: Integer;
   vStart: Integer;
   vItem: TBSONItem;
 begin
+  if (FBuffer = nil) then
+    raise EMongoBufferIsNotConfigured.CreateResFmt(@sMongoBufferIsNotConfigured, [ClassName]);
+
   vStart := FBuffer.Position;
   FBuffer.WriteInt(0); // making space for length
   for i := 0 to ABSONObject.Count-1 do
@@ -269,5 +257,25 @@ begin
   FBuffer.WriteInt(vStart, FBuffer.Position - vStart);
 end;
 
+
+procedure TDefaultMongoEncoder.putUUID(AName: String; AValue: TGUID);
+begin
+  put(BSON_BINARY, AName);
+  FBuffer.WriteInt(SizeOf(TGUID));
+  FBuffer.WriteByte(BSON_SUBTYPE_UUID);
+  FBuffer.Write(AValue, SizeOf(TGUID));
+end;
+
+procedure TDefaultMongoEncoder.SetBuffer(ABuffer: TBSONStream);
+begin
+  FBuffer := ABuffer;
+end;
+
+{ TMongoEncoderFactory }
+
+class function TMongoEncoderFactory.DefaultEncoder: IMongoEncoder;
+begin
+  Result := TDefaultMongoEncoder.Create;
+end;
 
 end.

@@ -19,12 +19,15 @@ type
 
     procedure GenId;
   public
-    constructor Create;
+    constructor Create;overload;
+    constructor Create(const OID: String);overload;
 
     class function NewFrom(): IObjectId;
+    class function NewFromOID(const OID: String): IObjectId;
 
     function AsByteArray: TObjectIdByteArray;
     function ToStringMongo: String;
+    constructor CreateWithOutOID;
   end;
 
   TBSONItem = class
@@ -33,10 +36,16 @@ type
     FValue: OleVariant;
     FValueType: Integer;
     procedure SetValue(const Value: OleVariant);
+    function GetAsObjectId: IObjectId;
+    function GetAsInteger: Integer;
+    function GetAsInt64: Int64;
   public
     property Name: String read FName;
     property Value: OleVariant read FValue write SetValue;
     property ValueType: Integer read FValueType;
+    property AsObjectId: IObjectId read GetAsObjectId;
+    property AsInteger: Integer read GetAsInteger;
+    property AsInt64: Int64 read GetAsInt64;
 
     class function NewFrom(AName: String; AValue: OleVariant): TBSONItem;
   end;
@@ -74,7 +83,7 @@ type
     function Put(Value: OleVariant): IBSONObject;
   end;
 
-  TBSONObject = class(TInterfacedObject, IBSONObject)
+  TBSONObject = class(TInterfacedObject, IBSONObject, IBSONBasicObject)
   private
     FMap: TStringList;
     FDuplicatesAction: TDuplicatesAction;
@@ -193,6 +202,18 @@ begin
   GenId;
 end;
 
+constructor TObjectId.Create(const OID: String);
+begin
+  inherited Create;
+
+  FOID := OID;
+end;
+
+constructor TObjectId.CreateWithOutOID;
+begin
+  inherited;
+end;
+
 procedure TObjectId.GenId;
 var
   st:TSystemTime;
@@ -227,6 +248,11 @@ end;
 class function TObjectId.NewFrom: IObjectId;
 begin
   Result := TObjectId.Create;
+end;
+
+class function TObjectId.NewFromOID(const OID: String): IObjectId;
+begin
+  Result := TObjectId.Create(OID);
 end;
 
 function TObjectId.ToStringMongo: String;
@@ -339,6 +365,28 @@ begin
 end;
 
 { TBSONItem }
+
+function TBSONItem.GetAsInt64: Int64;
+begin
+  if (FValueType in [varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord, varInt64]) then
+    Result := FValue
+  else
+    raise EConvertError.Create('Cannot convert the value to Int64.');
+end;
+
+function TBSONItem.GetAsInteger: Integer;
+begin
+  Result := AsInt64;
+end;
+
+function TBSONItem.GetAsObjectId: IObjectId;
+begin
+  Result := nil;
+  if (FValueType = varUnknown) then
+  begin
+    Supports(IUnknown(FValue), IObjectId, Result);
+  end;
+end;
 
 class function TBSONItem.NewFrom(AName: String; AValue: OleVariant): TBSONItem;
 begin

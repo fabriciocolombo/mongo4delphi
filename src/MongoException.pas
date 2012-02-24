@@ -27,12 +27,14 @@ type
   EMongoException = class(Exception);
   EIllegalArgumentException = class(EMongoException);
   EMongoConnectionFailureException = class(EMongoException);
+  EMongoBufferIsNotConfigured = class(EMongoException);
   EBSONDuplicateKeyInList = class(EMongoException);
   EBSONCannotChangeDuplicateAction = class(EMongoException);
 
 resourcestring
   sInvalidVariantValueType = 'Can''t serialize type "%s".';
   sMongoConnectionFailureException = 'failed to connect to "%s:%d"';
+  sMongoBufferIsNotConfigured = 'Buffer is not configured for "%s".';
   sBSONDuplicateKeyInList = 'Key "%s" already exist.';
   sBSONCannotChangeDuplicateAction = 'Cannot change duplicate action after items added ';
 

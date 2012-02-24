@@ -1,0 +1,27 @@
+Types that must be implemented
+  BSON_BINARY       = $05; //
+  BSON_REGEX        = $0B; //
+  BSON_SYMBOL       = $0E;
+  BSON_CODE_W_SCOPE = $0F;
+  BSON_TIMESTAMP    = $11;
+  BSON_MINKEY       = $FF;
+  BSON_MAXKEY       = $7F;
+  {subtype}
+  BSON_SUBTYPE_GENERIC = $00;
+  BSON_SUBTYPE_FUNC    = $01;
+  BSON_SUBTYPE_OLD_BINARY  = $02;
+  BSON_SUBTYPE_MD5     = $05;
+  BSON_SUBTYPE_USER    = $80;
+
+Mongo Driver Requirements	- High priority
+	* BSON serialization (OK considering the above types)
+	* BSON deserialization
+	*	full cursor support (e.g. support OP_GET_MORE operation)
+	*	close exhausted cursors via OP_KILL_CURSORS
+	*	support for running database commands
+	*	handle query errors
+	*	hint, explain, count, $where
+	*	database profiling: set/get profiling level, get profiling info
+	*	advanced connection management (replica sets, slave okay)
+	*	automatic reconnection
+	* authentication

@@ -16,7 +16,9 @@ uses
   BSONTypes in '..\src\BSONTypes.pas',
   MongoUtils in '..\src\MongoUtils.pas',
   TestBSONObject in 'TestBSONObject.pas',
-  TestBSONItem in 'TestBSONItem.pas';
+  TestBSONItem in 'TestBSONItem.pas',
+  MongoProvider in '..\src\MongoProvider.pas',
+  TestDecoder in 'TestDecoder.pas';
 
 {$R *.res}
 

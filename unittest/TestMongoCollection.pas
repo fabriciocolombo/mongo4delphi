@@ -14,21 +14,21 @@ type
   protected
     procedure SetUp; override;
     procedure TearDown; override;
-    
+
   published
-    procedure InsertSinglePairDocumentForSimplesType;
-    procedure InsertTwoPairDocument;
-    procedure InsertObjectID;
+    procedure InsertBSONObjectID;
     procedure InsertBSONObjectSimpleTypes;
     procedure InsertBSONObjectWithEmbeddedObject;
     procedure InsertBSONArraySimpleTypes;
     procedure InsertBSONArrayObject;
     procedure InsertBSONArrayWithEmbeddedArrays;
+    procedure InsertBSONObjectUUID;
+    procedure FindOne;
   end;
 
 implementation
 
-uses Variants, SysUtils, Math, BSONTypes;
+uses Variants, SysUtils, Math, BSONTypes, MongoUtils;
 
 { TTestMongoCollection }
 
@@ -83,11 +83,13 @@ var
   vSingle: Single;
   vDouble: Double;
   vCurrency: Currency;
+  vLongWord: LongWord;
   vBSON: IBSONObject;
 begin
   vSingle := 1.21;
   vDouble := 1.22;
   vCurrency := 1.23;
+  vLongWord := High(LongWord) div 2; 
 
   vBSON := TBSONObject.Create;
 
@@ -101,7 +103,7 @@ begin
   vBSON.Put('id08', High(Integer));
   vBSON.Put('id09', High(ShortInt));
   vBSON.Put('id10', High(Word));
-  vBSON.Put('id11', High(LongWord));
+  vBSON.Put('id11', vLongWord);
   vBSON.Put('id12', High(Int64));
   vBSON.Put('id13', vSingle);
   vBSON.Put('id14', vDouble);
@@ -127,42 +129,9 @@ begin
   FCollection.Insert(vBSON);
 end;
 
-procedure TTestMongoCollection.InsertObjectID;
+procedure TTestMongoCollection.InsertBSONObjectID;
 begin
-  FCollection.Insert(['id', 123, '_id', TObjectId.NewFrom]);
-end;
-
-procedure TTestMongoCollection.InsertSinglePairDocumentForSimplesType;
-var
-  vSingle: Single;
-  vDouble: Double;
-  vCurrency: Currency;
-begin
-  vSingle := 1.21;
-  vDouble := 1.22;
-  vCurrency := 1.23;
-  FCollection.Insert(['id', 'Fabricio']);
-  FCollection.Insert(['id', Null]); //null
-  FCollection.Insert(['id', Unassigned]); //null
-  FCollection.Insert(['id', Date]);
-  FCollection.Insert(['id', Now]);
-  FCollection.Insert(['id', High(Byte)]);
-  FCollection.Insert(['id', High(SmallInt)]);
-  FCollection.Insert(['id', High(Integer)]);
-  FCollection.Insert(['id', High(ShortInt)]);
-  FCollection.Insert(['id', High(Word)]);
-  FCollection.Insert(['id', High(LongWord)]);
-  FCollection.Insert(['id', High(Int64)]);
-  FCollection.Insert(['id', vSingle]);
-  FCollection.Insert(['id', vDouble]);
-  FCollection.Insert(['id', vCurrency]);
-  FCollection.Insert(['id', True]);
-  FCollection.Insert(['id', False]);
-end;
-
-procedure TTestMongoCollection.InsertTwoPairDocument;
-begin
-  FCollection.Insert(['id', 123, 'name', 'Fabricio']);
+  FCollection.Insert(TBSONObject.NewFrom('id', 123).Put('_id', TObjectId.NewFrom));
 end;
 
 procedure TTestMongoCollection.SetUp;
@@ -182,6 +151,27 @@ begin
   FDB.Free;
   FMongo.Free;
   inherited;
+end;
+
+procedure TTestMongoCollection.InsertBSONObjectUUID;
+begin
+  FCollection.Insert(TBSONObject.NewFrom('uid', TGUIDUtils.NewGuidAsString));
+end;
+
+procedure TTestMongoCollection.FindOne;
+var
+  vDoc: IBSONObject;
+begin
+  FCollection.Insert(TBSONObject.NewFrom('_id', TObjectId.NewFromOID('4f46b9fa65760489cc96ab49')).Put('id', 123));
+
+  vDoc := FCollection.FindOne(nil);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEqualsString('_id', vDoc[0].Name);
+  CheckEqualsString('ObjectId("4f46b9fa65760489cc96ab49")', vDoc[0].AsObjectId.ToStringMongo);
+  CheckEqualsString('id', vDoc[1].Name);
+  CheckEquals(123, Integer(vDoc[1].Value));
 end;
 
 initialization

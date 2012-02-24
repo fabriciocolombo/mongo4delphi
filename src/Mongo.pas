@@ -21,7 +21,7 @@ unit Mongo;
 
 interface
 
-uses Sockets, MongoEncoder, BSONStream, BSONTypes;
+uses Sockets, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider;
 
 const
   DEFAULT_HOST = 'localhost';
@@ -33,16 +33,17 @@ type
 
   TMongo = class
   private
-    FSocket: TTcpClient;
-    FEncoder: TMongoEncoder;
-    FStream: TBSONStream;
-    FRequestId: Integer;
-
-    procedure Insert(FullCollection: String; Doc: Array of Variant);overload;
-    procedure Insert(FullCollection: String; const BSONObject: IBSONObject);overload;
+    FProvider: IMongoProvider;
+    FEncoder: IMongoEncoder;
+    FDecoder: IMongoDecoder;
+    procedure SetEncoder(const Value: IMongoEncoder);
+    procedure SetDecoder(const Value: IMongoDecoder);
   public
     constructor Create;
     destructor Destroy; override;
+
+    property Encoder: IMongoEncoder read FEncoder write SetEncoder;
+    property Decoder: IMongoDecoder read FDecoder write SetDecoder; 
 
     procedure Open(AHost: String = DEFAULT_HOST; APort: Integer = DEFAULT_PORT);
 
@@ -69,6 +70,7 @@ type
   private
     FMongoDatabase: TMongoDB;
     FCollectionName: String;
+
     function GetFullName: String;
 
     //function GenerateIndexName(KeyFields: IBSONDocument): String;
@@ -78,6 +80,7 @@ type
     property CollectionName: String read FCollectionName;
     property FullName: String read GetFullName;
 
+    
     (*
     function Count(Query: IBSONDocument = nil; Limit: Integer = 0): Integer;
 
@@ -86,8 +89,9 @@ type
     function CreateIndex(KeyFields: IBSONDocument; AIndexName: String = ''): IBSONDocument;
     function DropIndex(AIndexName: String): Boolean;
     *)
-    procedure Insert(Doc: Array of Variant);overload;
-    procedure Insert(const BSONObject: IBSONObject);overload;
+    procedure Insert(const BSONObject: IBSONObject);
+
+    function FindOne(Query: IBSONObject): IBSONObject;
 
     //TODO Map/Reduce
     //TODO remove
@@ -163,17 +167,13 @@ uses SysUtils, MongoException, BSON, Classes;
 
 constructor TMongo.Create;
 begin
-  FSocket := TTcpClient.Create(nil);
-  FStream := TBSONStream.Create;
-  FEncoder := TMongoEncoder.Create(FStream);
+  FProvider := TDefaultMongoProvider.Create;
+  SetEncoder(TMongoEncoderFactory.DefaultEncoder);
+  SetDecoder(TMongoDecoderFactory.DefaultDecoder);
 end;
 
 destructor TMongo.Destroy;
 begin
-  FStream.Free;
-  FEncoder.Free;
-  FSocket.Close;
-  FSocket.Free;
   inherited;
 end;
 
@@ -182,67 +182,21 @@ begin
   Result := TMongoDB.Create(Self, ADBname);
 end;
 
-procedure TMongo.Insert(FullCollection: String; Doc: array of Variant);
-var
-  i: Integer;
-  vLength: Integer;
-begin
-  Inc(FRequestId);
-
-  FStream.Clear;
-  FStream.WriteInt(0); //length
-  FStream.WriteInt(FRequestId);
-  FStream.WriteInt(0);//ResponseTo
-  FStream.WriteInt(OP_INSERT);
-  FStream.WriteInt(0);//Flagss
-  FStream.WriteUTF8String(FullCollection);
-
-  FEncoder.BeginEncode;
-  i := Low(Doc);
-  while i < High(Doc) do
-  begin
-    FEncoder.PutObjectField(Doc[i], Doc[i+1]);
-
-    Inc(i, 2);
-  end;
-  FEncoder.EndEncode;
-  
-  vLength := FStream.Size;
-  FStream.WriteInt(0, vLength);
-
-  FSocket.SendBuf(FStream.Memory^, vLength);
-end;
-
-procedure TMongo.Insert(FullCollection: String;const BSONObject: IBSONObject);
-var
-  vLength: Integer;
-begin
-  Inc(FRequestId);
-
-  FStream.Clear;
-  FStream.WriteInt(0); //length
-  FStream.WriteInt(FRequestId);
-  FStream.WriteInt(0);//ResponseTo
-  FStream.WriteInt(OP_INSERT);
-  FStream.WriteInt(0);//Flagss
-  FStream.WriteUTF8String(FullCollection);
-
-  FEncoder.Encode(BSONObject);
-
-  vLength := FStream.Size;
-  FStream.WriteInt(0, vLength);
-
-  FSocket.SendBuf(FStream.Memory^, vLength);
-end;
-
 procedure TMongo.Open(AHost: String; APort: Integer);
 begin
-  FSocket.Close;
-  FSocket.RemoteHost := AHost;
-  FSocket.RemotePort := IntToStr(APort);
-  FSocket.Open;
-  if not FSocket.Connected then
-    raise EMongoConnectionFailureException.CreateResFmt(@sMongoConnectionFailureException, [AHost, APort]);
+  FProvider.Open(AHost, APort);
+end;
+
+procedure TMongo.SetDecoder(const Value: IMongoDecoder);
+begin
+  FDecoder := Value;
+  FProvider.SetDecoder(FDecoder);
+end;
+
+procedure TMongo.SetEncoder(const Value: IMongoEncoder);
+begin
+  FEncoder := Value;
+  FProvider.SetEncoder(FEncoder);
 end;
 
 { TMongoDB }
@@ -277,19 +231,19 @@ begin
   FCollectionName := AName;
 end;
 
+function TMongoCollection.FindOne(Query: IBSONObject): IBSONObject;
+begin
+  Result := FMongoDatabase.FMongo.FProvider.FindOne(FMongoDatabase.DBName, FCollectionName, Query);
+end;
+
 function TMongoCollection.GetFullName: String;
 begin
   Result := FMongoDatabase.DBName + '.' + FCollectionName;
 end;
 
-procedure TMongoCollection.Insert(Doc: array of Variant);
-begin
-  FMongoDatabase.FMongo.Insert(FullName, Doc);
-end;
-
 procedure TMongoCollection.Insert(const BSONObject: IBSONObject);
 begin
-  FMongoDatabase.FMongo.Insert(FullName, BSONObject);
+  FMongoDatabase.FMongo.FProvider.Insert(FMongoDatabase.DBName, FCollectionName, BSONObject);
 end;
 
 end.

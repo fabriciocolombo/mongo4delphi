@@ -28,13 +28,13 @@ const
   BSON_DOC          = $03; //embedded document
   BSON_ARRAY        = $04; //bson document but using integer string for key
   BSON_BINARY       = $05; //
-  BSON_UNDEFINED    = $06; //deprecated
+//  BSON_UNDEFINED    = $06; //deprecated
   BSON_OBJECTID     = $07; //
   BSON_BOOLEAN      = $08; //false:$00, true:$01
   BSON_DATETIME     = $09;
   BSON_NULL         = $0A;
   BSON_REGEX        = $0B; //
-  BSON_REF          = $0C; //deprecated
+//  BSON_REF          = $0C; //deprecated
   BSON_CODE         = $0D;
   BSON_SYMBOL       = $0E;
   BSON_CODE_W_SCOPE = $0F;
