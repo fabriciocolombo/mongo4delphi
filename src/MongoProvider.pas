@@ -2,12 +2,16 @@ unit MongoProvider;
 
 interface
 
-uses Sockets, MongoEncoder, MongoDecoder, BSONTypes, Classes, BSONStream;
+{.$DEFINE SYNAPSE}
+
+uses MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
+     {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets, //
+     Classes;
 
 const
   DEFAULT_HOST = 'localhost';
   DEFAULT_PORT = 27017;
-  
+
 type
   IMongoProvider = interface;
 
@@ -66,12 +70,18 @@ type
   TDefaultMongoProvider = class(TInterfacedObject, IMongoProvider)
   private
     FRequestId: Integer;
-    FSocket: TTcpClient;
     FEncoder: IMongoEncoder;
     FDecoder: IMongoDecoder;
     FQueueRequests: TStringList;
-
+    {$IFDEF SYNAPSE}
+    FSocket: TTCPBlockSocket;
+    {$ELSE}
+    FSocket: TTcpClient;
+    {$ENDIF}
     procedure ReadResponse(AStream: TBSONStream; ARequestId: Integer);
+
+    function SendBuf(Buffer: Pointer; Length: Integer): Integer;
+    function ReceiveBuf(var Buffer; Length: Integer): Integer;
   public
     constructor Create;
     destructor Destroy; override;
@@ -103,14 +113,24 @@ const
 
 procedure TDefaultMongoProvider.Close;
 begin
+  {$IFDEF SYNAPSE}
+  FSocket.CloseSocket;
+  {$ELSE}
   FSocket.Close;
+  {$ENDIF}
 end;
 
 constructor TDefaultMongoProvider.Create;
 begin
   inherited;
 
+  {$IFDEF SYNAPSE}
+  FSocket := TTCPBlockSocket.Create;
+  {$ELSE}
   FSocket := TTcpClient.Create(nil);
+  {$ENDIF}
+
+
   FQueueRequests := TStringList.Create;
 end;
 
@@ -159,7 +179,7 @@ begin
     vLength := vStream.Size;
     vStream.WriteInt(0, vLength);
 
-    FSocket.SendBuf(vStream.Memory^, vLength);
+    SendBuf(vStream.Memory, vLength);
 
 //    if ReturnFieldSelector<>nil then (ReturnFieldSelector as IPersistStream).Save(FData,false);
     ReadResponse(vStream, FRequestId);
@@ -227,7 +247,7 @@ begin
     vLength := vStream.Size;
     vStream.WriteInt(0, vLength);
 
-    FSocket.SendBuf(vStream.Memory^, vLength);
+    SendBuf(vStream.Memory, vLength);
 
     Result := TWriteResult.Create(Self, DB, FRequestId);
   finally
@@ -237,12 +257,22 @@ end;
 
 procedure TDefaultMongoProvider.Connect(AHost: String; APort: Integer);
 begin
-  FSocket.Close;
-  FSocket.RemoteHost := AHost;
-  FSocket.RemotePort := IntToStr(APort);
-  FSocket.Open;
-  if not FSocket.Connected then
-    raise EMongoConnectionFailureException.CreateResFmt(@sMongoConnectionFailureException, [AHost, APort]);
+  Close;
+
+  {$IFDEF SYNAPSE}
+    FSocket.Connect(AHost, IntToStr(APort));
+    if (FSocket.LastError <> 0) then
+    begin
+      raise EMongoConnectionFailureException.CreateResFmt(@sMongoConnectionFailureException, [AHost, APort]);
+    end;
+  {$ELSE}
+    FSocket.RemoteHost := AHost;
+    FSocket.RemotePort := IntToStr(APort);
+    FSocket.Open;
+
+    if not FSocket.Connected then
+      raise EMongoConnectionFailureException.CreateResFmt(@sMongoConnectionFailureException, [AHost, APort]);
+  {$ENDIF}
 end;
 
 procedure TDefaultMongoProvider.ReadResponse(AStream: TBSONStream; ARequestId: Integer);
@@ -255,7 +285,7 @@ var
 begin
   repeat
     //MsgLength,RequestID,ResponseTo
-    i := FSocket.ReceiveBuf(buf[0],12);
+    i := ReceiveBuf(buf[0],12);
     if i <> 12 then
       raise EMongoException.Create('MongoWire: invalid response');
 
@@ -268,7 +298,7 @@ begin
         while l>0 do
          begin
           if l<dSize then i:=l else i:=dSize;
-          i:=FSocket.ReceiveBuf(d[0],i);
+          i:= ReceiveBuf(d[0],i);
           if i=0 then raise EMongoException.Create('MongoWire: response aborted');
           AStream.Write(d[0],i);
           dec(l,i);
@@ -300,6 +330,24 @@ end;
 procedure TDefaultMongoProvider.SetEncoder(const AEncoder: IMongoEncoder);
 begin
   FEncoder := AEncoder;
+end;
+
+function TDefaultMongoProvider.ReceiveBuf(var Buffer; Length: Integer): Integer;
+begin
+  {$IFDEF SYNAPSE}
+  Result := FSocket.RecvBuffer(@Buffer, Length);
+  {$ELSE}
+  Result := FSocket.ReceiveBuf(Buffer, Length);
+  {$ENDIF}
+end;
+
+function TDefaultMongoProvider.SendBuf(Buffer: Pointer; Length: Integer): Integer;
+begin
+  {$IFDEF SYNAPSE}
+  Result := FSocket.SendBuffer(Buffer, Length);
+  {$ELSE}
+  Result := FSocket.SendBuf(Buffer^, Length);
+  {$ENDIF}
 end;
 
 { TWriteResult }

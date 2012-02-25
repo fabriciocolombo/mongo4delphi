@@ -26,6 +26,10 @@ Mongo Driver Requirements	- High priority
 	*	automatic reconnection
 	* authentication
 	
-Replace Exception with typed exception descendents of EMongoException
-Replace message hard coded string with ResourceString
-	
+TODO - Replace Exception with typed exception descendents of EMongoException
+TODO - Replace message hard coded string with ResourceString
+TODO - Review naming of ObjectId. Should be contain the BSON prefix?
+TODO - Implementation from TBSONStream.ReadObjectId must be moved to ObjectId implementation
+TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
+
+TODO - Check compatibility with FPC.

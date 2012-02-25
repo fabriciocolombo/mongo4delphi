@@ -85,7 +85,7 @@ type
   IBSONArray = interface(IBSONBasicObject)
     ['{ADA231EC-9BD6-4FEB-BCB7-56D88580319E}']
 
-    function Put(Value: OleVariant): IBSONObject;
+    function Put(Value: OleVariant): IBSONArray;
   end;
 
   TBSONObject = class(TInterfacedObject, IBSONObject)
@@ -119,7 +119,7 @@ type
 
   TBSONArray = class(TBSONObject, IBSONArray)
   public
-    function Put(Value: OleVariant): IBSONObject;
+    function Put(Value: OleVariant): IBSONArray;
 
     class function NewFrom(Value: OleVariant): IBSONArray;
   end;
@@ -436,13 +436,15 @@ begin
   Result.Put(Value);
 end;
 
-function TBSONArray.Put(Value: OleVariant): IBSONObject;
+function TBSONArray.Put(Value: OleVariant): IBSONArray;
 var
   vKey: String;
 begin
   vKey := IntToStr(Count);
 
-  Result := inherited Put(vKey, Value);
+  inherited Put(vKey, Value);
+
+  Result := Self;
 end;
 
 initialization
