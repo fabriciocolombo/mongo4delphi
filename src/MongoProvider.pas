@@ -4,11 +4,26 @@ interface
 
 uses Sockets, MongoEncoder, MongoDecoder, BSONTypes, Classes, BSONStream;
 
+const
+  DEFAULT_HOST = 'localhost';
+  DEFAULT_PORT = 27017;
+  
 type
   IMongoProvider = interface;
 
-  ICommandResult = interface
-    ['{CD9721C8-98AE-4630-8647-7772CE9E73F2}']
+  ICommandResult = interface(IBSONObject)
+    ['{8F4C1FA8-5CD5-433A-A641-16DA896B42DB}']
+
+    function Ok: Boolean;
+    function HasError: Boolean;
+    function GetCode: Integer;
+  end;
+
+  TCommandResult = class(TBSONObject, ICommandResult)
+  public
+    function HasError: Boolean;
+    function Ok: Boolean;
+    function GetCode: Integer;
   end;
 
   IWriteResult = interface
@@ -23,7 +38,7 @@ type
     FProvider: IMongoProvider;
     FRequestId: Integer;
     FDB: String;
-    FLastErrorResult: Pointer; //Weak Reference
+    FLastErrorResult: ICommandResult;
   public
     function getCachedLastError: ICommandResult;
     function getLastError: ICommandResult;
@@ -37,7 +52,7 @@ type
     procedure SetEncoder(const AEncoder: IMongoEncoder);
     procedure SetDecoder(const ADecoder: IMongoDecoder);
         
-    procedure Open(AHost: String; APort: Integer);
+    procedure Connect(AHost: String; APort: Integer);
     procedure Close;
 
     function GetLastError(DB: String; RequestId: Integer=0): ICommandResult;
@@ -64,7 +79,7 @@ type
     procedure SetEncoder(const AEncoder: IMongoEncoder);
     procedure SetDecoder(const ADecoder: IMongoDecoder);
 
-    procedure Open(AHost: String; APort: Integer);
+    procedure Connect(AHost: String; APort: Integer);
     procedure Close;
 
     function GetLastError(DB: String; RequestId: Integer=0): ICommandResult;
@@ -73,11 +88,16 @@ type
     function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;
 
     function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;
+
+    //TODO - Assert socket is Connected
   end;
 
 implementation
 
 uses MongoException, SysUtils, Windows, BSON, Variants;
+
+const
+  COMMAND_COLLECTION = '$cmd'; 
 
 { TDefaultMongoProvider }
 
@@ -181,7 +201,6 @@ begin
     Result := nil;
     Exit;
   end;
-
   Result := RunCommand(DB, TBSONObject.NewFrom('getlasterror', 1));
 end;
 
@@ -216,7 +235,7 @@ begin
   end;
 end;
 
-procedure TDefaultMongoProvider.Open(AHost: String; APort: Integer);
+procedure TDefaultMongoProvider.Connect(AHost: String; APort: Integer);
 begin
   FSocket.Close;
   FSocket.RemoteHost := AHost;
@@ -264,8 +283,13 @@ begin
 end;
 
 function TDefaultMongoProvider.RunCommand(DB: String; Command: IBSONObject): ICommandResult;
+var
+  vBSON: IBSONObject;
 begin
+  vBSON := FindOne(DB, COMMAND_COLLECTION, Command);
 
+  Result := TCommandResult.Create;
+  Result.PutAll(vBSON);
 end;
 
 procedure TDefaultMongoProvider.SetDecoder(const ADecoder: IMongoDecoder);
@@ -295,7 +319,50 @@ end;
 
 function TWriteResult.getLastError: ICommandResult;
 begin
-  Result := FProvider.GetLastError(FDB, FRequestId); 
+  if Assigned(FLastErrorResult) then
+  begin
+    Result := FLastErrorResult
+  end
+  else
+  begin
+    Result := FProvider.GetLastError(FDB, FRequestId);
+
+    FLastErrorResult := Result;
+  end;
+end;
+
+{ TCommandResult }
+
+function TCommandResult.GetCode: Integer;
+var
+  vCode: TBSONItem;
+begin
+  Result := -1;
+
+  vCode := Find('code');
+
+  if (vCode <> nil) then
+  begin
+    Result := vCode.Value;
+  end;
+end;
+
+function TCommandResult.HasError: Boolean;
+var
+  vOK: TBSONItem;
+begin
+  vOK := Items['err'];
+
+  Result := Length(vOK.AsString) > 1;
+end;
+
+function TCommandResult.Ok: Boolean;
+var
+  vOK: TBSONItem;
+begin
+  vOK := Items['ok'];
+
+  Result := (vOK.Value = True) or (vOK.Value = Ord(True));
 end;
 
 end.

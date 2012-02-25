@@ -21,11 +21,10 @@ unit Mongo;
 
 interface
 
-uses Sockets, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider;
+uses Sockets, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider,
+     Contnrs, Classes;
 
-const
-  DEFAULT_HOST = 'localhost';
-  DEFAULT_PORT = 27017;
+
 
 type
   TMongoDB = class;
@@ -36,8 +35,11 @@ type
     FProvider: IMongoProvider;
     FEncoder: IMongoEncoder;
     FDecoder: IMongoDecoder;
+    FDBList: TObjectList;
     procedure SetEncoder(const Value: IMongoEncoder);
     procedure SetDecoder(const Value: IMongoDecoder);
+  protected
+    property Provider: IMongoProvider read FProvider;
   public
     constructor Create;
     destructor Destroy; override;
@@ -45,15 +47,20 @@ type
     property Encoder: IMongoEncoder read FEncoder write SetEncoder;
     property Decoder: IMongoDecoder read FDecoder write SetDecoder; 
 
-    procedure Open(AHost: String = DEFAULT_HOST; APort: Integer = DEFAULT_PORT);
+    procedure Connect(AHost: String = DEFAULT_HOST; APort: Integer = DEFAULT_PORT);
 
     function getDB(const ADBname: String): TMongoDB;
+    procedure GetDatabaseNames(AList: TStrings);
   end;
 
   TMongoDB = class
   private
     FMongo: TMongo;
     FDBName: String;
+    FCollectionList: TObjectList;
+    function GetProvider: IMongoProvider;
+  protected
+    property Provider: IMongoProvider read GetProvider;
   public
     constructor Create(AMongo: TMongo; ADBName: String);
     destructor Destroy; override;
@@ -72,8 +79,11 @@ type
     FCollectionName: String;
 
     function GetFullName: String;
+    function GetProvider: IMongoProvider;
 
     //function GenerateIndexName(KeyFields: IBSONDocument): String;
+  protected
+    property Provider: IMongoProvider read GetProvider;
   public
     constructor Create(AMongoDatabase: TMongoDB; AName: String);
 
@@ -89,6 +99,9 @@ type
     function CreateIndex(KeyFields: IBSONDocument; AIndexName: String = ''): IBSONDocument;
     function DropIndex(AIndexName: String): Boolean;
     *)
+
+    procedure Drop();
+
     procedure Insert(const BSONObject: IBSONObject);
 
     function FindOne(Query: IBSONObject): IBSONObject;
@@ -161,12 +174,14 @@ type
 
 implementation
 
-uses SysUtils, MongoException, BSON, Classes;
+uses SysUtils, MongoException, BSON;
 
 { TMongo }
 
 constructor TMongo.Create;
 begin
+  inherited;
+  FDBList := TObjectList.Create;
   FProvider := TDefaultMongoProvider.Create;
   SetEncoder(TMongoEncoderFactory.DefaultEncoder);
   SetDecoder(TMongoDecoderFactory.DefaultDecoder);
@@ -174,17 +189,27 @@ end;
 
 destructor TMongo.Destroy;
 begin
+  FDBList.Free;
   inherited;
+end;
+
+procedure TMongo.GetDatabaseNames(AList: TStrings);
+var
+  vResult: ICommandResult;
+begin
+  vResult := FProvider.RunCommand('admin', TBSONObject.NewFrom('listDatabases', 1));
 end;
 
 function TMongo.getDB(const ADBname: String): TMongoDB;
 begin
   Result := TMongoDB.Create(Self, ADBname);
+
+  FDBList.Add(Result);
 end;
 
-procedure TMongo.Open(AHost: String; APort: Integer);
+procedure TMongo.Connect(AHost: String; APort: Integer);
 begin
-  FProvider.Open(AHost, APort);
+  FProvider.Connect(AHost, APort);
 end;
 
 procedure TMongo.SetDecoder(const Value: IMongoDecoder);
@@ -203,13 +228,15 @@ end;
 
 constructor TMongoDB.Create(AMongo: TMongo; ADBName: String);
 begin
+  inherited Create;
+  FCollectionList := TObjectList.Create;
   FMongo := AMongo;
   FDBName := ADBName;
 end;
 
 destructor TMongoDB.Destroy;
 begin
-
+  FCollectionList.Free;
   inherited;
 end;
 
@@ -221,6 +248,13 @@ end;
 function TMongoDB.GetCollection(AName: String): TMongoCollection;
 begin
   Result := TMongoCollection.Create(Self, AName);
+
+  FCollectionList.Add(Result);
+end;
+
+function TMongoDB.GetProvider: IMongoProvider;
+begin
+  Result := FMongo.Provider;
 end;
 
 { TMongoCollection }
@@ -231,9 +265,14 @@ begin
   FCollectionName := AName;
 end;
 
+procedure TMongoCollection.Drop;
+begin
+  Provider.RunCommand(FMongoDatabase.DBName, TBSONObject.NewFrom('drop', FCollectionName));
+end;
+
 function TMongoCollection.FindOne(Query: IBSONObject): IBSONObject;
 begin
-  Result := FMongoDatabase.FMongo.FProvider.FindOne(FMongoDatabase.DBName, FCollectionName, Query);
+  Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName, Query);
 end;
 
 function TMongoCollection.GetFullName: String;
@@ -241,9 +280,14 @@ begin
   Result := FMongoDatabase.DBName + '.' + FCollectionName;
 end;
 
+function TMongoCollection.GetProvider: IMongoProvider;
+begin
+  Result := FMongoDatabase.Provider;
+end;
+
 procedure TMongoCollection.Insert(const BSONObject: IBSONObject);
 begin
-  FMongoDatabase.FMongo.FProvider.Insert(FMongoDatabase.DBName, FCollectionName, BSONObject);
+  Provider.Insert(FMongoDatabase.DBName, FCollectionName, BSONObject);
 end;
 
 end.

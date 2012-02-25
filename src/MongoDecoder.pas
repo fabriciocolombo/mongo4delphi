@@ -58,19 +58,16 @@ end;
 
 function TDefaultMongoDecoder.Decode(ABuffer: TBSONStream): IBSONObject;
 var
-  vLength, vRequestId, vResponseTo,
-  vOpCode, vFlags, vStartingFrom,
   vNumberReturned: Integer;
-  vCursorId: Int64;
   i: Integer;
 begin
-  vLength := ABuffer.ReadInt;
-  vRequestID := ABuffer.ReadInt;
-  vResponseTo := ABuffer.ReadInt;
-  vOpCode := ABuffer.ReadInt;
-  vFlags := ABuffer.ReadInt;
-  vCursorId := ABuffer.ReadInt64;
-  vStartingFrom := ABuffer.ReadInt;
+  ABuffer.ReadInt; //Length
+  ABuffer.ReadInt; //RequestId
+  ABuffer.ReadInt; //ResponseTo
+  ABuffer.ReadInt; //OpCode
+  ABuffer.ReadInt; //Flags
+  ABuffer.ReadInt64; //CursorId
+  ABuffer.ReadInt; //StartingFrom
   vNumberReturned := ABuffer.ReadInt;
 
   for i := 1 to vNumberReturned do

@@ -18,7 +18,8 @@ uses
   TestBSONObject in 'TestBSONObject.pas',
   TestBSONItem in 'TestBSONItem.pas',
   MongoProvider in '..\src\MongoProvider.pas',
-  TestDecoder in 'TestDecoder.pas';
+  TestDecoder in 'TestDecoder.pas',
+  TestMongoProvider in 'TestMongoProvider.pas';
 
 {$R *.res}
 

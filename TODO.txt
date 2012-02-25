@@ -25,3 +25,7 @@ Mongo Driver Requirements	- High priority
 	*	advanced connection management (replica sets, slave okay)
 	*	automatic reconnection
 	* authentication
+	
+Replace Exception with typed exception descendents of EMongoException
+Replace message hard coded string with ResourceString
+	

@@ -9,7 +9,6 @@ type
   private
     FStream: TBSONStream;
     FDecoder: IMongoDecoder;
-
   protected
     procedure SetUp; override;
     procedure TearDown; override;

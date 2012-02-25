@@ -141,13 +141,14 @@ Item0=FASTMM
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=6
-Item0=D:\Desenvolvimento\OpenSource\delphi\TMongoWire
-Item1=sdk;..\public;FastMM
-Item2=sdk;..\public;FastMM4
-Item3=sdk;..\public
-Item4=C:\Program Files\Indy9
-Item5=..\..\public
+Count=7
+Item0=D:\Desenvolvimento\OpenSource\delphi\TMongoWire;D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src
+Item1=D:\Desenvolvimento\OpenSource\delphi\TMongoWire
+Item2=sdk;..\public;FastMM
+Item3=sdk;..\public;FastMM4
+Item4=sdk;..\public
+Item5=C:\Program Files\Indy9
+Item6=..\..\public
 [HistoryLists\hlUnitOutputDirectory]
 Count=2
 Item0=dcu

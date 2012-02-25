@@ -39,6 +39,7 @@ type
     function GetAsObjectId: IObjectId;
     function GetAsInteger: Integer;
     function GetAsInt64: Int64;
+    function GetAsString: String;
   public
     property Name: String read FName;
     property Value: OleVariant read FValue write SetValue;
@@ -46,6 +47,9 @@ type
     property AsObjectId: IObjectId read GetAsObjectId;
     property AsInteger: Integer read GetAsInteger;
     property AsInt64: Int64 read GetAsInt64;
+    property AsString: String read GetAsString;
+
+    function IsInteger: Boolean; 
 
     class function NewFrom(AName: String; AValue: OleVariant): TBSONItem;
   end;
@@ -75,6 +79,7 @@ type
     function Put(const AKey: String; Value: OleVariant): IBSONObject;
     function Find(const AKey: String): TBSONItem;overload;
     function Find(const AKey: String;var AIndex: Integer): TBSONItem;overload;
+    function PutAll(const ASource: IBSONObject): IBSONObject;
   end;
 
   IBSONArray = interface(IBSONBasicObject)
@@ -83,11 +88,11 @@ type
     function Put(Value: OleVariant): IBSONObject;
   end;
 
-  TBSONObject = class(TInterfacedObject, IBSONObject, IBSONBasicObject)
+  TBSONObject = class(TInterfacedObject, IBSONObject)
   private
     FMap: TStringList;
     FDuplicatesAction: TDuplicatesAction;
-
+  protected
     procedure PushItem(AItem: TBSONItem);
     function GetItems(AKey: String): TBSONItem;
     function GetItem(AIndex: Integer): TBSONItem;
@@ -108,6 +113,8 @@ type
     function Find(const AKey: String): TBSONItem;overload;
     function Find(const AKey: String;var AIndex: Integer): TBSONItem;overload;
     function Count: Integer;
+
+    function PutAll(const ASource: IBSONObject): IBSONObject;
   end;
 
   TBSONArray = class(TBSONObject, IBSONArray)
@@ -353,6 +360,16 @@ begin
   Result := Self;
 end;
 
+function TBSONObject.PutAll(const ASource: IBSONObject): IBSONObject;
+var
+  i: Integer;
+begin
+  for i := 0 to ASource.Count-1 do
+  begin
+    Put(ASource[i].Name, ASource[i].Value);
+  end;
+end;
+
 procedure TBSONObject.SetDuplicatesAction(const Value: TDuplicatesAction);
 begin
   if (FDuplicatesAction <> Value) then
@@ -368,7 +385,7 @@ end;
 
 function TBSONItem.GetAsInt64: Int64;
 begin
-  if (FValueType in [varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord, varInt64]) then
+  if IsInteger then
     Result := FValue
   else
     raise EConvertError.Create('Cannot convert the value to Int64.');
@@ -386,6 +403,16 @@ begin
   begin
     Supports(IUnknown(FValue), IObjectId, Result);
   end;
+end;
+
+function TBSONItem.GetAsString: String;
+begin
+  Result := VarToStr(FValue);
+end;
+
+function TBSONItem.IsInteger: Boolean;
+begin
+  Result := (FValueType in [varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord, varInt64]);
 end;
 
 class function TBSONItem.NewFrom(AName: String; AValue: OleVariant): TBSONItem;

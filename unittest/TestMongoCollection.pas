@@ -14,7 +14,6 @@ type
   protected
     procedure SetUp; override;
     procedure TearDown; override;
-
   published
     procedure InsertBSONObjectID;
     procedure InsertBSONObjectSimpleTypes;
@@ -138,17 +137,16 @@ procedure TTestMongoCollection.SetUp;
 begin
   inherited;
   FMongo := TMongo.Create;
-  FMongo.Open();
+  FMongo.Connect();
 
   FDB := FMongo.getDB('unit');
 
-  FCollection := FDB.GetCollection('test'); 
+  FCollection := FDB.GetCollection('test');
+  FCollection.Drop;
 end;
 
 procedure TTestMongoCollection.TearDown;
 begin
-  FCollection.Free;
-  FDB.Free;
   FMongo.Free;
   inherited;
 end;
