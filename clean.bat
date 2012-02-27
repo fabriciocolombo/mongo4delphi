@@ -8,6 +8,7 @@ del /F /S /Q unittest\*.compiled
 del /F /S /Q unittest\*.exe
 del /F /S /Q unittest\*.or
 del /F /S /Q unittest\*.identcache
+del /F /S /Q unittest\unittest.res
 
 del /F /S /Q src\*.dcu 
 del /F /S /Q src\*.~pas

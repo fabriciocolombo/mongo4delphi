@@ -17,11 +17,27 @@ type
     procedure TearDown; override;
   published
     procedure WriteSimpleTypes;
+    procedure ReadCString;
   end;
 
 implementation
 
 { TTestBSONStream }
+
+procedure TTestBSONStream.ReadCString;
+var
+  vInput, vOutput: String;
+begin
+  vInput := 'ABCDEF«√…”';
+
+  FStream.WriteUTF8String(vInput);
+
+  FStream.Position := 0;
+
+  vOutput := FStream.ReadCString;
+
+  CheckEquals(vInput, vOutput);
+end;
 
 procedure TTestBSONStream.SetUp;
 begin

@@ -186,7 +186,7 @@ begin
 //    if ReturnFieldSelector<>nil then (ReturnFieldSelector as IPersistStream).Save(FData,false);
     ReadResponse(vStream, FRequestId);
 
-//    vStream.SaveToFile('FindOneRowSingleTypes.stream');
+//    vStream.SaveToFile('Response.stream');
 
     vStream.Position := 0;
     vStream.Read(vLength, 4);

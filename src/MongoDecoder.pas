@@ -34,6 +34,7 @@ type
   private
     function DecodeElement(ACurrent: IBSONObject; ABuffer: TBSONStream): Boolean;
     function DecodeObject(ABuffer: TBSONStream): IBSONObject;
+    function DecodeArray(ABuffer: TBSONStream): IBSONArray;
   public
     function Decode(ABuffer: TBSONStream): IBSONObject;
   end;
@@ -76,6 +77,15 @@ begin
   end;
 end;
 
+function TDefaultMongoDecoder.DecodeArray(ABuffer: TBSONStream): IBSONArray;
+var
+  vTemp: IBSONObject;
+begin
+  vTemp := DecodeObject(ABuffer);
+
+  Result := TBSONArray.NewFromObject(vTemp)
+end;
+
 function TDefaultMongoDecoder.DecodeElement(ACurrent: IBSONObject; ABuffer: TBSONStream): Boolean;
 var
   vType: Byte;
@@ -95,8 +105,8 @@ begin
     BSON_NULL: ACurrent.Put(vName, Null);
     BSON_FLOAT: ACurrent.Put(vName, ABuffer.ReadDouble);
     BSON_STRING: ACurrent.Put(vName, ABuffer.ReadUTF8String);
-    BSON_DOC:;
-    BSON_ARRAY:;
+    BSON_DOC: ACurrent.Put(vName, DecodeObject(ABuffer));
+    BSON_ARRAY: ACurrent.Put(vName, DecodeArray(ABuffer));
     BSON_OBJECTID: ACurrent.Put(vName, TObjectId.NewFromOID(ABuffer.ReadObjectId));
     BSON_BOOLEAN: ACurrent.Put(vName, (ABuffer.ReadByte = BSON_BOOL_TRUE));
     BSON_DATETIME: ACurrent.Put(vName, VarFromDateTime((ABuffer.ReadInt64/MSecsPerDay) + UnixDateDelta));

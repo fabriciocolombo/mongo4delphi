@@ -9,6 +9,9 @@ interface
 uses Contnrs, Classes;
 
 type
+  IBSONObject = interface;
+  IBSONArray = interface;
+  
   TObjectIdByteArray = array[0..11] of byte;
 
   IObjectId = interface
@@ -52,6 +55,8 @@ type
     function GetAsDateTime: TDateTime;
     function GetAsFloat: Double;
     function GetAsBoolean: Boolean;
+    function GetAsBSONObject: IBSONObject;
+    function GetAsBSONArray: IBSONArray;
   public
     property Name: String read FName;
     property Value: Variant read FValue write SetValue;
@@ -63,6 +68,8 @@ type
     property AsDateTime: TDateTime read GetAsDateTime;
     property AsFloat: Double read GetAsFloat;
     property AsBoolean: Boolean read GetAsBoolean;
+    property AsBSONObject: IBSONObject read GetAsBSONObject;
+    property AsBSONArray: IBSONArray read GetAsBSONArray;
 
     function GetValueTypeDesc: String;
 
@@ -137,6 +144,8 @@ type
     function Put(Value: Variant): IBSONArray;
 
     class function NewFrom(Value: Variant): IBSONArray;
+    class function NewFromValues(Values:Array of Variant): IBSONArray;
+    class function NewFromObject(Value: IBSONObject): IBSONArray;
   end;
 
 implementation
@@ -401,6 +410,24 @@ begin
     raise EConvertError.Create('Cannot convert the value to Boolean.');
 end;
 
+function TBSONItem.GetAsBSONArray: IBSONArray;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONArray, Result);
+  end;
+end;
+
+function TBSONItem.GetAsBSONObject: IBSONObject;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONObject, Result);
+  end;
+end;
+
 function TBSONItem.GetAsDateTime: TDateTime;
 begin
   if (FValueType = bvtDateTime) then
@@ -481,6 +508,30 @@ class function TBSONArray.NewFrom(Value: Variant): IBSONArray;
 begin
   Result := TBSONArray.Create;
   Result.Put(Value);
+end;
+
+class function TBSONArray.NewFromObject(Value: IBSONObject): IBSONArray;
+var
+  i: Integer;
+begin
+  Result := TBSONArray.Create;
+
+  for i := 0 to Value.Count-1 do
+  begin
+    Result.Put(Value[i].Value);
+  end;
+end;
+
+class function TBSONArray.NewFromValues(Values: array of Variant): IBSONArray;
+var
+  i: Integer;
+begin
+  Result := TBSONArray.Create;
+
+  for i := Low(Values) to High(Values) do
+  begin
+    Result.Put(Values[i]);
+  end;
 end;
 
 function TBSONArray.Put(Value: Variant): IBSONArray;

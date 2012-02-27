@@ -102,24 +102,24 @@ function TBSONStream.ReadCString: String;
 var
   c: AnsiChar;
   s:AnsiString;
-  sx,sl:integer;
+  vLength,vPos:integer;
 begin
-  sx:=0;
-  sl:=0;
+  vLength:=0;
+  vPos:=0;
   Read(c, 1);
   while c <> #0 do
   begin
-    if sx = sl then
+    if vPos = vLength then
     begin
-      inc(sl, $100);//GrowStep
-      SetLength(s, sl);
+      inc(vLength, 256);
+      SetLength(s, vLength);
     end;
 
-    inc(sx);
-    s[sx]:=c;
+    inc(vPos);
+    s[vPos]:=c;
     Read(c, 1);
   end;
-  SetLength(s, sx);
+  SetLength(s, vPos);
 
   Result := {$IFDEF Unicode}UTF8ToString(PAnsiChar(s));{$ELSE}UTF8Decode(s);{$ENDIF}
 end;
@@ -138,15 +138,15 @@ begin
     SetLength(vTempResult, vLength-1);
     Read(vTempResult[1], vLength-1);
   end;
-  vLength:=0;
-  Read(vLength, 1); //closing null
+
+  ReadByte; //closing null
 
   Result := {$IFDEF Unicode}UTF8ToString(vTempResult);{$ELSE}UTF8Decode(vTempResult);{$ENDIF}
 end;
 
 function TBSONStream.ReadObjectId: String;
 const
-  hex:array[0..15] of char='0123456789abcdef';
+  hex: array[0..15] of char='0123456789abcdef';
 var
   oid: array[0..11] of byte;
 begin
@@ -173,7 +173,7 @@ end;
 
 function TBSONStream.ReadByte: Byte;
 begin
-  Read(Result, 1);
+  Read(Result, SizeOf(Byte));
 end;
 
 end.

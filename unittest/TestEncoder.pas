@@ -27,6 +27,7 @@ type
     procedure EncodeBSONObjectWithEmbeddedObject;
     procedure EncodeBSONArray;
     procedure EncodeUUID;
+    procedure EncodeUnicodeKey;
   end;
 
 implementation
@@ -222,6 +223,24 @@ procedure TTestEncoder.TearDown;
 begin
   FStream.Free;
   inherited;
+end;
+
+procedure TTestEncoder.EncodeUnicodeKey;
+var
+  vBSON: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('ação', 123);
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'ação' size 7 in UTF8
+  //Write 123 size 4
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(17, FStream.Size);
 end;
 
 initialization

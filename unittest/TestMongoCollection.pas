@@ -166,6 +166,8 @@ var
 begin
   FCollection.Insert(TBSONObject.NewFrom('_id', TObjectId.NewFromOID('4f46b9fa65760489cc96ab49')).Put('id', 123));
 
+//  FCollection.Insert(TBSONObject.NewFrom('id', 123).Put('items', TBSONArray.NewFromValues([1, 2, 3])));
+
   vDoc := FCollection.FindOne(nil);
 
   CheckNotNull(vDoc);

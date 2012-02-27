@@ -15,27 +15,22 @@ Types that must be implemented
 
 Mongo Driver Requirements	- High priority
 	* BSON serialization (OK considering the above types)
-	* BSON deserialization
+	* BSON deserialization (OK considering the above types)
 	*	full cursor support (e.g. support OP_GET_MORE operation)
 	*	close exhausted cursors via OP_KILL_CURSORS
 	*	support for running database commands
-	*	handle query errors
+	*	handle query errors (OK - Support to GetLastError)
 	*	hint, explain, count, $where
 	*	database profiling: set/get profiling level, get profiling info
 	*	advanced connection management (replica sets, slave okay)
 	*	automatic reconnection
 	* authentication
 	
-TODO - Remove Warnings from Delphi XE	
 TODO - Replace Exception with typed exception descendents of EMongoException
 TODO - Replace message hard coded string with ResourceString
 TODO - Review naming of ObjectId. Should be contain the BSON prefix?
 TODO - Implementation from TBSONStream.ReadObjectId must be moved to ObjectId implementation
 TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
 
-TODO - Check compatibility with FPC.
-
 TODO - Include a Log for debug with almost Console
 
-BUG FPC - Parece existir um Bug no freepascal/lazarus ao armazenar valores do tipo Int64 em um OleVariant, 
-          se utilizar Variant funciona corretamente.

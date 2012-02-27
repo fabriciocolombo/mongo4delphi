@@ -9,9 +9,7 @@ interface
 uses BaseTestCase, BSONTypes;
 
 type
-
   { TTestBSONItem }
-
   TTestBSONItem = class(TBaseTestCase)
   private
   published

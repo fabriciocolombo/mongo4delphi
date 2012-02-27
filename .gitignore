@@ -5,3 +5,4 @@ __history
 *.~pas
 *.~dpr
 *.~dpk
+unittest/backup
