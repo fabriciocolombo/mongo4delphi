@@ -27,11 +27,12 @@ type
     procedure InsertBSONArrayWithEmbeddedArrays;
     procedure InsertBSONObjectUUID;
     procedure FindOne;
+    procedure TestCount;
   end;
 
 implementation
 
-uses Variants, SysUtils, Math, BSONTypes, MongoUtils;
+uses Variants, SysUtils, Math, BSONTypes, MongoUtils, TestFramework;
 
 { TTestMongoCollection }
 
@@ -176,6 +177,23 @@ begin
   CheckEquals('ObjectId("4f46b9fa65760489cc96ab49")', vDoc[0].AsObjectId.ToStringMongo);
   CheckEquals('id', vDoc[1].Name);
   CheckEquals(123, Integer(vDoc[1].Value));
+end;
+
+procedure TTestMongoCollection.TestCount;
+const
+  LIMIT = 2;
+begin
+  CheckEquals(0, FCollection.Count);
+  
+  FCollection.Insert(TBSONObject.NewFrom('id', 1));
+  FCollection.Insert(TBSONObject.NewFrom('id', 2));
+  FCollection.Insert(TBSONObject.NewFrom('id', 3));
+  FCollection.Insert(TBSONObject.NewFrom('id', 4));
+  FCollection.Insert(TBSONObject.NewFrom('id', 5));
+
+  CheckEquals(5, FCollection.Count);
+  CheckEquals(LIMIT, FCollection.Count(LIMIT));
+  CheckEquals(1, FCollection.Count(TBSONObject.NewFrom('id', 3)));
 end;
 
 initialization

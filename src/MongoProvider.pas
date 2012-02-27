@@ -8,7 +8,7 @@ interface
 
 uses MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
      {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets, 
-     Classes;
+     Classes, SysUtils;
 
 const
   DEFAULT_HOST = 'localhost';
@@ -23,6 +23,9 @@ type
     function Ok: Boolean;
     function HasError: Boolean;
     function GetCode: Integer;
+    function GetErrorMessage: String;
+    function GetException: Exception;
+    procedure RaiseOnError;
   end;
 
   TCommandResult = class(TBSONObject, ICommandResult)
@@ -30,6 +33,9 @@ type
     function HasError: Boolean;
     function Ok: Boolean;
     function GetCode: Integer;
+    function GetErrorMessage: String;
+    function GetException: Exception;
+    procedure RaiseOnError;
   end;
 
   IWriteResult = interface
@@ -67,6 +73,9 @@ type
     function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;
 
     function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;
+
+    function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
+    function HasNext(AStream: TBSONStream; DB: String; Collection: String;  ACursorId: Int64; ABatchSize: Integer): IBSONObject;
   end;
 
   TDefaultMongoProvider = class(TInterfacedObject, IMongoProvider)
@@ -80,10 +89,14 @@ type
     {$ELSE}
     FSocket: TTcpClient;
     {$ENDIF}
-    procedure ReadResponse(AStream: TBSONStream; ARequestId: Integer);
+
+    procedure ReadResponse(AStream: TBSONStream; ARequestId: Integer;var AFlags, ANumberReturned: Integer);overload;
+    procedure ReadResponse(AStream: TBSONStream; ARequestId: Integer;var AFlags, ANumberReturned: Integer;var ACursorId: Int64);overload;
 
     function SendBuf(Buffer: Pointer; Length: Integer): Integer;
     function ReceiveBuf(var Buffer; Length: Integer): Integer;
+
+    procedure BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);
   public
     constructor Create;
     destructor Destroy; override;
@@ -100,13 +113,14 @@ type
     function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;
 
     function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;
-
+    function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
+    function HasNext(AStream: TBSONStream; DB: String; Collection: String;  ACursorId: Int64; ABatchSize: Integer): IBSONObject;
     //TODO - Assert socket is Connected
   end;
 
 implementation
 
-uses MongoException, SysUtils, Windows, BSON, Variants;
+uses MongoException, Windows, BSON, Variants, Math;
 
 const
   COMMAND_COLLECTION = '$cmd'; 
@@ -184,7 +198,7 @@ begin
     SendBuf(vStream.Memory, vLength);
 
 //    if ReturnFieldSelector<>nil then (ReturnFieldSelector as IPersistStream).Save(FData,false);
-    ReadResponse(vStream, FRequestId);
+    ReadResponse(vStream, FRequestId, vFlags, vNumberReturned, vCursorId);
 
 //    vStream.SaveToFile('Response.stream');
 
@@ -204,7 +218,6 @@ begin
     if vNumberReturned = 0 then
       raise Exception.Create('MongoWire.Get: no documents returned');
 
-    vStream.Position := 0;
     Result := FDecoder.Decode(vStream);
 
     if (vFlags and $0002) <> 0 then
@@ -277,11 +290,11 @@ begin
   {$ENDIF}
 end;
 
-procedure TDefaultMongoProvider.ReadResponse(AStream: TBSONStream; ARequestId: Integer);
+procedure TDefaultMongoProvider.ReadResponse(AStream: TBSONStream; ARequestId: Integer;var AFlags, ANumberReturned: Integer;var ACursorId: Int64);
 const
   dSize=$10000;
 var
-  i,l:integer;
+  i,l: integer;
   buf:array[0..2] of integer;
   d:array[0..dSize-1] of byte;
 begin
@@ -289,7 +302,7 @@ begin
     //MsgLength,RequestID,ResponseTo
     i := ReceiveBuf(buf[0],12);
     if i <> 12 then
-      raise EMongoException.Create('MongoWire: invalid response');
+      raise EMongoInvalidResponse.CreateResFmt(@sMongoInvalidResponse, [ARequestId]);
 
       if buf[2] = ARequestId then
       begin
@@ -301,7 +314,7 @@ begin
          begin
           if l<dSize then i:=l else i:=dSize;
           i:= ReceiveBuf(d[0],i);
-          if i=0 then raise EMongoException.Create('MongoWire: response aborted');
+          if i=0 then raise EMongoReponseAborted.CreateResFmt(@sMongoReponseAborted, [ARequestId]);
           AStream.Write(d[0],i);
           dec(l,i);
          end;
@@ -312,6 +325,18 @@ begin
           AStream.Position:=36;
       end;
   until buf[2]= ARequestID;
+
+  AStream.Position := 0;
+  AStream.ReadInt;//Length,
+  AStream.ReadInt;//RequestID
+  AStream.ReadInt;//ResponseTo
+  AStream.ReadInt;//OpCode
+
+  AFlags := AStream.ReadInt;
+  ACursorId := AStream.ReadInt64;//CursorId
+  AStream.ReadInt;//StartingFrom
+
+  ANumberReturned := AStream.ReadInt;
 end;
 
 function TDefaultMongoProvider.RunCommand(DB: String; Command: IBSONObject): ICommandResult;
@@ -350,6 +375,100 @@ begin
   {$ELSE}
   Result := FSocket.SendBuf(Buffer^, Length);
   {$ENDIF}
+end;
+
+function TDefaultMongoProvider.OpenQuery(AStream: TBSONStream; DB, Collection: String;Query: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
+var
+  vLength: Integer;
+  vNumberReturned: Integer;
+  vFlags:integer;
+  vCursorId: Int64;
+begin
+  InterlockedIncrement(FRequestId);
+
+  Result := TBSONObject.NewFrom('requestId', FRequestId);
+
+  BeginMsg(AStream, DB, Collection, OP_QUERY);
+  AStream.WriteInt(ASkip);
+  AStream.WriteInt(ABatchSize);
+
+  FEncoder.SetBuffer(AStream);
+  FEncoder.Encode(Query);
+
+  vLength := AStream.Size;
+  AStream.WriteInt(0, vLength);
+
+  SendBuf(AStream.Memory, vLength);
+
+//    if ReturnFieldSelector<>nil then (ReturnFieldSelector as IPersistStream).Save(FData,false);
+  ReadResponse(AStream, FRequestId, vFlags, vNumberReturned, vCursorId);
+
+  Result.Put('numberReturned', vNumberReturned);
+  Result.Put('cursorId', vCursorId);
+
+  if (vFlags and $0001) <> 0 then
+    raise Exception.Create('MongoWire.Get: cursor not found');
+
+  if vNumberReturned = 0 then
+    raise Exception.Create('MongoWire.Get: no documents returned');
+end;
+
+function TDefaultMongoProvider.HasNext(AStream: TBSONStream; DB, Collection: String; ACursorId: Int64; ABatchSize: Integer): IBSONObject;
+var
+  vLength, vFlags, vNumberReturned: Integer;
+  vCursorId: Int64;
+  vHasNext: Boolean;
+begin
+  vHasNext := False;
+  vFlags := 0;
+  vNumberReturned := 0;
+  vCursorId := 0;
+
+  if ACursorId > 0 then
+  begin
+    InterlockedIncrement(FRequestId);
+
+    BeginMsg(AStream, DB, Collection, OP_GET_MORE);
+
+    AStream.WriteInt(ABatchSize);
+    AStream.WriteInt64(ACursorId);
+
+    vLength := AStream.Size;
+    AStream.WriteInt(0, vLength);
+
+    SendBuf(AStream.Memory, vLength);
+
+    ReadResponse(AStream, FRequestId, vFlags, vNumberReturned, vCursorId);
+
+    vHasNext := vNumberReturned <> 0;
+
+    if (vFlags and $0001)<>0 then raise
+      Exception.Create('Query: cursor not found');
+  end;
+
+  Result := TBSONObject.NewFrom('requestId', FRequestId)
+                       .Put('hasNext', vHasNext)
+                       .Put('numberReturned', vNumberReturned)
+                       .Put('cursorId', vCursorId);
+
+end;
+
+procedure TDefaultMongoProvider.BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);
+begin
+  AStream.Clear;
+  AStream.WriteInt(0); //length
+  AStream.WriteInt(FRequestId);
+  AStream.WriteInt(0);//ResponseTo
+  AStream.WriteInt(OperationCode);
+  AStream.WriteInt(0);//Flags
+  AStream.WriteUTF8String(Format('%s.%s', [DB, Collection]));
+end;
+
+procedure TDefaultMongoProvider.ReadResponse(AStream: TBSONStream;ARequestId: Integer; var AFlags, ANumberReturned: Integer);
+var
+  vCursorId: Int64;
+begin
+  ReadResponse(AStream, ARequestId, AFlags, ANumberReturned, vCursorId);
 end;
 
 { TWriteResult }
@@ -397,6 +516,53 @@ begin
   end;
 end;
 
+function TCommandResult.GetErrorMessage: String;
+var
+  vErrorMsg: TBSONItem;
+begin
+  vErrorMsg := Find('errmsg');
+
+  Result := EmptyStr;
+  if Assigned(vErrorMsg) then
+  begin
+    Result := vErrorMsg.AsString;
+  end;
+end;
+
+function TCommandResult.GetException: Exception;
+var
+  cmdName,
+  vMessage: String;
+  vError: TBSONItem;
+  vCode: Integer;
+begin
+  Result := nil;
+  
+  if not Ok then
+  begin
+    cmdName := Item[0].AsString;
+
+    vMessage := Format('command failed [%s]' + sLineBreak{  + Self.ToString}, [cmdName]);
+
+    Result := ECommandFailure.Create(vMessage);
+  end
+  else
+  begin
+    // GLE check
+    if HasError then
+    begin
+      vError := Items['err'];
+
+      vCode := getCode();
+
+      if (vCode = 11000) or (vCode = 11001) or (Pos('E11000', vError.AsString) = 1) or (Pos('E11001', vError.AsString) = 1) then
+        Result := EMongoDuplicateKey.Create(vCode, vError.AsString)
+      else
+        Result := EMongoException.Create(vCode, vError.AsString);
+    end;
+  end;
+end;
+
 function TCommandResult.HasError: Boolean;
 var
   vOK: TBSONItem;
@@ -413,6 +579,27 @@ begin
   vOK := Items['ok'];
 
   Result := (vOK.Value = True) or (vOK.Value = Ord(True));
+end;
+
+procedure TCommandResult.RaiseOnError;
+
+  function ReturnAddr: Pointer;
+  asm
+          MOV     EAX,[EBP+4]
+  end;
+  
+var
+  vException: Exception;
+begin
+  if (not Ok) or HasError then
+  begin
+    vException := GetException;
+
+    if (vException <> nil) then
+    begin
+      raise vException at ReturnAddr; 
+    end;
+  end;
 end;
 
 end.

@@ -9,7 +9,7 @@ interface
 uses BaseTestCase, MongoDecoder, BSONStream;
 
 type
-  TTestEncoder = class(TBaseTestCase)
+  TTestDecoder = class(TBaseTestCase)
   private
     FStream: TBSONStream;
     FDecoder: IMongoDecoder;
@@ -27,16 +27,16 @@ implementation
 
 uses BSONTypes, Variants, SysUtils, DateUtils;
 
-{ TTestEncoder }
+{ TTestDecoder }
 
-procedure TTestEncoder.DecodeFindOneEmbeddedArray;
+procedure TTestDecoder.DecodeFindOneEmbeddedArray;
 var
   vDoc: IBSONObject;
   vItems: IBSONArray;
 begin
   FStream.LoadFromFile('.\response\FindOneEmbeddedArray.stream');
 
-  vDoc := FDecoder.Decode(FStream);
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
 
   CheckNotNull(vDoc);
   CheckEquals(3, vDoc.Count);
@@ -54,14 +54,14 @@ begin
   CheckEquals(3, vItems[2].AsInteger);
 end;
 
-procedure TTestEncoder.DecodeFindOneEmbeddedDocument;
+procedure TTestDecoder.DecodeFindOneEmbeddedDocument;
 var
   vDoc,
   vItems: IBSONObject;
 begin
   FStream.LoadFromFile('.\response\FindOneEmbeddedDocument.stream');
 
-  vDoc := FDecoder.Decode(FStream);
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
 
   CheckNotNull(vDoc);
   CheckEquals(3, vDoc.Count);
@@ -81,13 +81,13 @@ begin
  
 end;
 
-procedure TTestEncoder.DecodeFindOneRow;
+procedure TTestDecoder.DecodeFindOneRow;
 var
   vDoc: IBSONObject;
 begin
   FStream.LoadFromFile('.\response\FindOne.stream');
 
-  vDoc := FDecoder.Decode(FStream);
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
 
   CheckNotNull(vDoc);
   CheckEquals(2, vDoc.Count);
@@ -97,7 +97,7 @@ begin
   CheckEquals(123, Integer(vDoc[1].Value));  
 end;
 
-procedure TTestEncoder.DecodeFindOneRowSimpleTypes;
+procedure TTestDecoder.DecodeFindOneRowSimpleTypes;
 var
   vDoc: IBSONObject;
   vSingle: Single;
@@ -110,7 +110,7 @@ begin
   
   FStream.LoadFromFile('.\response\FindOneRowSingleTypes.stream');
 
-  vDoc := FDecoder.Decode(FStream);
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
 
   CheckNotNull(vDoc);
   CheckEquals(18, vDoc.Count);
@@ -135,20 +135,20 @@ begin
   CheckFalse(vDoc.Items['id17'].Value, 'Is not false');
 end;
 
-procedure TTestEncoder.SetUp;
+procedure TTestDecoder.SetUp;
 begin
   inherited;
   FStream := TBSONStream.Create;
   FDecoder := TMongoDecoderFactory.DefaultDecoder; 
 end;
 
-procedure TTestEncoder.TearDown;
+procedure TTestDecoder.TearDown;
 begin
   inherited;
   FStream.Free;
 end;
 
 initialization
-  TTestEncoder.RegisterTest;
+  TTestDecoder.RegisterTest;
 
 end.

@@ -28,6 +28,7 @@ type
     ['{FE47DC70-7349-4818-998C-BB0B15D78683}']
 
     function Decode(ABuffer: TBSONStream): IBSONObject;
+    function DecodeFromBeginning(ABuffer: TBSONStream): IBSONObject;
   end;
 
   TDefaultMongoDecoder = class(TInterfacedObject, IMongoDecoder)
@@ -37,6 +38,7 @@ type
     function DecodeArray(ABuffer: TBSONStream): IBSONArray;
   public
     function Decode(ABuffer: TBSONStream): IBSONObject;
+    function DecodeFromBeginning(ABuffer: TBSONStream): IBSONObject;
   end;
 
   TMongoDecoderFactory = class
@@ -57,10 +59,7 @@ end;
 
 { TDefaultMongoDecoder }
 
-function TDefaultMongoDecoder.Decode(ABuffer: TBSONStream): IBSONObject;
-var
-  vNumberReturned: Integer;
-  i: Integer;
+function TDefaultMongoDecoder.DecodeFromBeginning(ABuffer: TBSONStream): IBSONObject;
 begin
   ABuffer.ReadInt; //Length
   ABuffer.ReadInt; //RequestId
@@ -69,12 +68,14 @@ begin
   ABuffer.ReadInt; //Flags
   ABuffer.ReadInt64; //CursorId
   ABuffer.ReadInt; //StartingFrom
-  vNumberReturned := ABuffer.ReadInt;
+  ABuffer.ReadInt; //NumberReturned
 
-  for i := 1 to vNumberReturned do
-  begin
-    Result := DecodeObject(ABuffer);
-  end;
+  Result := Decode(ABuffer);
+end;
+
+function TDefaultMongoDecoder.Decode(ABuffer: TBSONStream): IBSONObject;
+begin
+  Result := DecodeObject(ABuffer);
 end;
 
 function TDefaultMongoDecoder.DecodeArray(ABuffer: TBSONStream): IBSONArray;

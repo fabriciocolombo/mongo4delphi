@@ -24,12 +24,33 @@ interface
 uses SysUtils;
 
 type
-  EMongoException = class(Exception);
+  EMongoException = class(Exception)
+  private
+    FCode: Integer;
+  public
+    property Code: Integer read FCode;
+
+    constructor Create(ACode: Integer; const Msg: string);overload;
+    constructor Create(const Msg: string);overload;
+  end;
+
   EIllegalArgumentException = class(EMongoException);
   EMongoConnectionFailureException = class(EMongoException);
   EMongoBufferIsNotConfigured = class(EMongoException);
   EBSONDuplicateKeyInList = class(EMongoException);
   EBSONCannotChangeDuplicateAction = class(EMongoException);
+
+  EMongoDBCursorException = class(EMongoException);
+  EMongoDBCursorStateException = class(EMongoDBCursorException);
+
+  ECommandFailure = class(EMongoException);
+ 
+  EMongoDuplicateKey = class(EMongoException);
+
+  EMongoProviderException = class(EMongoException);
+  EMongoInvalidResponse = class(EMongoProviderException);
+  EMongoReponseAborted = class(EMongoProviderException);
+
 
 resourcestring
   sInvalidVariantValueType = 'Can''t serialize type "%s".';
@@ -37,7 +58,24 @@ resourcestring
   sMongoBufferIsNotConfigured = 'Buffer is not configured for "%s".';
   sBSONDuplicateKeyInList = 'Key "%s" already exist.';
   sBSONCannotChangeDuplicateAction = 'Cannot change duplicate action after items added ';
+  sMongoDBCursorStateException = 'Cannot change state after open query.';
+
+  sMongoInvalidResponse = 'Invalid response for requestId "%d".';
+  sMongoReponseAborted = 'Response aborted for requestId "%d".';
 
 implementation
+
+{ EMongoException }
+
+constructor EMongoException.Create(ACode: Integer; const Msg: string);
+begin
+  inherited Create(Msg);
+  FCode := ACode;
+end;
+
+constructor EMongoException.Create(const Msg: string);
+begin
+  inherited Create(Msg);
+end;
 
 end.

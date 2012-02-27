@@ -5,11 +5,11 @@ program unittest;
 {$ENDIF}
 
 uses
-{$IFNDEF FPC}
+  {$IFNDEF FPC}
   FastMM4,
-{$ELSE}
+  {$ELSE}
   Interfaces,
-{$ENDIF}
+  {$ENDIF}
   GuiTestRunner,
   Forms,
   TestBSONItem in 'TestBSONItem.pas',
@@ -19,7 +19,8 @@ uses
   TestDecoder in 'TestDecoder.pas',
   TestMongoProvider in 'TestMongoProvider.pas',
   TestMongoCollection in 'TestMongoCollection.pas',
-  BaseTestCase in 'BaseTestCase.pas';
+  BaseTestCase in 'BaseTestCase.pas',
+  TestMongoDBCursor in 'TestMongoDBCursor.pas';
 
 {$R *.res}
 
@@ -28,7 +29,7 @@ begin
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;
   {$ELSE}
-    Application.CreateForm(TGuiTestRunner, TestRunner);
+    Application.CreateForm(TTestRunner, TestRunner);
   {$ENDIF}
   Application.Run;
 end.

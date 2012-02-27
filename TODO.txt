@@ -1,4 +1,28 @@
-Types that must be implemented
+Mongo Driver Requirements	- High priority
+	* BSON serialization¹
+	* BSON deserialization¹
+	*	full cursor support (e.g. support OP_GET_MORE operation)
+	*	close exhausted cursors via OP_KILL_CURSORS
+	*	support for running database commands
+	*	handle query errors (OK - Support to GetLastError)
+	*	hint, explain, count, $where
+	*	database profiling: set/get profiling level, get profiling info
+	*	advanced connection management (replica sets, slave okay)
+	*	automatic reconnection
+	* authentication
+	* batch insert/update/remove
+	
+TODO - Replace Exception with typed exception descendents of EMongoException
+TODO - Replace message hard coded string with ResourceString
+TODO - Review naming of ObjectId. Should be contain the BSON prefix?
+TODO - Implementation from TBSONStream.ReadObjectId must be moved to ObjectId implementation
+TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
+
+TODO - Include a Log for debug with almost Console
+
+TODO - Requests manager. Each request must be a self stream
+
+(1) Types that must be implemented
   BSON_BINARY       = $05; //
   BSON_REGEX        = $0B; //
   BSON_SYMBOL       = $0E;
@@ -12,25 +36,3 @@ Types that must be implemented
   BSON_SUBTYPE_OLD_BINARY  = $02;
   BSON_SUBTYPE_MD5     = $05;
   BSON_SUBTYPE_USER    = $80;
-
-Mongo Driver Requirements	- High priority
-	* BSON serialization (OK considering the above types)
-	* BSON deserialization (OK considering the above types)
-	*	full cursor support (e.g. support OP_GET_MORE operation)
-	*	close exhausted cursors via OP_KILL_CURSORS
-	*	support for running database commands
-	*	handle query errors (OK - Support to GetLastError)
-	*	hint, explain, count, $where
-	*	database profiling: set/get profiling level, get profiling info
-	*	advanced connection management (replica sets, slave okay)
-	*	automatic reconnection
-	* authentication
-	
-TODO - Replace Exception with typed exception descendents of EMongoException
-TODO - Replace message hard coded string with ResourceString
-TODO - Review naming of ObjectId. Should be contain the BSON prefix?
-TODO - Implementation from TBSONStream.ReadObjectId must be moved to ObjectId implementation
-TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
-
-TODO - Include a Log for debug with almost Console
-

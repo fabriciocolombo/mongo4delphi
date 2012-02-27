@@ -47,7 +47,7 @@ type
     FValueType: TBsonValueType;
 
     procedure SetValue(const Value: Variant);
-    
+
     function GetAsObjectId: IObjectId;
     function GetAsInteger: Integer;
     function GetAsInt64: Int64;
@@ -72,6 +72,8 @@ type
     property AsBSONArray: IBSONArray read GetAsBSONArray;
 
     function GetValueTypeDesc: String;
+
+    function IsInteger: Boolean;
 
     class function NewFrom(AName: String;const AValue: Variant): TBSONItem;
   end;
@@ -125,6 +127,7 @@ type
     destructor Destroy; override;
 
     class function NewFrom(const AKey: String; Value: Variant): IBSONObject;
+    class function Empty: IBSONObject;
 
     property DuplicatesAction: TDuplicatesAction read GetDuplicatesAction write SetDuplicatesAction default daUpdateValue;
 
@@ -313,6 +316,11 @@ begin
   Result := Find(AKey, vIndex);
 end;
 
+class function TBSONObject.Empty: IBSONObject;
+begin
+  Result := TBSONObject.Create;
+end;
+
 function TBSONObject.Find(const AKey: String;var AIndex: Integer): TBSONItem;
 begin
   Result := nil;
@@ -438,7 +446,7 @@ end;
 
 function TBSONItem.GetAsFloat: Double;
 begin
-  if (FValueType = bvtDouble) then
+  if (FValueType = bvtDouble) or IsInteger then
     Result := FValue
   else
     raise EConvertError.Create('Cannot convert the value to Double.');
@@ -446,7 +454,7 @@ end;
 
 function TBSONItem.GetAsInt64: Int64;
 begin
-  if FValueType in [bvtInteger, bvtInt64] then
+  if IsInteger then
     Result := FValue
   else
     raise EConvertError.Create('Cannot convert the value to Int64.');
@@ -476,6 +484,11 @@ begin
   Result := GetEnumName(TypeInfo(TBsonValueType), Ord(FValueType));
 end;
 
+function TBSONItem.IsInteger: Boolean;
+begin
+  Result := FValueType in [bvtInteger, bvtInt64];
+end;
+
 class function TBSONItem.NewFrom(AName: String;const AValue: Variant): TBSONItem;
 begin
   Result := TBSONItem.Create;
@@ -484,6 +497,8 @@ begin
 end;
 
 procedure TBSONItem.SetValue(const Value: Variant);
+var
+  vCurrencyValue: Currency;
 begin
   FValue := Value;
 
@@ -493,7 +508,13 @@ begin
     varDate: FValueType := bvtDateTime;
     varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord: FValueType := bvtInteger;
     varInt64: FValueType := bvtInt64;
-    varSingle,varDouble,varCurrency: FValueType := bvtDouble;
+    varSingle,varDouble,varCurrency: begin
+                                       vCurrencyValue := FValue;
+                                       if Frac(vCurrencyValue) = 0 then
+                                         FValueType := bvtInteger
+                                       else
+                                          FValueType := bvtDouble;
+                                     end;  
     varOleStr, varString{$IFDEF UNICODE}, varUString{$ENDIF}: FValueType := bvtString;
     varBoolean: FValueType := bvtBoolean;
     varDispatch, varUnknown: FValueType := bvtInterface;
