@@ -36,6 +36,7 @@ end;
 
 procedure TTestMongoProvider.TearDown;
 begin
+  FProvider := nil;
   inherited;
 end;
 

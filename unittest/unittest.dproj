@@ -57,6 +57,7 @@
 			<DCCReference Include="TestDecoder.pas"/>
 			<DCCReference Include="TestMongoProvider.pas"/>
 			<DCCReference Include="TestMongoCollection.pas"/>
+			<DCCReference Include="BaseTestCase.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
@@ -106,6 +107,9 @@
 						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
+					<Parameters>
+						<Parameters Name="DebugSourceDirs">..\src</Parameters>
+					</Parameters>
 				</Delphi.Personality>
 				<Platforms>
 					<Platform value="Win32">True</Platform>

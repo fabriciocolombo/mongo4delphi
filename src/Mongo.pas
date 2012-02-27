@@ -47,7 +47,7 @@ type
     property Encoder: IMongoEncoder read FEncoder write SetEncoder;
     property Decoder: IMongoDecoder read FDecoder write SetDecoder; 
 
-    procedure Connect(AHost: String = DEFAULT_HOST; APort: Integer = DEFAULT_PORT);
+    procedure Connect(AHost: AnsiString = DEFAULT_HOST; APort: Integer = DEFAULT_PORT);
 
     function getDB(const ADBname: String): TMongoDB;
     procedure GetDatabaseNames(AList: TStrings);
@@ -207,7 +207,7 @@ begin
   FDBList.Add(Result);
 end;
 
-procedure TMongo.Connect(AHost: String; APort: Integer);
+procedure TMongo.Connect(AHost: AnsiString; APort: Integer);
 begin
   FProvider.Connect(AHost, APort);
 end;

@@ -467,9 +467,11 @@ begin
     varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord: FValueType := bvtInteger;
     varInt64: FValueType := bvtInt64;
     varSingle,varDouble,varCurrency: FValueType := bvtDouble;
-    varOleStr, varString: FValueType := bvtString;
+    varOleStr, varString{$IFDEF UNICODE}, varUString{$ENDIF}: FValueType := bvtString;
     varBoolean: FValueType := bvtBoolean;
     varDispatch, varUnknown: FValueType := bvtInterface;
+  else
+    raise Exception.CreateFmt('Type "%s" not implemented.', [IntToHex(VarType(FValue), 4)]);
   end;
 end;
 

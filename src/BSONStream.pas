@@ -26,7 +26,7 @@ uses Classes;
 type
   TBSONStream = class(TMemoryStream)
   public
-    function WriteUTF8String(value: AnsiString): Integer;
+    function WriteUTF8String(value: String): Integer;
     procedure WriteInt(value: Integer);overload;
     procedure WriteInt(pos, value: Integer);overload;
     procedure WriteInt64(value: Int64);
@@ -35,8 +35,8 @@ type
 
     function ReadInt: Integer;
     function ReadInt64: Int64;
-    function ReadCString: UTF8String;
-    function ReadUTF8String: UTF8String;
+    function ReadCString: String;
+    function ReadUTF8String: String;
     function ReadObjectId: String;
     function ReadDouble: Double;
     function ReadByte: Byte;
@@ -78,14 +78,14 @@ begin
   Write(value, SizeOf(Int64));
 end;
 
-function TBSONStream.WriteUTF8String(value: AnsiString): Integer;
+function TBSONStream.WriteUTF8String(value: String): Integer;
 var
   vUTF8: UTF8String;
   vSize: Integer;
 begin
   vUTF8 := UTF8Encode(value);
   vSize := Length(vUTF8);
-  Result := Write(PChar(vUTF8)^, vSize + 1);
+  Result := Write(PAnsiChar(vUTF8)^, vSize + 1);
 end;
 
 function TBSONStream.ReadInt: Integer;
@@ -98,7 +98,7 @@ begin
   Read(Result, 8);
 end;
 
-function TBSONStream.ReadCString: UTF8String;
+function TBSONStream.ReadCString: String;
 var
   c: AnsiChar;
   s:AnsiString;
@@ -120,17 +120,18 @@ begin
     Read(c, 1);
   end;
   SetLength(s, sx);
-  Result := UTF8Decode(s);
+
+  Result := {$IFDEF Unicode}UTF8ToString(PAnsiChar(s));{$ELSE}UTF8Decode(s);{$ENDIF}
 end;
 
-function TBSONStream.ReadUTF8String: UTF8String;
+function TBSONStream.ReadUTF8String: String;
 var
   vLength: Integer;
   vTempResult:AnsiString;
 begin
   vLength := ReadInt;
 
-  vTempResult := EmptyStr;
+  vTempResult := '';
 
   if (vLength > 1) then
   begin
@@ -140,7 +141,7 @@ begin
   vLength:=0;
   Read(vLength, 1); //closing null
 
-  Result := UTF8Decode(vTempResult);
+  Result := {$IFDEF Unicode}UTF8ToString(vTempResult);{$ELSE}UTF8Decode(vTempResult);{$ENDIF}
 end;
 
 function TBSONStream.ReadObjectId: String;

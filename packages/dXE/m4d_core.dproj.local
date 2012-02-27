@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
-  <Transactions>
-    <Transaction>2012/02/25 13:11:27.491,=rtl.dcp</Transaction>
-    <Transaction>2012/02/25 13:11:44.239,D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\packages\dXE\m4d_core.dproj=C:\Users\Fabricio\Documents\RAD Studio\Projects\Package1.dproj</Transaction>
+	<Transactions>
+    <Transaction>2012/02/25 13:11:27.000.491,=rtl.dcp</Transaction>
+    <Transaction>2012/02/25 13:11:44.000.239,C:\Users\Fabricio\Documents\RAD Studio\Projects\Package1.dproj=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\packages\dXE\m4d_core.dproj</Transaction>
   </Transactions>
 </BorlandProject>

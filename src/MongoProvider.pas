@@ -58,7 +58,7 @@ type
     procedure SetEncoder(const AEncoder: IMongoEncoder);
     procedure SetDecoder(const ADecoder: IMongoDecoder);
         
-    procedure Connect(AHost: String; APort: Integer);
+    procedure Connect(AHost: AnsiString; APort: Integer);
     procedure Close;
 
     function GetLastError(DB: String; RequestId: Integer=0): ICommandResult;
@@ -91,7 +91,7 @@ type
     procedure SetEncoder(const AEncoder: IMongoEncoder);
     procedure SetDecoder(const ADecoder: IMongoDecoder);
 
-    procedure Connect(AHost: String; APort: Integer);
+    procedure Connect(AHost: AnsiString; APort: Integer);
     procedure Close;
 
     function GetLastError(DB: String; RequestId: Integer=0): ICommandResult;
@@ -257,7 +257,7 @@ begin
   end;
 end;
 
-procedure TDefaultMongoProvider.Connect(AHost: String; APort: Integer);
+procedure TDefaultMongoProvider.Connect(AHost: AnsiString; APort: Integer);
 begin
   Close;
 
@@ -269,7 +269,7 @@ begin
     end;
   {$ELSE}
     FSocket.RemoteHost := AHost;
-    FSocket.RemotePort := IntToStr(APort);
+    FSocket.RemotePort := TSocketPort(IntToStr(APort));
     FSocket.Open;
 
     if not FSocket.Connected then
