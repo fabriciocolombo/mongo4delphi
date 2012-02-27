@@ -1,11 +1,15 @@
 unit TestBSONObject;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
-uses TestFramework, BSONTypes;
+uses BaseTestCase, BSONTypes;
 
 type
-  TTestBSONObject = class(TTestCase)
+  TTestBSONObject = class(TBaseTestCase)
   private
   published
     procedure PutNewItem;
@@ -35,31 +39,37 @@ begin
 
   vItem := vBSON.Find('key');
   CheckNotNull(vItem);
-  CheckEqualsString('key', vItem.Name);
-  CheckEqualsString('value', vItem.Value);
+  CheckEquals('key', vItem.Name);
+  CheckEquals('value', vItem.Value);
 end;
 
 procedure TTestBSONObject.ShouldNotBeChangeDuplicateActionAfterAddItems;
 var
   vBSON: IBSONObject;
 begin
-  ExpectedException := EBSONCannotChangeDuplicateAction;
-
-  vBSON := TBSONObject.Create;
-  vBSON.Put('key', 1);
-  vBSON.DuplicatesAction := daError;
+  try
+    vBSON := TBSONObject.Create;
+    vBSON.Put('key', 1);
+    vBSON.DuplicatesAction := daError;
+  except
+    on E: Exception do
+      CheckTrue(E is EBSONCannotChangeDuplicateAction, E.Message);
+  end;
 end;
 
 procedure TTestBSONObject.ShouldRaiseExceptionWithDuplicateActionError;
 var
   vBSON: IBSONObject;
 begin
-  ExpectedException := EBSONDuplicateKeyInList;
-
-  vBSON := TBSONObject.Create;
-  vBSON.DuplicatesAction := daError;
-  vBSON.Put('key', 1);
-  vBSON.Put('key', 2);
+  try
+    vBSON := TBSONObject.Create;
+    vBSON.DuplicatesAction := daError;
+    vBSON.Put('key', 1);
+    vBSON.Put('key', 2);
+  except
+    on E: Exception do
+      CheckTrue(E is EBSONDuplicateKeyInList, E.Message);
+  end;
 end;
 
 procedure TTestBSONObject.UpdataExistentItem;
@@ -78,21 +88,21 @@ begin
 
   vItem := vBSON.Find('key');
   CheckNotNull(vItem);
-  CheckEqualsString('key', vItem.Name);
-  CheckEqualsString('value', vItem.Value);
+  CheckEquals('key', vItem.Name);
+  CheckEquals('value', vItem.Value);
 
   vBSON.Put('key', 'changed');
   CheckEquals(1, vBSON.Count);
 
   vItemChanged := vBSON.Find('key');
   CheckNotNull(vItemChanged);
-  CheckEqualsString('key', vItemChanged.Name);
-  CheckEqualsString('changed', vItemChanged.Value);
+  CheckEquals('key', vItemChanged.Name);
+  CheckEquals('changed', vItemChanged.Value);
 
-  CheckTrue(vItem = vItemChanged);
+  CheckTrue(vItem = vItemChanged, 'Not is the same item');
 end;
 
 initialization
-  RegisterTest(TTestBSONObject.Suite);
+  TTestBSONObject.RegisterTest;
 
 end.

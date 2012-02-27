@@ -1,11 +1,15 @@
 unit TestMongoProvider;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
-uses TestFramework, MongoProvider, MongoDecoder, MongoEncoder, BSONTypes;
+uses BaseTestCase, MongoProvider, MongoDecoder, MongoEncoder, BSONTypes;
 
 type
-  TTestMongoProvider = class(TTestCase)
+  TTestMongoProvider = class(TBaseTestCase)
   private
     FProvider: IMongoProvider;
   protected
@@ -42,8 +46,8 @@ begin
   vLastError := FProvider.GetLastError('test');
 
   CheckNotNull(vLastError);
-  CheckTrue(vLastError.Ok);
-  CheckFalse(vLastError.HasError);
+  CheckTrue(vLastError.Ok, 'Is not Ok');
+  CheckFalse(vLastError.HasError, 'Has an error');
   CheckEquals(-1, vLastError.GetCode);
 end;
 
@@ -59,9 +63,9 @@ begin
   vLastError := vWriteResult.getLastError;
 
   CheckNotNull(vLastError);
-  CheckTrue(vLastError.Ok);
-  CheckTrue(vWriteResult.getCachedLastError = vLastError);
-  CheckTrue(vWriteResult.getCachedLastError = vWriteResult.getLastError);
+  CheckTrue(vLastError.Ok, 'Is not Ok');
+  CheckTrue(vWriteResult.getCachedLastError = vLastError, 'Not cached the error');
+  CheckTrue(vWriteResult.getCachedLastError = vWriteResult.getLastError, 'Not cached the error');
 end;
 
 procedure TTestMongoProvider.TestRunCommand;
@@ -69,12 +73,12 @@ var
   vCommandResult: ICommandResult;
 begin
   vCommandResult := FProvider.RunCommand('test', TBSONObject.NewFrom('dbStats', 1));
-  CheckTrue(vCommandResult.Ok);
-  CheckFalse(vCommandResult.HasError);
-  CheckEqualsString('test', vCommandResult.Items['db'].Value);
+  CheckTrue(vCommandResult.Ok, 'Is not Ok');
+  CheckFalse(vCommandResult.HasError, 'Has an error');
+  CheckEquals('test', vCommandResult.Items['db'].Value);
 end;
 
 initialization
-   RegisterTest(TTestMongoProvider.Suite);
+   TTestMongoProvider.RegisterTest;
 
 end.

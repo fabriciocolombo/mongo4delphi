@@ -2,10 +2,12 @@ unit MongoProvider;
 
 interface
 
-{.$DEFINE SYNAPSE}
+{$IFDEF FPC}
+  {$DEFINE SYNAPSE}
+{$ENDIF}
 
 uses MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
-     {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets, //
+     {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets, 
      Classes;
 
 const

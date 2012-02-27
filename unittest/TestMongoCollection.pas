@@ -1,12 +1,16 @@
 unit TestMongoCollection;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
-uses TestFramework, Mongo;
+uses BaseTestCase, Mongo;
 
 type
   //Require mongodb service running
-  TTestMongoCollection = class(TTestCase)
+  TTestMongoCollection = class(TBaseTestCase)
   private
     FMongo: TMongo;
     FDB: TMongoDB;
@@ -166,13 +170,13 @@ begin
 
   CheckNotNull(vDoc);
   CheckEquals(2, vDoc.Count);
-  CheckEqualsString('_id', vDoc[0].Name);
-  CheckEqualsString('ObjectId("4f46b9fa65760489cc96ab49")', vDoc[0].AsObjectId.ToStringMongo);
-  CheckEqualsString('id', vDoc[1].Name);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('ObjectId("4f46b9fa65760489cc96ab49")', vDoc[0].AsObjectId.ToStringMongo);
+  CheckEquals('id', vDoc[1].Name);
   CheckEquals(123, Integer(vDoc[1].Value));
 end;
 
 initialization
-  RegisterTest(TTestMongoCollection.Suite);
+  TTestMongoCollection.RegisterTest;
 
 end.

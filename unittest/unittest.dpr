@@ -1,30 +1,34 @@
 program unittest;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
+{$IFNDEF FPC}
   FastMM4,
-  Forms,
+{$ELSE}
+  Interfaces,
+{$ENDIF}
   GuiTestRunner,
-  MongoDecoder in '..\src\MongoDecoder.pas',
-  MongoEncoder in '..\src\MongoEncoder.pas',
-  BSON in '..\src\BSON.pas',
-  MongoException in '..\src\MongoException.pas',
+  Forms,
+  TestBSONItem in 'TestBSONItem.pas',
+  TestBSONObject in 'TestBSONObject.pas',
   TestEncoder in 'TestEncoder.pas',
   TestBsonStream in 'TestBsonStream.pas',
-  BSONStream in '..\src\BSONStream.pas',
-  Mongo in '..\src\Mongo.pas',
-  TestMongoCollection in 'TestMongoCollection.pas',
-  BSONTypes in '..\src\BSONTypes.pas',
-  MongoUtils in '..\src\MongoUtils.pas',
-  TestBSONObject in 'TestBSONObject.pas',
-  TestBSONItem in 'TestBSONItem.pas',
-  MongoProvider in '..\src\MongoProvider.pas',
   TestDecoder in 'TestDecoder.pas',
-  TestMongoProvider in 'TestMongoProvider.pas';
+  TestMongoProvider in 'TestMongoProvider.pas',
+  TestMongoCollection in 'TestMongoCollection.pas',
+  BaseTestCase in 'BaseTestCase.pas';
 
 {$R *.res}
 
 begin
   Application.Initialize;
-  GuiTestRunner.RunRegisteredTests;
+  {$IFNDEF FPC}
+    GuiTestRunner.RunRegisteredTests;
+  {$ELSE}
+    Application.CreateForm(TGuiTestRunner, TestRunner);
+  {$ENDIF}
   Application.Run;
 end.

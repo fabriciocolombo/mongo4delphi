@@ -1,11 +1,15 @@
 unit TestBSONStream;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
-uses TestFramework, BSONStream;
+uses BaseTestCase, BSONStream;
 
 type
-  TTestBSONStream = class(TTestCase)
+  TTestBSONStream = class(TBaseTestCase)
   private
     FStream: TBSONStream;
   protected
@@ -53,6 +57,6 @@ begin
 end;
 
 initialization
-  RegisterTest(TTestBSONStream.Suite);
+  TTestBSONStream.RegisterTest;
 
 end.

@@ -1,5 +1,7 @@
-*.dcu
-*.~pas
 dunit.ini
-*.~dpr
+__history
+*.dcu
 *.exe
+*.~pas
+*.~dpr
+*.~dpk

@@ -49,7 +49,7 @@ type
 
     procedure PutInterfaceField(name: String; const val: IUnknown);
 
-    procedure PutObjectField(name: String; val: OleVariant);
+    procedure PutObjectField(const AItem: TBSONItem);
   public
     procedure SetBuffer(ABuffer: TBSONStream);
     procedure Encode(const ABSONObject: IBSONBasicObject);
@@ -63,7 +63,7 @@ type
 implementation
 
 uses DateUtils, SysUtils, Variants, BSON, MongoException, Classes, Math,
-  MongoUtils;
+  MongoUtils, Windows;
 
 { TDefaultMongoEncoder }
 
@@ -122,36 +122,36 @@ begin
   put(BSON_NULL, AName);
 end;
 
-procedure TDefaultMongoEncoder.PutObjectField(name: String; val: OleVariant);
+procedure TDefaultMongoEncoder.PutObjectField(const AItem: TBSONItem);
 var
-  valueType: TVarType;
   vGUID: TGUID;
+  name: String;
 begin
-  valueType := VarType(val);
+  name := AItem.Name;
 
   if SameText(name, '_transientFields') then Exit;
 
-  if SameText(name, '$where') and (valueType = vtString) then
+  if SameText(name, '$where') and (AItem.ValueType = bvtString) then
   begin
       put(BSON_CODE, name);
-      putValueString(val.toString() );
+      putValueString(AItem.AsString);
       Exit;
   end;
 
-  case valueType and varTypeMask of
-    varEmpty, varNull: putNull(name);
-    varDate: putDate( name , VarToDateTime(val));
-    varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord: putInt(name, val);
-    varInt64: putInt64(name, val);
-    varSingle,varDouble,varCurrency: putFloat(name, val);
-    varOleStr, varString: begin
-                            if TGUIDUtils.TryStringToGuid(VarToWideStr(val), vGUID) then
-                              putUUID(name, vGUID)
-                            else
-                              putString(name, VarToStr(val));
-                          end;
-    varBoolean: putBoolean(name, val);
-    varDispatch, varUnknown: PutInterfaceField(name, IUnknown(val));
+  case AItem.ValueType of
+    bvtNull: putNull(name);
+    bvtBoolean: putBoolean(name, AItem.AsBoolean);
+    bvtInteger: putInt(name, AItem.AsInteger);
+    bvtInt64: putInt64(name, AItem.AsInt64);
+    bvtDouble: putFloat(name, AItem.AsFloat);
+    bvtDateTime: putDate( name , AItem.AsDateTime);
+    bvtString:  begin
+                  if TGUIDUtils.TryStringToGuid(AItem.AsString, vGUID) then
+                    putUUID(name, vGUID)
+                  else
+                    putString(name, AItem.AsString);
+                end;
+    bvtInterface: PutInterfaceField(name, IUnknown(AItem.Value));
 {    varError,
     varAny,
     varTypeMask,
@@ -183,8 +183,10 @@ begin
 //  else if ( val instanceof MaxKey )
 //      putMaxKey( name );
   else
-    raise EIllegalArgumentException.CreateResFmt(@sInvalidVariantValueType, [VarToStrDef(val, EmptyStr)]);
+    raise EIllegalArgumentException.CreateResFmt(@sInvalidVariantValueType, [AItem.GetValueTypeDesc]);
   end;
+
+  
 end;
 
 procedure TDefaultMongoEncoder.putString(AName, AValue: String);
@@ -251,7 +253,7 @@ begin
   begin
     vItem := ABSONObject.Item[i];
     
-    PutObjectField(vItem.Name, vItem.Value);
+    PutObjectField(vItem);
   end;
   FBuffer.WriteByte(BSON_EOF);
   FBuffer.WriteInt(vStart, FBuffer.Position - vStart);

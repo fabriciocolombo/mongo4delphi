@@ -1,19 +1,27 @@
 unit TestBSONItem;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
-uses TestFramework, BSONTypes;
+uses BaseTestCase, BSONTypes;
 
 type
-  TTestBSONItem = class(TTestCase)
+
+  { TTestBSONItem }
+
+  TTestBSONItem = class(TBaseTestCase)
   private
   published
     procedure CheckValueType;
+    procedure CheckVariantInt64Value;
   end;
 
 implementation
 
-uses Variants;
+uses Variants, SysUtils;
 
 { TTestBSONItem }
 
@@ -23,19 +31,39 @@ var
 begin
   vItem := TBSONItem.NewFrom('key', '123');
   try
-    CheckEquals(varOleStr, vItem.ValueType);
+    CheckEquals(Ord(bvtString), Ord(vItem.ValueType));
 
     vItem.Value := 123;
-    CheckEquals(varInteger, vItem.ValueType);
+    CheckEquals(Ord(bvtInteger), Ord(vItem.ValueType));
 
     vItem.Value := Null;
-    CheckEquals(varNull, vItem.ValueType);
+    CheckEquals(Ord(bvtNull), Ord(vItem.ValueType));
   finally
     vItem.Free;
   end;
 end;
 
+procedure TTestBSONItem.CheckVariantInt64Value;
+var
+  vItem: TBSONItem;
+  vInt64: Int64;
+  v: Variant;
+begin
+  vInt64 := 9223372036854775807;
+
+  v := vInt64;
+
+  vItem := TBSONItem.NewFrom('key', v);
+  try
+    CheckEquals(vInt64, vItem.AsInt64);
+    CheckEquals(Ord(bvtInt64), Ord(vItem.ValueType), 'Invalid ValueType');
+  finally
+    vItem.Free;
+  end;
+end;
+
+
 initialization
-  RegisterTest(TTestBSONItem.Suite);
+  TTestBSONItem.RegisterTest;
 
 end.

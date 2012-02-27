@@ -1,5 +1,9 @@
 unit BSONTypes;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses Contnrs, Classes;
@@ -27,31 +31,42 @@ type
 
     function AsByteArray: TObjectIdByteArray;
     function ToStringMongo: String;
-    constructor CreateWithOutOID;
   end;
+
+  TBsonValueType = (bvtNull,
+                    bvtBoolean, bvtInteger, bvtInt64, bvtDouble,
+                    bvtDateTime, bvtString, bvtInterface);
 
   TBSONItem = class
   private
     FName: String;
-    FValue: OleVariant;
-    FValueType: Integer;
-    procedure SetValue(const Value: OleVariant);
+    FValue: Variant;
+    FValueType: TBsonValueType;
+
+    procedure SetValue(const Value: Variant);
+    
     function GetAsObjectId: IObjectId;
     function GetAsInteger: Integer;
     function GetAsInt64: Int64;
     function GetAsString: String;
+    function GetAsDateTime: TDateTime;
+    function GetAsFloat: Double;
+    function GetAsBoolean: Boolean;
   public
     property Name: String read FName;
-    property Value: OleVariant read FValue write SetValue;
-    property ValueType: Integer read FValueType;
+    property Value: Variant read FValue write SetValue;
+    property ValueType: TBsonValueType read FValueType;
     property AsObjectId: IObjectId read GetAsObjectId;
     property AsInteger: Integer read GetAsInteger;
     property AsInt64: Int64 read GetAsInt64;
     property AsString: String read GetAsString;
+    property AsDateTime: TDateTime read GetAsDateTime;
+    property AsFloat: Double read GetAsFloat;
+    property AsBoolean: Boolean read GetAsBoolean;
 
-    function IsInteger: Boolean; 
+    function GetValueTypeDesc: String;
 
-    class function NewFrom(AName: String; AValue: OleVariant): TBSONItem;
+    class function NewFrom(AName: String;const AValue: Variant): TBSONItem;
   end;
 
   TDuplicatesAction = (daUpdateValue, daError);
@@ -76,7 +91,7 @@ type
     property DuplicatesAction: TDuplicatesAction read GetDuplicatesAction write SetDuplicatesAction;
     property Items[AKey: String]: TBSONItem read GetItems;
 
-    function Put(const AKey: String; Value: OleVariant): IBSONObject;
+    function Put(const AKey: String; Value: Variant): IBSONObject;
     function Find(const AKey: String): TBSONItem;overload;
     function Find(const AKey: String;var AIndex: Integer): TBSONItem;overload;
     function PutAll(const ASource: IBSONObject): IBSONObject;
@@ -85,7 +100,7 @@ type
   IBSONArray = interface(IBSONBasicObject)
     ['{ADA231EC-9BD6-4FEB-BCB7-56D88580319E}']
 
-    function Put(Value: OleVariant): IBSONArray;
+    function Put(Value: Variant): IBSONArray;
   end;
 
   TBSONObject = class(TInterfacedObject, IBSONObject)
@@ -102,14 +117,14 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    class function NewFrom(const AKey: String; Value: OleVariant): IBSONObject;
+    class function NewFrom(const AKey: String; Value: Variant): IBSONObject;
 
     property DuplicatesAction: TDuplicatesAction read GetDuplicatesAction write SetDuplicatesAction default daUpdateValue;
 
     property Items[AKey: String]: TBSONItem read GetItems;
     property Item[AIndex: Integer]: TBSONItem read GetItem;default;
 
-    function Put(const AKey: String; Value: OleVariant): IBSONObject;
+    function Put(const AKey: String; Value: Variant): IBSONObject;
     function Find(const AKey: String): TBSONItem;overload;
     function Find(const AKey: String;var AIndex: Integer): TBSONItem;overload;
     function Count: Integer;
@@ -119,15 +134,15 @@ type
 
   TBSONArray = class(TBSONObject, IBSONArray)
   public
-    function Put(Value: OleVariant): IBSONArray;
+    function Put(Value: Variant): IBSONArray;
 
-    class function NewFrom(Value: OleVariant): IBSONArray;
+    class function NewFrom(Value: Variant): IBSONArray;
   end;
 
 implementation
 
 uses BSON, windows, Registry, SysUtils, Variants, MongoUtils,
-  MongoException;
+  MongoException, TypInfo;
 
 var
   _mongoObjectID_MachineID: Integer;
@@ -214,11 +229,6 @@ begin
   inherited Create;
 
   FOID := OID;
-end;
-
-constructor TObjectId.CreateWithOutOID;
-begin
-  inherited;
 end;
 
 procedure TObjectId.GenId;
@@ -328,7 +338,7 @@ begin
   end;
 end;
 
-class function TBSONObject.NewFrom(const AKey: String;Value: OleVariant): IBSONObject;
+class function TBSONObject.NewFrom(const AKey: String;Value: Variant): IBSONObject;
 begin
   Result := TBSONObject.Create;
   Result.Put(AKey, Value);
@@ -339,7 +349,7 @@ begin
   FMap.AddObject(AItem.Name, AItem);
 end;
 
-function TBSONObject.Put(const AKey: String; Value: OleVariant): IBSONObject;
+function TBSONObject.Put(const AKey: String; Value: Variant): IBSONObject;
 var
   vItem: TBSONItem;
 begin
@@ -383,9 +393,33 @@ end;
 
 { TBSONItem }
 
+function TBSONItem.GetAsBoolean: Boolean;
+begin
+  if (FValueType = bvtBoolean) then
+    Result := FValue
+  else
+    raise EConvertError.Create('Cannot convert the value to Boolean.');
+end;
+
+function TBSONItem.GetAsDateTime: TDateTime;
+begin
+  if (FValueType = bvtDateTime) then
+    Result := VarToDateTime(FValue)
+  else
+    raise EConvertError.Create('Cannot convert the value to TDateTime.');
+end;
+
+function TBSONItem.GetAsFloat: Double;
+begin
+  if (FValueType = bvtDouble) then
+    Result := FValue
+  else
+    raise EConvertError.Create('Cannot convert the value to Double.');
+end;
+
 function TBSONItem.GetAsInt64: Int64;
 begin
-  if IsInteger then
+  if FValueType in [bvtInteger, bvtInt64] then
     Result := FValue
   else
     raise EConvertError.Create('Cannot convert the value to Int64.');
@@ -399,7 +433,7 @@ end;
 function TBSONItem.GetAsObjectId: IObjectId;
 begin
   Result := nil;
-  if (FValueType = varUnknown) then
+  if (FValueType = bvtInterface) then
   begin
     Supports(IUnknown(FValue), IObjectId, Result);
   end;
@@ -410,33 +444,44 @@ begin
   Result := VarToStr(FValue);
 end;
 
-function TBSONItem.IsInteger: Boolean;
+function TBSONItem.GetValueTypeDesc: String;
 begin
-  Result := (FValueType in [varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord, varInt64]);
+  Result := GetEnumName(TypeInfo(TBsonValueType), Ord(FValueType));
 end;
 
-class function TBSONItem.NewFrom(AName: String; AValue: OleVariant): TBSONItem;
+class function TBSONItem.NewFrom(AName: String;const AValue: Variant): TBSONItem;
 begin
   Result := TBSONItem.Create;
   Result.FName := AName;
   Result.SetValue(AValue);
 end;
 
-procedure TBSONItem.SetValue(const Value: OleVariant);
+procedure TBSONItem.SetValue(const Value: Variant);
 begin
   FValue := Value;
-  FValueType := VarType(FValue) and varTypeMask;
+
+  FValueType := bvtNull;
+  case VarType(FValue) and varTypeMask of
+    varEmpty, varNull: ;
+    varDate: FValueType := bvtDateTime;
+    varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord: FValueType := bvtInteger;
+    varInt64: FValueType := bvtInt64;
+    varSingle,varDouble,varCurrency: FValueType := bvtDouble;
+    varOleStr, varString: FValueType := bvtString;
+    varBoolean: FValueType := bvtBoolean;
+    varDispatch, varUnknown: FValueType := bvtInterface;
+  end;
 end;
 
 { TBSONArray }
 
-class function TBSONArray.NewFrom(Value: OleVariant): IBSONArray;
+class function TBSONArray.NewFrom(Value: Variant): IBSONArray;
 begin
   Result := TBSONArray.Create;
   Result.Put(Value);
 end;
 
-function TBSONArray.Put(Value: OleVariant): IBSONArray;
+function TBSONArray.Put(Value: Variant): IBSONArray;
 var
   vKey: String;
 begin

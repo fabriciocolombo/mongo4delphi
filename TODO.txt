@@ -26,6 +26,7 @@ Mongo Driver Requirements	- High priority
 	*	automatic reconnection
 	* authentication
 	
+TODO - Remove Warnings from Delphi XE	
 TODO - Replace Exception with typed exception descendents of EMongoException
 TODO - Replace message hard coded string with ResourceString
 TODO - Review naming of ObjectId. Should be contain the BSON prefix?
@@ -33,3 +34,8 @@ TODO - Implementation from TBSONStream.ReadObjectId must be moved to ObjectId im
 TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
 
 TODO - Check compatibility with FPC.
+
+TODO - Include a Log for debug with almost Console
+
+BUG FPC - Parece existir um Bug no freepascal/lazarus ao armazenar valores do tipo Int64 em um OleVariant, 
+          se utilizar Variant funciona corretamente.

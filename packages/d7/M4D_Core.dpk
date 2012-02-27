@@ -1,0 +1,44 @@
+package M4D_Core;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Mongo Driver for Delphi - M4D'}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  inet;
+
+contains
+  BSON in '..\..\src\BSON.pas',
+  BSONStream in '..\..\src\BSONStream.pas',
+  BSONTypes in '..\..\src\BSONTypes.pas',
+  Mongo in '..\..\src\Mongo.pas',
+  MongoDecoder in '..\..\src\MongoDecoder.pas',
+  MongoEncoder in '..\..\src\MongoEncoder.pas',
+  MongoException in '..\..\src\MongoException.pas',
+  MongoProvider in '..\..\src\MongoProvider.pas',
+  MongoUtils in '..\..\src\MongoUtils.pas';
+
+end.

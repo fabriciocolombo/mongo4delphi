@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <Package Version="3">
+    <PathDelim Value="\"/>
+    <Name Value="M4D_Core"/>
+    <CompilerOptions>
+      <Version Value="9"/>
+      <PathDelim Value="\"/>
+      <SearchPaths>
+        <OtherUnitFiles Value="..\..\src"/>
+        <UnitOutputDirectory Value="lib"/>
+      </SearchPaths>
+      <Other>
+        <CompilerPath Value="$(CompPath)"/>
+      </Other>
+    </CompilerOptions>
+    <Description Value="Mongo Driver for Delphi - M4D"/>
+    <Files Count="9">
+      <Item1>
+        <Filename Value="..\..\src\BSON.pas"/>
+        <UnitName Value="BSON"/>
+      </Item1>
+      <Item2>
+        <Filename Value="..\..\src\BSONStream.pas"/>
+        <UnitName Value="BSONStream"/>
+      </Item2>
+      <Item3>
+        <Filename Value="..\..\src\BSONTypes.pas"/>
+        <UnitName Value="BSONTypes"/>
+      </Item3>
+      <Item4>
+        <Filename Value="..\..\src\Mongo.pas"/>
+        <UnitName Value="Mongo"/>
+      </Item4>
+      <Item5>
+        <Filename Value="..\..\src\MongoDecoder.pas"/>
+        <UnitName Value="MongoDecoder"/>
+      </Item5>
+      <Item6>
+        <Filename Value="..\..\src\MongoEncoder.pas"/>
+        <UnitName Value="MongoEncoder"/>
+      </Item6>
+      <Item7>
+        <Filename Value="..\..\src\MongoException.pas"/>
+        <UnitName Value="MongoException"/>
+      </Item7>
+      <Item8>
+        <Filename Value="..\..\src\MongoProvider.pas"/>
+        <UnitName Value="MongoProvider"/>
+      </Item8>
+      <Item9>
+        <Filename Value="..\..\src\MongoUtils.pas"/>
+        <UnitName Value="MongoUtils"/>
+      </Item9>
+    </Files>
+    <RequiredPkgs Count="1">
+      <Item1>
+        <PackageName Value="FCL"/>
+        <MinVersion Major="1" Valid="True"/>
+      </Item1>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>

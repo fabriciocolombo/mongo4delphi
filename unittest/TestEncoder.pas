@@ -1,11 +1,18 @@
 unit TestEncoder;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
-uses TestFramework, MongoEncoder, BSONStream;
+uses BaseTestCase, MongoEncoder, BSONStream;
 
 type
-  TTestEncoder = class(TTestCase)
+
+  { TTestEncoder }
+
+  TTestEncoder = class(TBaseTestCase)
   private
     FStream: TBSONStream;
     FEncoder: IMongoEncoder;
@@ -15,6 +22,7 @@ type
   published
     procedure ShouldRaiseBufferIsNotConfigured;
     procedure EncodeBSONObject;
+    procedure EncodeBSONInt64;
     procedure EncodeBSONObjectSimpleTypes;
     procedure EncodeBSONObjectWithEmbeddedObject;
     procedure EncodeBSONArray;
@@ -80,16 +88,38 @@ begin
   CheckEquals(13, FStream.Size);
 end;
 
+procedure TTestEncoder.EncodeBSONInt64;
+var
+  vBSON: IBSONObject;
+  vInt64: Int64;
+begin
+  vInt64 := 9223372036854775807;
+  vBSON := TBSONObject.Create;
+  vBSON.Put('id', vInt64);
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'id' size 3 in UTF8
+  //Write value Int64 size 8
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(17, FStream.Size);
+end;
+
 procedure TTestEncoder.EncodeBSONObjectSimpleTypes;
 var
   vSingle: Single;
   vDouble: Double;
   vCurrency: Currency;
+  vInt64: Int64;
   vBSON: IBSONObject;
 begin
   vSingle := 1.21;
   vDouble := 1.22;
   vCurrency := 1.23;
+  vInt64 := 9223372036854775807;
 
   vBSON := TBSONObject.Create;
 
@@ -104,8 +134,8 @@ begin
   vBSON.Put('id08', High(Integer));  //1 + 5 + 4 = 10 + 83 = 93
   vBSON.Put('id09', High(ShortInt)); //1 + 5 + 4 = 10 + 93 = 103
   vBSON.Put('id10', High(Word));     //1 + 5 + 4 = 10 + 103 = 113
-  vBSON.Put('id11', High(LongWord)); //1 + 5 + 4 = 10 + 113 = 123
-  vBSON.Put('id12', High(Int64));    //1 + 5 + 8 = 14 + 123 = 137
+  vBSON.Put('id11', LongWord(4294967295)); //1 + 5 + 4 = 10 + 113 = 123
+  vBSON.Put('id12', vInt64);         //1 + 5 + 8 = 14 + 123 = 137
   vBSON.Put('id13', vSingle);        //1 + 5 + 8 = 14 + 137 = 151
   vBSON.Put('id14', vDouble);        //1 + 5 + 8 = 14 + 151 = 165
   vBSON.Put('id15', vCurrency);      //1 + 5 + 8 = 14 + 165 = 179
@@ -179,9 +209,13 @@ end;
 
 procedure TTestEncoder.ShouldRaiseBufferIsNotConfigured;
 begin
-  ExpectedException := EMongoBufferIsNotConfigured;
-  FEncoder.SetBuffer(nil);
-  FEncoder.Encode(nil);
+  try
+    FEncoder.SetBuffer(nil);
+    FEncoder.Encode(nil);
+  except
+    on E: Exception do
+      CheckTrue(E is EMongoBufferIsNotConfigured, E.Message);
+  end;
 end;
 
 procedure TTestEncoder.TearDown;
@@ -191,6 +225,6 @@ begin
 end;
 
 initialization
-  RegisterTest(TTestEncoder.Suite);
+  TTestEncoder.RegisterTest;
 
 end.

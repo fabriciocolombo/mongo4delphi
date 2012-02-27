@@ -50,12 +50,12 @@ uses SysUtils, BSON;
 
 procedure TBSONStream.WriteByte(value: Byte);
 begin
-  Write(value, SizeOf(value));
+  Write(value, SizeOf(Byte));
 end;
 
 procedure TBSONStream.WriteInt(value: Integer);
 begin
-  Write(value, SizeOf(value));
+  Write(value, SizeOf(Integer));
 end;
 
 procedure TBSONStream.WriteDouble(value: Double);
@@ -75,7 +75,7 @@ end;
 
 procedure TBSONStream.WriteInt64(value: Int64);
 begin
-  Write(value, SizeOf(value));
+  Write(value, SizeOf(Int64));
 end;
 
 function TBSONStream.WriteUTF8String(value: AnsiString): Integer;
@@ -95,7 +95,7 @@ end;
 
 function TBSONStream.ReadInt64: Int64;
 begin
-  Read(Result, SizeOf(Int64));
+  Read(Result, 8);
 end;
 
 function TBSONStream.ReadCString: UTF8String;
