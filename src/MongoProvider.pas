@@ -72,10 +72,17 @@ type
 
     function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;
 
-    function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;
+    function FindOne(DB, Collection: String): IBSONObject;overload;
+    function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;overload;
+    function FindOne(DB, Collection: String; Query, Fields: IBSONObject): IBSONObject;overload;
 
-    function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
+    function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query, Fields: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
     function HasNext(AStream: TBSONStream; DB: String; Collection: String;  ACursorId: Int64; ABatchSize: Integer): IBSONObject;
+
+    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
+
+    procedure KillCursor(ACursorId: Int64);
+    procedure KillCursors(ACursorId: Array of Int64);
   end;
 
   TDefaultMongoProvider = class(TInterfacedObject, IMongoProvider)
@@ -96,7 +103,9 @@ type
     function SendBuf(Buffer: Pointer; Length: Integer): Integer;
     function ReceiveBuf(var Buffer; Length: Integer): Integer;
 
-    procedure BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);
+    procedure BeginMsg(AStream: TBSONStream; OperationCode: Integer);overload;
+    procedure BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);overload;
+    procedure SendMsg(AStream: TBSONStream);
   public
     constructor Create;
     destructor Destroy; override;
@@ -112,9 +121,17 @@ type
 
     function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;
 
-    function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;
-    function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
+    function FindOne(DB, Collection: String): IBSONObject;overload;
+    function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;overload;
+    function FindOne(DB, Collection: String; Query, Fields: IBSONObject): IBSONObject;overload;
+
+    function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query, Fields: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
     function HasNext(AStream: TBSONStream; DB: String; Collection: String;  ACursorId: Int64; ABatchSize: Integer): IBSONObject;
+
+    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
+
+    procedure KillCursor(ACursorId: Int64);
+    procedure KillCursors(ACursorId: Array of Int64);
     //TODO - Assert socket is Connected
   end;
 
@@ -159,74 +176,8 @@ begin
 end;
 
 function TDefaultMongoProvider.FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;
-var
-  vLength: Integer;
-  vStartingFrom: Integer;
-  vNumberReturned: Integer;
-  vRequestID:integer;
-  vResponseTo:integer;
-  vOpCode:integer;
-  vFlags:integer;
-  vCursorId: Int64;
-  vStream: TBSONStream;
 begin
-  InterlockedIncrement(FRequestId);
-
-  vStream := TBSONStream.Create;
-  try
-    vStream.Clear;
-    vStream.WriteInt(0); //length
-    vStream.WriteInt(FRequestId);
-    vStream.WriteInt(0);//ResponseTo
-    vStream.WriteInt(OP_QUERY);
-    vStream.WriteInt(0);//Flags
-    vStream.WriteUTF8String(Format('%s.%s', [DB, Collection]));
-    vStream.WriteInt(0); //NumberToSkip
-    vStream.WriteInt(1); //NumberToReturn
-
-    if (Query = nil) then
-    begin
-      Query := TBSONObject.Create;
-    end;
-
-    FEncoder.SetBuffer(vStream);
-    FEncoder.Encode(Query);
-
-    vLength := vStream.Size;
-    vStream.WriteInt(0, vLength);
-
-    SendBuf(vStream.Memory, vLength);
-
-//    if ReturnFieldSelector<>nil then (ReturnFieldSelector as IPersistStream).Save(FData,false);
-    ReadResponse(vStream, FRequestId, vFlags, vNumberReturned, vCursorId);
-
-//    vStream.SaveToFile('Response.stream');
-
-    vStream.Position := 0;
-    vStream.Read(vLength, 4);
-    vStream.Read(vRequestID, 4);
-    vStream.Read(vResponseTo, 4);
-    vStream.Read(vOpCode, 4);
-    vStream.Read(vFlags, 4);
-    vStream.Read(vCursorId, 8);
-    vStream.Read(vStartingFrom, 4);
-    vStream.Read(vNumberReturned, 4);
-
-    if (vFlags and $0001) <> 0 then
-      raise Exception.Create('MongoWire.Get: cursor not found');
-
-    if vNumberReturned = 0 then
-      raise Exception.Create('MongoWire.Get: no documents returned');
-
-    Result := FDecoder.Decode(vStream);
-
-    if (vFlags and $0002) <> 0 then
-      raise Exception.Create('MongoWire.Get: '+VarToStr(Result.Items['$err'].Value));
-
-///    Result := TWriteResult.Create(Self, DB, FRequestId);
-  finally
-    vStream.Free;
-  end;
+  Result := FindOne(DB, Collection, Query, TBSONObject.Empty);
 end;
 
 function TDefaultMongoProvider.GetLastError(DB: String; RequestId: Integer): ICommandResult;
@@ -241,28 +192,16 @@ end;
 
 function TDefaultMongoProvider.Insert(DB, Collection: String;BSONObject: IBSONObject): IWriteResult;
 var
-  vLength: Integer;
   vStream: TBSONStream;
 begin
-  InterlockedIncrement(FRequestId);
-
   vStream := TBSONStream.Create;
   try
-    vStream.Clear;
-    vStream.WriteInt(0); //length
-    vStream.WriteInt(FRequestId);
-    vStream.WriteInt(0);//ResponseTo
-    vStream.WriteInt(OP_INSERT);
-    vStream.WriteInt(0);//Flagss
-    vStream.WriteUTF8String(Format('%s.%s', [DB, Collection]));
+    BeginMsg(vStream, DB, Collection, OP_INSERT);
 
     FEncoder.SetBuffer(vStream);
     FEncoder.Encode(BSONObject);
 
-    vLength := vStream.Size;
-    vStream.WriteInt(0, vLength);
-
-    SendBuf(vStream.Memory, vLength);
+    SendMsg(vStream);
 
     Result := TWriteResult.Create(Self, DB, FRequestId);
   finally
@@ -377,30 +316,29 @@ begin
   {$ENDIF}
 end;
 
-function TDefaultMongoProvider.OpenQuery(AStream: TBSONStream; DB, Collection: String;Query: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
+function TDefaultMongoProvider.OpenQuery(AStream: TBSONStream; DB, Collection: String;Query, Fields: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
 var
-  vLength: Integer;
   vNumberReturned: Integer;
   vFlags:integer;
   vCursorId: Int64;
 begin
-  InterlockedIncrement(FRequestId);
-
   Result := TBSONObject.NewFrom('requestId', FRequestId);
 
   BeginMsg(AStream, DB, Collection, OP_QUERY);
+
   AStream.WriteInt(ASkip);
   AStream.WriteInt(ABatchSize);
 
   FEncoder.SetBuffer(AStream);
   FEncoder.Encode(Query);
 
-  vLength := AStream.Size;
-  AStream.WriteInt(0, vLength);
+  if (Fields <> nil) and (Fields.Count > 0) then
+  begin
+     FEncoder.Encode(Fields);
+  end;
 
-  SendBuf(AStream.Memory, vLength);
+  SendMsg(AStream);
 
-//    if ReturnFieldSelector<>nil then (ReturnFieldSelector as IPersistStream).Save(FData,false);
   ReadResponse(AStream, FRequestId, vFlags, vNumberReturned, vCursorId);
 
   Result.Put('numberReturned', vNumberReturned);
@@ -415,7 +353,7 @@ end;
 
 function TDefaultMongoProvider.HasNext(AStream: TBSONStream; DB, Collection: String; ACursorId: Int64; ABatchSize: Integer): IBSONObject;
 var
-  vLength, vFlags, vNumberReturned: Integer;
+  vFlags, vNumberReturned: Integer;
   vCursorId: Int64;
   vHasNext: Boolean;
 begin
@@ -426,17 +364,12 @@ begin
 
   if ACursorId > 0 then
   begin
-    InterlockedIncrement(FRequestId);
-
     BeginMsg(AStream, DB, Collection, OP_GET_MORE);
 
     AStream.WriteInt(ABatchSize);
     AStream.WriteInt64(ACursorId);
 
-    vLength := AStream.Size;
-    AStream.WriteInt(0, vLength);
-
-    SendBuf(AStream.Memory, vLength);
+    SendMsg(AStream);
 
     ReadResponse(AStream, FRequestId, vFlags, vNumberReturned, vCursorId);
 
@@ -450,17 +383,24 @@ begin
                        .Put('hasNext', vHasNext)
                        .Put('numberReturned', vNumberReturned)
                        .Put('cursorId', vCursorId);
-
 end;
 
-procedure TDefaultMongoProvider.BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);
+procedure TDefaultMongoProvider.BeginMsg(AStream: TBSONStream; OperationCode: Integer);
 begin
+  InterlockedIncrement(FRequestId);
+
   AStream.Clear;
   AStream.WriteInt(0); //length
   AStream.WriteInt(FRequestId);
   AStream.WriteInt(0);//ResponseTo
   AStream.WriteInt(OperationCode);
   AStream.WriteInt(0);//Flags
+end;
+
+procedure TDefaultMongoProvider.BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);
+begin
+  BeginMsg(AStream, OperationCode);
+  
   AStream.WriteUTF8String(Format('%s.%s', [DB, Collection]));
 end;
 
@@ -471,8 +411,139 @@ begin
   ReadResponse(AStream, ARequestId, AFlags, ANumberReturned, vCursorId);
 end;
 
-{ TWriteResult }
+function TDefaultMongoProvider.FindOne(DB, Collection: String): IBSONObject;
+begin
+  Result := FindOne(DB, Collection, TBSONObject.Empty);
+end;
 
+function TDefaultMongoProvider.FindOne(DB, Collection: String; Query, Fields: IBSONObject): IBSONObject;
+var
+  vNumberReturned: Integer;
+  vFlags:integer;
+  vStream: TBSONStream;
+begin
+  vStream := TBSONStream.Create;
+  try
+    BeginMsg(vStream, DB, Collection, OP_QUERY);
+    vStream.WriteInt(0); //NumberToSkip
+    vStream.WriteInt(1); //NumberToReturn
+
+    if (Query = nil) then
+    begin
+      Query := TBSONObject.Create;
+    end;
+
+    FEncoder.SetBuffer(vStream);
+    FEncoder.Encode(Query);
+
+    if (Fields <> nil) and (Fields.Count > 0) then
+    begin
+      FEncoder.Encode(Fields);
+    end;
+
+    SendMsg(vStream);
+
+    ReadResponse(vStream, FRequestId, vFlags, vNumberReturned);
+
+    if (vFlags and $0001) <> 0 then
+      raise Exception.Create('MongoWire.Get: cursor not found');
+
+    if vNumberReturned = 0 then
+      Result := nil
+    else
+      Result := FDecoder.Decode(vStream);
+
+    if (vFlags and $0002) <> 0 then
+      raise Exception.Create('MongoWire.Get: '+VarToStr(Result.Items['$err'].Value));
+  finally
+    vStream.Free;
+  end;
+end;
+
+function TDefaultMongoProvider.Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
+var
+  vStream: TBSONStream;
+  vOID: TBSONItem;
+begin
+  vStream := TBSONStream.Create;
+  try
+    BeginMsg(vStream, DB, Collection, OP_DELETE);
+
+    vOID := AObject.Find('_id');
+
+    if Assigned(vOID) and vOID.IsObjectId then
+      vStream.WriteInt(1) //Single Remove
+    else
+      vStream.WriteInt(0);
+    
+    FEncoder.SetBuffer(vStream);
+    FEncoder.Encode(AObject);
+
+    SendMsg(vStream);
+
+    Result := TWriteResult.Create(Self, DB, FRequestId);
+  finally
+    vStream.Free;
+  end;
+end;
+
+procedure TDefaultMongoProvider.KillCursor(ACursorId: Int64);
+begin
+  KillCursors([ACursorId]);
+end;
+
+procedure TDefaultMongoProvider.KillCursors(ACursorId: array of Int64);
+const
+  MAX_CURSORS_PER_BATCH = 2;
+var
+  vStream: TBSONStream;
+  vTotalCursors: Integer;
+  i, soFar, totalSoFar: Integer;
+begin
+  vStream := TBSONStream.Create;
+  try
+    vTotalCursors := Length(ACursorId);
+    soFar := 0;
+    totalSoFar := 0;
+
+    BeginMsg(vStream, OP_KILL_CURSORS);
+    vStream.WriteInt(Min(MAX_CURSORS_PER_BATCH, vTotalCursors));
+
+    for i := Low(ACursorId) to High(ACursorId) do
+    begin
+      vStream.WriteInt64(ACursorId[i]);
+
+      Inc(soFar);
+      Inc(totalSoFar);
+
+      if (soFar = MAX_CURSORS_PER_BATCH) then
+      begin
+        SendMsg(vStream);
+
+        BeginMsg(vStream, OP_KILL_CURSORS);
+        vStream.WriteInt(Min(MAX_CURSORS_PER_BATCH, vTotalCursors - totalSoFar));
+        soFar := 0;
+      end;
+    end;
+
+    SendMsg(vStream);
+  finally
+    vStream.Free;
+  end;
+end;
+
+procedure TDefaultMongoProvider.SendMsg(AStream: TBSONStream);
+var
+  vLength: Integer;
+begin
+  vLength := AStream.Size;
+
+  AStream.WriteInt(0, vLength);
+
+  SendBuf(AStream.Memory, vLength);
+end;
+
+{ TWriteResult }
 
 constructor TWriteResult.Create(const AProvider: IMongoProvider; ADB: String; ARequestId: Integer);
 begin
@@ -520,7 +591,11 @@ function TCommandResult.GetErrorMessage: String;
 var
   vErrorMsg: TBSONItem;
 begin
-  vErrorMsg := Find('errmsg');
+  vErrorMsg := Find('err');
+  if (vErrorMsg = nil) then
+  begin
+    vErrorMsg := Find('errmsg');
+  end;
 
   Result := EmptyStr;
   if Assigned(vErrorMsg) then

@@ -4,6 +4,13 @@ program unittest;
   {$MODE Delphi}
 {$ENDIF}
 
+(*
+  {$IFNDEF FPC}
+  FastMM4,
+  {$ELSE}
+  Interfaces,
+  {$ENDIF}
+*)
 uses
   {$IFNDEF FPC}
   FastMM4,
@@ -20,7 +27,16 @@ uses
   TestMongoProvider in 'TestMongoProvider.pas',
   TestMongoCollection in 'TestMongoCollection.pas',
   BaseTestCase in 'BaseTestCase.pas',
-  TestMongoDBCursor in 'TestMongoDBCursor.pas';
+  TestMongoDBCursor in 'TestMongoDBCursor.pas',
+  BSON in '..\src\BSON.pas',
+  BSONStream in '..\src\BSONStream.pas',
+  BSONTypes in '..\src\BSONTypes.pas',
+  Mongo in '..\src\Mongo.pas',
+  MongoDecoder in '..\src\MongoDecoder.pas',
+  MongoEncoder in '..\src\MongoEncoder.pas',
+  MongoException in '..\src\MongoException.pas',
+  MongoProvider in '..\src\MongoProvider.pas',
+  MongoUtils in '..\src\MongoUtils.pas';
 
 {$R *.res}
 

@@ -74,6 +74,7 @@ type
     function GetValueTypeDesc: String;
 
     function IsInteger: Boolean;
+    function IsObjectId: Boolean;
 
     class function NewFrom(AName: String;const AValue: Variant): TBSONItem;
   end;
@@ -487,6 +488,12 @@ end;
 function TBSONItem.IsInteger: Boolean;
 begin
   Result := FValueType in [bvtInteger, bvtInt64];
+end;
+
+function TBSONItem.IsObjectId: Boolean;
+begin
+  Result := (FValueType = bvtInterface) and
+              Supports(IUnknown(FValue), IObjectId);
 end;
 
 class function TBSONItem.NewFrom(AName: String;const AValue: Variant): TBSONItem;

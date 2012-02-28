@@ -1,15 +1,18 @@
 Mongo Driver Requirements	- High priority
 	* BSON serialization¹
 	* BSON deserialization¹
-	*	full cursor support (e.g. support OP_GET_MORE operation)
-	*	close exhausted cursors via OP_KILL_CURSORS
-	*	support for running database commands
-	*	handle query errors (OK - Support to GetLastError)
+	*	full cursor support (e.g. support OP_GET_MORE operation) - OK, needs design review 
+	*	close exhausted cursors via OP_KILL_CURSORS - OK
+	*	support for running database commands - OK
+	*	handle query errors - OK, support to GetLastError
 	*	hint, explain, count, $where
 	*	database profiling: set/get profiling level, get profiling info
 	*	advanced connection management (replica sets, slave okay)
 	*	automatic reconnection
 	* authentication
+	* Insert - OK
+	* Update
+	* Remove - OK
 	* batch insert/update/remove
 	
 TODO - Replace Exception with typed exception descendents of EMongoException

@@ -21,6 +21,7 @@ type
   published
     procedure TestCountAndSize;
     procedure TestCursor;
+    procedure TestCursorWithFieldsSelector;
   end;
 
 implementation
@@ -69,14 +70,13 @@ var
   vItem: IBSONObject;
   vId: Integer;
 begin
-  FCollection.Insert(TBSONObject.NewFrom('id', 1));
-  FCollection.Insert(TBSONObject.NewFrom('id', 2));
-  FCollection.Insert(TBSONObject.NewFrom('id', 3));
-  FCollection.Insert(TBSONObject.NewFrom('id', 4));
-  FCollection.Insert(TBSONObject.NewFrom('id', 5));
+  FCollection.Insert(TBSONObject.NewFrom('id', 1).put('name', 'teste'));
+  FCollection.Insert(TBSONObject.NewFrom('id', 2).put('name', 'teste'));
+  FCollection.Insert(TBSONObject.NewFrom('id', 3).put('name', 'teste'));
+  FCollection.Insert(TBSONObject.NewFrom('id', 4).put('name', 'teste'));
+  FCollection.Insert(TBSONObject.NewFrom('id', 5).put('name', 'teste'));
 
   vCursor := FCollection.Find();
-
   vId := 0;
   CheckNotNull(vCursor);
   while vCursor.HasNext do
@@ -84,12 +84,20 @@ begin
     vItem := vCursor.Next;
 
     Inc(vId);
+    CheckEquals(3, vItem.Count);
     CheckEquals(vId, vItem.Items['id'].AsInteger);
   end;
   CheckEquals(5, vId);
+
+  (*
+  FCollection.Insert(TBSONObject.NewFrom('id', 6).put('name', 'teste'));
+  FCollection.Insert(TBSONObject.NewFrom('id', 7).put('name', 'teste'));
+  FCollection.Insert(TBSONObject.NewFrom('id', 8).put('name', 'teste'));
+  FCollection.Insert(TBSONObject.NewFrom('id', 9).put('name', 'teste'));
+  FCollection.Insert(TBSONObject.NewFrom('id', 10).put('name', 'teste'));
+  *)
   
   vCursor := FCollection.Find().BatchSize(2);
-
   vId := 0;
   CheckNotNull(vCursor);
   while vCursor.HasNext do
@@ -97,12 +105,49 @@ begin
     vItem := vCursor.Next;
 
     Inc(vId);
+    CheckEquals(3, vItem.Count);
     CheckEquals(vId, vItem.Items['id'].AsInteger);
   end;
-
   CheckEquals(5, vId);
 end;
 
+
+procedure TTestMongoDBCursor.TestCursorWithFieldsSelector;
+var
+  vCursor: IMongoDBCursor;
+  vItem: IBSONObject;
+  vId: Integer;
+begin
+  FCollection.Insert(TBSONObject.NewFrom('id', 1).put('name', 'teste'));
+
+  vCursor := FCollection.Find(TBSONObject.Empty, TBSONObject.NewFrom('id', 1));
+  vId := 0;
+  CheckNotNull(vCursor);
+  while vCursor.HasNext do
+  begin
+    vItem := vCursor.Next;
+
+    Inc(vId);
+    CheckEquals(2, vItem.Count);
+    CheckEquals('id', vItem.Item[1].Name);
+    CheckEquals(vId, vItem.Items['id'].AsInteger);
+  end;
+  CheckEquals(1, vId);
+
+  vCursor := FCollection.Find(TBSONObject.Empty, TBSONObject.NewFrom('id', 0));
+  vId := 0;
+  CheckNotNull(vCursor);
+  while vCursor.HasNext do
+  begin
+    vItem := vCursor.Next;
+
+    Inc(vId);
+    CheckEquals(2, vItem.Count);
+    CheckEquals('name', vItem.Item[1].Name);
+    CheckEquals('teste', vItem.Items['name'].AsString);
+  end;
+  CheckEquals(1, vId);  
+end;
 
 initialization
   TTestMongoDBCursor.RegisterTest;

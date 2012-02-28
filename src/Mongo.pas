@@ -150,6 +150,7 @@ type
     FTotalRecordsReturned: Integer;
     FStream: TBSONStream;
     FCursorId: Int64;
+    FSavedCursorId: Int64;
 
     procedure OpenCursor;
 
@@ -158,6 +159,8 @@ type
     function Clone: TMongoDBCursor;
 
     function ChooseBatchSize(batchSize, limit, fetched: Integer): Integer;
+
+    procedure KillOpenedCursor;
   public
     constructor Create(ACollection: TMongoCollection; AQuery: IBSONObject; AFields: IBSONObject);
     destructor Destroy; override;
@@ -424,6 +427,8 @@ end;
 
 destructor TMongoDBCursor.Destroy;
 begin
+  KillOpenedCursor;
+  
   FStream.Free;
   inherited;
 end;
@@ -469,10 +474,11 @@ begin
   if (FSnapShot) then
     vQuery.Put('$snapshot', True);
 
-  vResponse := FCollection.Provider.OpenQuery(FStream, FCollection.FMongoDatabase.DBName, FCollection.FCollectionName, vQuery, FSkip, ChooseBatchSize(FBatchSize, FLimit, 0));
+  vResponse := FCollection.Provider.OpenQuery(FStream, FCollection.FMongoDatabase.DBName, FCollection.FCollectionName, vQuery, FFields, FSkip, ChooseBatchSize(FBatchSize, FLimit, 0));
   FRequestId := vResponse.Items['requestId'].AsInteger;
   FNumberReturned := vResponse.Items['numberReturned'].AsInteger;
-  FCursorId := vResponse.Items['cursorId'].AsInt64; 
+  FCursorId := vResponse.Items['cursorId'].AsInt64;
+  FSavedCursorId := FCursorId;
 end;
 
 function TMongoDBCursor.HasNext: Boolean;
@@ -491,6 +497,7 @@ begin
     FRequestId := vResponse.Items['requestId'].AsInteger;
     FNumberReturned := vResponse.Items['numberReturned'].AsInteger;
     FCursorId := vResponse.Items['cursorId'].AsInt64;
+
     FFetchedRecords := 0;
 
     Result := vResponse.Items['hasNext'].AsBoolean;
@@ -500,8 +507,6 @@ end;
 function TMongoDBCursor.Next: IBSONObject;
 begin
   OpenCursor;
-
-//  SaveStream('DBCursor.Next', FWireQuery.FData, FQuery);
 
   Result := FCollection.FMongoDatabase.FMongo.Decoder.Decode(FStream);
 
@@ -548,6 +553,14 @@ begin
   FOrderBy := AOrder;
 
   Result := Self;
+end;
+
+procedure TMongoDBCursor.KillOpenedCursor;
+begin
+  if FSavedCursorId > 0 then
+  begin
+    FCollection.Provider.KillCursor(FSavedCursorId);
+  end;
 end;
 
 end.
