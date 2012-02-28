@@ -9,7 +9,7 @@ Mongo Driver Requirements	- High priority
 	*	database profiling: set/get profiling level, get profiling info
 	*	advanced connection management (replica sets, slave okay)
 	*	automatic reconnection
-	* authentication
+	* authentication - OK
 	* Insert - OK
 	* Update - OK
 	* Remove - OK

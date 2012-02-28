@@ -23,6 +23,7 @@ type
     procedure TestGetLastError;
     procedure TestInsert;
     procedure TestFindOne;
+    procedure TestFindOneWithError;
     procedure TestRemove;
     procedure TestRemoveMultipleRows;
     procedure TestUpdate;
@@ -35,6 +36,8 @@ type
   end;
 
 implementation
+
+uses TestFramework;
 
 const
   sDB = 'test';
@@ -156,6 +159,15 @@ begin
   CheckEquals('_id', vDoc[0].Name);
   CheckEquals('name', vDoc[1].Name);
   CheckEquals('Fabricio', vDoc[1].AsString);
+end;
+
+procedure TTestMongoProvider.TestFindOneWithError;
+var
+  vDoc: IBSONObject;
+begin
+  vDoc := FProvider.FindOne(sDB, sColl);
+
+  CheckNull(vDoc);
 end;
 
 procedure TTestMongoProvider.TestGetLastError;

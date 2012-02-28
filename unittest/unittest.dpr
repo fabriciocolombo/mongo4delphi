@@ -37,7 +37,9 @@ uses
   MongoException in '..\src\MongoException.pas',
   MongoProvider in '..\src\MongoProvider.pas',
   MongoUtils in '..\src\MongoUtils.pas',
-  MongoMD5 in '..\src\MongoMD5.pas';
+  MongoMD5 in '..\src\MongoMD5.pas',
+  ServerError in '..\src\ServerError.pas',
+  TestServerError in 'TestServerError.pas';
 
 {$R *.res}
 
@@ -46,7 +48,7 @@ begin
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;
   {$ELSE}
-    Application.CreateForm(TGuiTestRunner, TestRunner);
+    Application.CreateForm(TTestRunner, TestRunner);
   {$ENDIF}
   Application.Run;
 end.

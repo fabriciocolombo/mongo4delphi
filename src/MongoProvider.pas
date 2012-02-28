@@ -93,6 +93,27 @@ type
     procedure Logout(DB: String);
   end;
 
+  TResponse = class
+  private
+    FCursorId: Int64;
+    FRequestID: Integer;
+    FStartingFrom: Integer;
+    FFlags: Integer;
+    FOpCode: Integer;
+    FLength: Integer;
+    FNumberReturned: Integer;
+    FResponseTo: Integer;
+  public
+    property Length: Integer read FLength write FLength;
+    property RequestID: Integer read FRequestID write FRequestID;
+    property ResponseTo: Integer read FResponseTo write FResponseTo;
+    property OpCode: Integer read FOpCode write FOpCode;
+    property Flags: Integer read FFlags write FFlags;
+    property CursorId: Int64 read FCursorId write FCursorId;
+    property StartingFrom: Integer read FStartingFrom write FStartingFrom;
+    property NumberReturned: Integer read FNumberReturned write FNumberReturned;
+  end;
+
   TDefaultMongoProvider = class(TInterfacedObject, IMongoProvider)
   private
     FRequestId: Integer;
@@ -107,6 +128,7 @@ type
 
     procedure ReadResponse(AStream: TBSONStream; ARequestId: Integer;var AFlags, ANumberReturned: Integer);overload;
     procedure ReadResponse(AStream: TBSONStream; ARequestId: Integer;var AFlags, ANumberReturned: Integer;var ACursorId: Int64);overload;
+    function ReadResponse(AStream: TBSONStream; ARequestId: Integer): TResponse;overload;
 
     function SendBuf(Buffer: Pointer; Length: Integer): Integer;
     function ReceiveBuf(var Buffer; Length: Integer): Integer;
@@ -236,52 +258,14 @@ begin
 end;
 
 procedure TDefaultMongoProvider.ReadResponse(AStream: TBSONStream; ARequestId: Integer;var AFlags, ANumberReturned: Integer;var ACursorId: Int64);
-const
-  dSize=$10000;
 var
-  i,l: integer;
-  buf:array[0..2] of integer;
-  d:array[0..dSize-1] of byte;
+  vResponse: TResponse;
 begin
-  repeat
-    //MsgLength,RequestID,ResponseTo
-    i := ReceiveBuf(buf[0],12);
-    if i <> 12 then
-      raise EMongoInvalidResponse.CreateResFmt(@sMongoInvalidResponse, [ARequestId]);
+  vResponse := ReadResponse(AStream, ARequestId);
 
-      if buf[2] = ARequestId then
-      begin
-        //forward start of header
-        AStream.Position:=0;
-        AStream.Write(buf[0],12);
-        l:=buf[0]-12;
-        while l>0 do
-         begin
-          if l<dSize then i:=l else i:=dSize;
-          i:= ReceiveBuf(d[0],i);
-          if i=0 then raise EMongoReponseAborted.CreateResFmt(@sMongoReponseAborted, [ARequestId]);
-          AStream.Write(d[0],i);
-          dec(l,i);
-         end;
-        //set position after message header
-        if buf[0]<36 then
-          AStream.Position:=buf[0]
-        else
-          AStream.Position:=36;
-      end;
-  until buf[2]= ARequestID;
-
-  AStream.Position := 0;
-  AStream.ReadInt;//Length,
-  AStream.ReadInt;//RequestID
-  AStream.ReadInt;//ResponseTo
-  AStream.ReadInt;//OpCode
-
-  AFlags := AStream.ReadInt;
-  ACursorId := AStream.ReadInt64;//CursorId
-  AStream.ReadInt;//StartingFrom
-
-  ANumberReturned := AStream.ReadInt;
+  AFlags := vResponse.Flags;
+  ANumberReturned := vResponse.NumberReturned;
+  ACursorId := vResponse.CursorId;
 end;
 
 function TDefaultMongoProvider.RunCommand(DB: String; Command: IBSONObject): ICommandResult;
@@ -349,12 +333,6 @@ begin
 
   Result.Put('numberReturned', vNumberReturned);
   Result.Put('cursorId', vCursorId);
-
-  if (vFlags and $0001) <> 0 then
-    raise Exception.Create('MongoWire.Get: cursor not found');
-
-  if vNumberReturned = 0 then
-    raise Exception.Create('MongoWire.Get: no documents returned');
 end;
 
 function TDefaultMongoProvider.HasNext(AStream: TBSONStream; DB, Collection: String; ACursorId: Int64; ABatchSize: Integer): IBSONObject;
@@ -424,9 +402,8 @@ end;
 
 function TDefaultMongoProvider.FindOne(DB, Collection: String; Query, Fields: IBSONObject): IBSONObject;
 var
-  vNumberReturned: Integer;
-  vFlags:integer;
   vStream: TBSONStream;
+  vResponse: TResponse;
 begin
   vStream := TBSONStream.Create;
   try
@@ -449,18 +426,12 @@ begin
 
     SendMsg(vStream);
 
-    ReadResponse(vStream, FRequestId, vFlags, vNumberReturned);
+    vResponse := ReadResponse(vStream, FRequestId);
 
-    if (vFlags and $0001) <> 0 then
-      raise Exception.Create('MongoWire.Get: cursor not found');
-
-    if vNumberReturned = 0 then
+    if vResponse.NumberReturned = 0 then
       Result := nil
     else
       Result := FDecoder.Decode(vStream);
-
-    if (vFlags and $0002) <> 0 then
-      raise Exception.Create('MongoWire.Get: '+VarToStr(Result.Items['$err'].Value));
   finally
     vStream.Free;
   end;
@@ -659,6 +630,55 @@ end;
 procedure TDefaultMongoProvider.Logout(DB: String);
 begin
   RunCommand(DB, TBSONObject.NewFrom('logout', 1));
+end;
+
+function TDefaultMongoProvider.ReadResponse(AStream: TBSONStream; ARequestId: Integer): TResponse;
+const
+  dSize=$10000;
+var
+  i,l: integer;
+  buf:array[0..2] of integer;
+  d:array[0..dSize-1] of byte;
+begin
+  repeat
+    //MsgLength,RequestID,ResponseTo
+    i := ReceiveBuf(buf[0],12);
+    if i <> 12 then
+      raise EMongoInvalidResponse.CreateResFmt(@sMongoInvalidResponse, [ARequestId]);
+
+      if buf[2] = ARequestId then
+      begin
+        //forward start of header
+        AStream.Position:=0;
+        AStream.Write(buf[0],12);
+        l:=buf[0]-12;
+        while l>0 do
+         begin
+          if l<dSize then i:=l else i:=dSize;
+          i:= ReceiveBuf(d[0],i);
+          if i=0 then raise EMongoReponseAborted.CreateResFmt(@sMongoReponseAborted, [ARequestId]);
+          AStream.Write(d[0],i);
+          dec(l,i);
+         end;
+        //set position after message header
+        if buf[0]<36 then
+          AStream.Position:=buf[0]
+        else
+          AStream.Position:=36;
+      end;
+  until buf[2]= ARequestID;
+
+  AStream.Position := 0;
+
+  Result := TResponse.Create;
+  Result.Length := AStream.ReadInt;
+  Result.RequestID := AStream.ReadInt;
+  Result.ResponseTo := AStream.ReadInt;
+  Result.OpCode := AStream.ReadInt;
+  Result.Flags := AStream.ReadInt;
+  Result.CursorId := AStream.ReadInt64;
+  Result.StartingFrom := AStream.ReadInt;
+  Result.NumberReturned := AStream.ReadInt;
 end;
 
 { TWriteResult }
