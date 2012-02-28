@@ -22,6 +22,8 @@ type
     procedure TestCountAndSize;
     procedure TestCursor;
     procedure TestCursorWithFieldsSelector;
+    procedure TestExplain;
+    procedure TestHint;
   end;
 
 implementation
@@ -34,7 +36,7 @@ begin
   FMongo := TMongo.Create;
   FMongo.Connect();
 
-  FDB := FMongo.getDB('unit');
+  FDB := FMongo.getDB('test');
 
   FCollection := FDB.GetCollection('test');
   FCollection.Drop;
@@ -87,14 +89,6 @@ begin
   end;
   CheckEquals(5, vId);
 
-  (*
-  FCollection.Insert(TBSONObject.NewFrom('id', 6).put('name', 'teste'));
-  FCollection.Insert(TBSONObject.NewFrom('id', 7).put('name', 'teste'));
-  FCollection.Insert(TBSONObject.NewFrom('id', 8).put('name', 'teste'));
-  FCollection.Insert(TBSONObject.NewFrom('id', 9).put('name', 'teste'));
-  FCollection.Insert(TBSONObject.NewFrom('id', 10).put('name', 'teste'));
-  *)
-  
   vCursor := FCollection.Find().BatchSize(2);
   vId := 0;
   CheckNotNull(vCursor);
@@ -145,6 +139,46 @@ begin
     CheckEquals('teste', vItem.Items['name'].AsString);
   end;
   CheckEquals(1, vId);  
+end;
+
+procedure TTestMongoDBCursor.TestExplain;
+var
+  vExplain: IBSONObject;
+begin
+  vExplain := FCollection.Find.Explain;
+
+  CheckNotNull(vExplain);
+  CheckEquals('BasicCursor', vExplain.Items['cursor'].AsString);
+  CheckEquals(0, vExplain.Items['nscanned'].AsInteger);
+  CheckEquals(0, vExplain.Items['nscannedObjects'].AsInteger);
+  CheckEquals(0, vExplain.Items['n'].AsInteger);
+  Check(vExplain.Items['millis'].AsInteger >= 0);
+  CheckEquals(0, vExplain.Items['nYields'].AsInteger);
+  CheckEquals(0, vExplain.Items['nChunkSkips'].AsInteger);
+  CheckEquals(False, vExplain.Items['isMultiKey'].AsBoolean);
+  CheckEquals(False, vExplain.Items['indexOnly'].AsBoolean);
+  CheckNotNull(vExplain.Items['indexBounds'].AsBSONObject);
+end;
+
+procedure TTestMongoDBCursor.TestHint;
+var
+  vDoc: IBSONObject;
+begin
+  FCollection.CreateIndex(TBSONObject.NewFrom('idHint', 1), 'idx_test_hint');
+
+  //Without hint
+  vDoc := FCollection.Find.Explain;
+  CheckEquals('BasicCursor', vDoc.Items['cursor'].AsString);
+
+  //Without indexName hint
+  vDoc := FCollection.Find.Hint('idx_test_hint').Explain;
+  CheckEquals('BtreeCursor idx_test_hint', vDoc.Items['cursor'].AsString);
+
+  //Without indexField hint
+  vDoc := FCollection.Find.Hint(TBSONObject.NewFrom('idHint', 1)).Explain;
+  CheckEquals('BtreeCursor idx_test_hint', vDoc.Items['cursor'].AsString);
+
+  Check(FCollection.DropIndex('idx_test_hint').Ok);
 end;
 
 initialization

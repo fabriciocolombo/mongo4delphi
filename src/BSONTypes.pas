@@ -1,3 +1,22 @@
+{***************************************************************************}
+{                                                                           }
+{                    Mongo Delphi Driver                                    }
+{                                                                           }
+{           Copyright (c) 2012 Fabricio Colombo                             }
+{                                                                           }
+{  Licensed under the Apache License, Version 2.0 (the "License");          }
+{  you may not use this file except in compliance with the License.         }
+{  You may obtain a copy of the License at                                  }
+{                                                                           }
+{      http://www.apache.org/licenses/LICENSE-2.0                           }
+{                                                                           }
+{  Unless required by applicable law or agreed to in writing, software      }
+{  distributed under the License is distributed on an "AS IS" BASIS,        }
+{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. }
+{  See the License for the specific language governing permissions and      }
+{  limitations under the License.                                           }
+{                                                                           }
+{***************************************************************************}
 unit BSONTypes;
 
 {$IFDEF FPC}
@@ -549,7 +568,7 @@ end;
 
 procedure TBSONItem.SetValue(const Value: Variant);
 var
-  vCurrencyValue: Currency;
+  vTempValue: Extended;
 begin
   FValue := Value;
 
@@ -560,11 +579,11 @@ begin
     varByte, varSmallint,varInteger,varShortInt,varWord,varLongWord: FValueType := bvtInteger;
     varInt64: FValueType := bvtInt64;
     varSingle,varDouble,varCurrency: begin
-                                       vCurrencyValue := FValue;
-                                       if Frac(vCurrencyValue) = 0 then
+                                       vTempValue := FValue;
+                                       if Frac(vTempValue) <= 0.00001 then
                                          FValueType := bvtInteger
                                        else
-                                          FValueType := bvtDouble;
+                                         FValueType := bvtDouble;
                                      end;  
     varOleStr, varString{$IFDEF UNICODE}, varUString{$ENDIF}: FValueType := bvtString;
     varBoolean: FValueType := bvtBoolean;

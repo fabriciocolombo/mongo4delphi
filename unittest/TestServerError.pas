@@ -25,7 +25,7 @@ type
 
 implementation
 
-uses TestFramework, SysUtils;
+uses SysUtils;
 
 const
   sTestErrorMessage = 'Test message - ';

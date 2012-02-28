@@ -1,10 +1,30 @@
+{***************************************************************************}
+{                                                                           }
+{                    Mongo Delphi Driver                                    }
+{                                                                           }
+{           Copyright (c) 2012 Fabricio Colombo                             }
+{                                                                           }
+{  Licensed under the Apache License, Version 2.0 (the "License");          }
+{  you may not use this file except in compliance with the License.         }
+{  You may obtain a copy of the License at                                  }
+{                                                                           }
+{      http://www.apache.org/licenses/LICENSE-2.0                           }
+{                                                                           }
+{  Unless required by applicable law or agreed to in writing, software      }
+{  distributed under the License is distributed on an "AS IS" BASIS,        }
+{  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. }
+{  See the License for the specific language governing permissions and      }
+{  limitations under the License.                                           }
+{                                                                           }
+{***************************************************************************}
 unit MongoProvider;
 
-interface
-
 {$IFDEF FPC}
+  {$MODE Delphi}
   {$DEFINE SYNAPSE}
 {$ENDIF}
+
+interface
 
 uses MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
      {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets, 
@@ -84,13 +104,16 @@ type
     function FindOne(DB, Collection: String; Query, Fields: IBSONObject): IBSONObject;overload;
 
     function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query, Fields: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
-    function HasNext(AStream: TBSONStream; DB: String; Collection: String;  ACursorId: Int64; ABatchSize: Integer): IBSONObject;
+    function HasNext(AStream: TBSONStream; DB: String; Collection: String; ACursorId: Int64; ABatchSize: Integer): IBSONObject;
 
     procedure KillCursor(ACursorId: Int64);
     procedure KillCursors(ACursorId: Array of Int64);
 
     function Authenticate(DB: String; AUserName, APassword: String): Boolean;
     procedure Logout(DB: String);
+
+    function CreateIndex(DB: String; Collection: String; KeyFields: IBSONObject; AIndexName: String = ''): IWriteResult;
+    function DropIndex(DB: String; Collection: String; AIndexName: String): ICommandResult;
   end;
 
   TResponse = class
@@ -173,8 +196,10 @@ type
     function Authenticate(DB: String; AUserName: String; APassword: String): Boolean;
     procedure Logout(DB: String);
 
-    //TODO - Assert socket is Connected
+    function CreateIndex(DB: String; Collection: String; KeyFields: IBSONObject; AIndexName: String): IWriteResult;
+    function DropIndex(DB: String; Collection: String; AIndexName: String): ICommandResult;
 
+   //TODO - Assert socket is Connected
   end;
 
 implementation
@@ -182,7 +207,8 @@ implementation
 uses MongoException, Windows, BSON, Variants, Math, MongoMD5;
 
 const
-  COMMAND_COLLECTION = '$cmd'; 
+  COMMAND_COLLECTION = '$cmd';
+  SYSTEM_INDEXEX_COLLECTION = 'system.indexes';
 
 { TDefaultMongoProvider }
 
@@ -679,6 +705,27 @@ begin
   Result.CursorId := AStream.ReadInt64;
   Result.StartingFrom := AStream.ReadInt;
   Result.NumberReturned := AStream.ReadInt;
+end;
+
+function TDefaultMongoProvider.CreateIndex(DB, Collection: String; KeyFields: IBSONObject; AIndexName: String): IWriteResult;
+var
+  vIndexOptions: IBSONObject;
+begin
+  vIndexOptions := TBSONObject.NewFrom('name', AIndexName)
+                              .Put('ns', Format('%s.%s', [DB, Collection]))
+                              .Put('key', KeyFields);
+
+  Result := Insert(DB, SYSTEM_INDEXEX_COLLECTION, vIndexOptions);
+end;
+
+function TDefaultMongoProvider.DropIndex(DB, Collection, AIndexName: String): ICommandResult;
+var
+  vIndexOptions: IBSONObject;
+begin
+  vIndexOptions := TBSONObject.NewFrom('deleteIndexes', Collection)
+                              .Put('index', AIndexName);
+
+  Result := RunCommand(DB, vIndexOptions);
 end;
 
 { TWriteResult }

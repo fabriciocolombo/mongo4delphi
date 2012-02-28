@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit BSONStream;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses Classes;

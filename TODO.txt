@@ -1,14 +1,20 @@
 Mongo Driver Requirements	- High priority
 	* BSON serialization¹
 	* BSON deserialization¹
+	*	database profiling: set/get profiling level, get profiling info
+	*	advanced connection management (replica sets, slave okay)
+	*	automatic reconnection
+
+Fully implemented:	
 	*	full cursor support (e.g. support OP_GET_MORE operation) - OK, needs design review 
 	*	close exhausted cursors via OP_KILL_CURSORS - OK
 	*	support for running database commands - OK
 	*	handle query errors - OK, support to GetLastError
-	*	hint, explain, count, $where
-	*	database profiling: set/get profiling level, get profiling info
-	*	advanced connection management (replica sets, slave okay)
-	*	automatic reconnection
+	*	hint - Ok
+	* explain - OK
+	* count - OK
+	* snapshot queries - OK
+	* $where - OK
 	* authentication - OK
 	* Insert - OK
 	* Update - OK
@@ -16,6 +22,7 @@ Mongo Driver Requirements	- High priority
 	* batch insert - OK
 	* batch update - OK, use the operator Multi to modify multiple records
 	* batch remove - OK, using a query to remove multiple records
+	* Create/Drop Indexes - OK
 	
 TODO - Replace Exception with typed exception descendents of EMongoException
 TODO - Replace message hard coded string with ResourceString
@@ -27,7 +34,7 @@ TODO - Include a Log for debug with almost Console
 
 TODO - Requests manager. Each request must be a self stream
 
-(1) Types that must be implemented
+(1) Types not yet implemented
   BSON_BINARY       = $05; //
   BSON_REGEX        = $0B; //
   BSON_SYMBOL       = $0E;

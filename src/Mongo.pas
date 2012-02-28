@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit Mongo;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses Sockets, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider,
@@ -85,7 +89,7 @@ type
     function GetFullName: String;
     function GetProvider: IMongoProvider;
 
-    //function GenerateIndexName(KeyFields: IBSONDocument): String;
+    function GenerateIndexName(KeyFields: IBSONObject): String;
   protected
     property Provider: IMongoProvider read GetProvider;
   public
@@ -101,10 +105,8 @@ type
     function Count(Limit: Integer = 0): Integer;overload;
     function Count(Query: IBSONObject; Limit: Integer = 0): Integer;overload;
 
-    (*
-    function CreateIndex(KeyFields: IBSONDocument; AIndexName: String = ''): IBSONDocument;
-    function DropIndex(AIndexName: String): Boolean;
-    *)
+    function CreateIndex(KeyFields: IBSONObject; AIndexName: String = ''): IWriteResult;
+    function DropIndex(AIndexName: String): ICommandResult;
 
     procedure Drop();
 
@@ -124,8 +126,8 @@ type
     function Count: Integer;
     function Size: Integer;
     function Sort(AOrder: IBSONObject): IMongoDBCursor;
-    //TODO function Hint(AIndexKeys: IBSONDocument): IMongoDBCursor;overload;
-    //TODO function Hint(AIndexName: String): IMongoDBCursor;overload;
+    function Hint(AIndexKeys: IBSONObject): IMongoDBCursor;overload;
+    function Hint(AIndexName: String): IMongoDBCursor;overload;
     function Snapshot: IMongoDBCursor;
     function Explain: IBSONObject;
     function Limit(n: Integer): IMongoDBCursor;
@@ -154,6 +156,8 @@ type
     FStream: TBSONStream;
     FCursorId: Int64;
     FSavedCursorId: Int64;
+    FIndexName: String;
+    FIndexKeys: IBSONObject;
 
     procedure OpenCursor;
 
@@ -173,9 +177,10 @@ type
 
     //consider the Limit
     function Size: Integer;
+
     function Sort(AOrder: IBSONObject): IMongoDBCursor;
-    //TODO function Hint(AIndexKeys: IBSONDocument): IMongoDBCursor;overload;
-    //TODO function Hint(AIndexName: String): IMongoDBCursor;overload;
+    function Hint(AIndexKeys: IBSONObject): IMongoDBCursor;overload;
+    function Hint(AIndexName: String): IMongoDBCursor;overload;
     function Snapshot: IMongoDBCursor;
     function Explain: IBSONObject;
     function Limit(n: Integer): IMongoDBCursor;
@@ -324,6 +329,16 @@ begin
   FCollectionName := AName;
 end;
 
+function TMongoCollection.CreateIndex(KeyFields: IBSONObject; AIndexName: String): IWriteResult;
+begin
+  if (Trim(AIndexName) = EmptyStr) then
+  begin
+    AIndexName := GenerateIndexName(KeyFields); 
+  end;
+
+  Result := Provider.CreateIndex(FMongoDatabase.DBName, FCollectionName, KeyFields, AIndexName);
+end;
+
 procedure TMongoCollection.Drop;
 begin
   Provider.RunCommand(FMongoDatabase.DBName, TBSONObject.NewFrom('drop', FCollectionName));
@@ -337,6 +352,11 @@ end;
 function TMongoCollection.Find(Query: IBSONObject): IMongoDBCursor;
 begin
   Result := Find(Query, TBSONObject.Create as IBSONObject);
+end;
+
+function TMongoCollection.DropIndex(AIndexName: String): ICommandResult;
+begin
+  Result := Provider.DropIndex(FMongoDatabase.DBName, FCollectionName, AIndexName);
 end;
 
 function TMongoCollection.Find(Query, Fields: IBSONObject): IMongoDBCursor;
@@ -362,6 +382,21 @@ end;
 procedure TMongoCollection.Insert(const BSONObject: IBSONObject);
 begin
   Provider.Insert(FMongoDatabase.DBName, FCollectionName, BSONObject);
+end;
+
+function TMongoCollection.GenerateIndexName(KeyFields: IBSONObject): String;
+var
+  i: Integer;
+  vIndexName: String;
+begin
+  vIndexName := 'idx';
+
+  for i := 0 to KeyFields.Count-1 do
+  begin
+    vIndexName := vIndexName + '_' + KeyFields[i].Name;
+  end;
+
+  Result := vIndexName;
 end;
 
 { TMongoDBCursor }
@@ -420,6 +455,8 @@ begin
   vClone.FOrderBy:= FOrderBy;
   vClone.FExplain := FExplain;
   vClone.FSnapShot := FSnapShot;
+  vClone.FIndexName := FIndexName;
+  vClone.FIndexKeys := FIndexKeys;
 
   Result := vClone;
 end;
@@ -480,6 +517,11 @@ begin
   begin
     vQuery.Put('orderby', FOrderBy);
   end;
+
+  if (Trim(FIndexName) <> EmptyStr) then
+    vQuery.Put('$hint', FIndexName);
+  if (FIndexKeys <> nil) then
+    vQuery.Put('$hint', FIndexKeys);
 
   if (FExplain) then
     vQuery.Put('$explain', True);
@@ -574,6 +616,24 @@ begin
   begin
     FCollection.Provider.KillCursor(FSavedCursorId);
   end;
+end;
+
+function TMongoDBCursor.Hint(AIndexName: String): IMongoDBCursor;
+begin
+  AssertCursorIsNotOpen;
+
+  FIndexName := AIndexName;
+
+  Result := Self;
+end;
+
+function TMongoDBCursor.Hint(AIndexKeys: IBSONObject): IMongoDBCursor;
+begin
+  AssertCursorIsNotOpen;
+
+  FIndexKeys := AIndexKeys;
+  
+  Result := Self;
 end;
 
 end.

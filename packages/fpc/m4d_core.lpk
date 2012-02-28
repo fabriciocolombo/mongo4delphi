@@ -15,7 +15,7 @@
       </Other>
     </CompilerOptions>
     <Description Value="Mongo Driver for Delphi - M4D"/>
-    <Files Count="9">
+    <Files Count="11">
       <Item1>
         <Filename Value="..\..\src\BSON.pas"/>
         <UnitName Value="BSON"/>
@@ -53,9 +53,13 @@
         <UnitName Value="MongoUtils"/>
       </Item9>
       <Item10>
+        <Filename Value="..\..\src\ServerError.pas"/>
+        <UnitName Value="ServerError"/>
+      </Item10>
+      <Item11>
         <Filename Value="..\..\src\MongoMD5.pas"/>
         <UnitName Value="MongoMD5"/>
-      </Item10>			
+      </Item11>
     </Files>
     <RequiredPkgs Count="1">
       <Item1>

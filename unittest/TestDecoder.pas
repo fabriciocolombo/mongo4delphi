@@ -6,7 +6,7 @@ unit TestDecoder;
 
 interface
 
-uses BaseTestCase, MongoDecoder, BSONStream;
+uses BaseTestCase, MongoDecoder, BSONStream, Classes;
 
 type
   TTestDecoder = class(TBaseTestCase)
@@ -21,6 +21,8 @@ type
     procedure DecodeFindOneRowSimpleTypes;
     procedure DecodeFindOneEmbeddedDocument;
     procedure DecodeFindOneEmbeddedArray;
+    procedure DecodeExplainBasicCursor;
+    procedure DecodeExplainBTreeCursor;
   end;
   
 implementation
@@ -28,6 +30,30 @@ implementation
 uses BSONTypes, Variants, SysUtils, DateUtils;
 
 { TTestDecoder }
+
+procedure TTestDecoder.DecodeExplainBasicCursor;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\ExplainBasicCursor.stream');
+
+  vDoc := FDecoder.Decode(FStream);
+
+  CheckEquals(11, vDoc.Count);
+  CheckEquals('BasicCursor', vDoc.Items['cursor'].AsString);
+end;
+
+procedure TTestDecoder.DecodeExplainBTreeCursor;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\ExplainBTreeCursor.stream');
+
+  vDoc := FDecoder.Decode(FStream);
+
+  CheckEquals(12, vDoc.Count);
+  CheckEquals('BtreeCursor idx_id_value', vDoc.Items['cursor'].AsString);
+end;
 
 procedure TTestDecoder.DecodeFindOneEmbeddedArray;
 var

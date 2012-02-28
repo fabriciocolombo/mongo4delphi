@@ -69,6 +69,7 @@
 			<DCCReference Include="..\..\src\MongoMD5.pas"/>
 			<DCCReference Include="..\..\src\MongoProvider.pas"/>
 			<DCCReference Include="..\..\src\MongoUtils.pas"/>
+			<DCCReference Include="..\..\src\ServerError.pas"/>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>

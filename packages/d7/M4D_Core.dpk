@@ -41,6 +41,7 @@ contains
   MongoException in '..\..\src\MongoException.pas',
   MongoMD5 in '..\..\src\MongoMD5.pas',
   MongoProvider in '..\..\src\MongoProvider.pas',
-  MongoUtils in '..\..\src\MongoUtils.pas';
+  MongoUtils in '..\..\src\MongoUtils.pas',
+  ServerError in '..\..\src\ServerError.pas';
 
 end.

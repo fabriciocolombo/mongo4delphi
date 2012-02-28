@@ -23,7 +23,8 @@ type
     procedure TestGetLastError;
     procedure TestInsert;
     procedure TestFindOne;
-    procedure TestFindOneWithError;
+    procedure TestFindOneEmpty;
+    procedure TestFindWithWhere;
     procedure TestRemove;
     procedure TestRemoveMultipleRows;
     procedure TestUpdate;
@@ -33,11 +34,11 @@ type
     procedure TestBatchRemove;
     procedure TestBatchInsert;
     procedure TestAuthentication;
+    procedure TestCreateIndex;
+    procedure TestDropIndex;
   end;
 
 implementation
-
-uses TestFramework;
 
 const
   sDB = 'test';
@@ -129,6 +130,18 @@ begin
   CheckNull(vDoc);
 end;
 
+procedure TTestMongoProvider.TestCreateIndex;
+begin
+  CheckWriteResult(FProvider.CreateIndex(sDB, sColl, TBSONObject.NewFrom('id', 1), 'idx_teste'));
+end;
+
+procedure TTestMongoProvider.TestDropIndex;
+begin
+  CheckWriteResult(FProvider.CreateIndex(sDB, sColl, TBSONObject.NewFrom('id', 1), 'idx_teste'));
+
+  CheckCommandResult(FProvider.DropIndex(sDB, sColl, 'idx_teste'));
+end;
+
 procedure TTestMongoProvider.TestFindOne;
 var
   vDoc: IBSONObject;
@@ -161,13 +174,27 @@ begin
   CheckEquals('Fabricio', vDoc[1].AsString);
 end;
 
-procedure TTestMongoProvider.TestFindOneWithError;
+procedure TTestMongoProvider.TestFindOneEmpty;
 var
   vDoc: IBSONObject;
 begin
   vDoc := FProvider.FindOne(sDB, sColl);
 
   CheckNull(vDoc);
+end;
+
+procedure TTestMongoProvider.TestFindWithWhere;
+var
+  vDoc: IBSONObject;
+begin
+  FProvider.Insert(sDB, sColl, TBSONObject.NewFrom('id', 1));
+  FProvider.Insert(sDB, sColl, TBSONObject.NewFrom('id', 2));
+  FProvider.Insert(sDB, sColl, TBSONObject.NewFrom('id', 3));
+
+  vDoc := FProvider.FindOne(sDB, sColl, TBSONObject.NewFrom('$where', 'this.id == 2'));
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals(2, vDoc.Items['id'].AsInteger);
 end;
 
 procedure TTestMongoProvider.TestGetLastError;

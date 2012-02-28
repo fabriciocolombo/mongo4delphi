@@ -8,7 +8,7 @@ interface
 
 uses
     BSON, BSONStream, BSONTypes, Mongo, MongoDecoder, MongoEncoder, 
-  MongoException, MongoProvider, MongoUtils;
+  MongoException, MongoProvider, MongoUtils, ServerError, MongoMD5;
 
 implementation
 

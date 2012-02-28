@@ -28,6 +28,7 @@ type
     procedure EncodeBSONArray;
     procedure EncodeUUID;
     procedure EncodeUnicodeKey;
+    procedure EncodeJavaScriptWhere;
   end;
 
 implementation
@@ -241,6 +242,25 @@ begin
   FEncoder.Encode(vBSON);
 
   CheckEquals(17, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeJavaScriptWhere;
+var
+  vBSON: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('$where', 'this.a>3');
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string '$where' size 7 in UTF8
+  //Write valueSize size 4
+  //Write this.a>3 size 9
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(26, FStream.Size);
 end;
 
 initialization

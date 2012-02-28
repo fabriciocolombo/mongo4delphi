@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit MongoDecoder;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses BSONStream, BSONTypes;
@@ -113,6 +117,8 @@ begin
     BSON_DATETIME: ACurrent.Put(vName, VarFromDateTime((ABuffer.ReadInt64/MSecsPerDay) + UnixDateDelta));
     BSON_INT32: ACurrent.Put(vName, ABuffer.ReadInt);
     BSON_INT64: ACurrent.Put(vName, ABuffer.ReadInt64);
+  else
+    raise EIllegalArgumentException.CreateFmt('Decoder not implements the type "%d".', [vType]);
   end;
   Result := True;
 end;

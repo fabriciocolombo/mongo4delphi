@@ -2,9 +2,9 @@
 <BorlandProject>
 	<Transactions>
     <Transaction>2012/02/25 13:11:27.000.491,=rtl.dcp</Transaction>
-    <Transaction>2012/02/25 13:11:44.000.239,C:\Users\Fabricio\Documents\RAD Studio\Projects\Package1.dproj=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\packages\dXE\m4d_core.dproj</Transaction>
-    <Transaction>2012/02/28 10:20:53.209,=IndyCore.dcp</Transaction>
-    <Transaction>2012/02/28 10:20:53.224,=IndySystem.dcp</Transaction>
-    <Transaction>2012/02/28 10:20:53.238,=IndyProtocols.dcp</Transaction>
+    <Transaction>2012/02/25 13:11:44.000.239,D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\packages\dXE\m4d_core.dproj=C:\Users\Fabricio\Documents\RAD Studio\Projects\Package1.dproj</Transaction>
+    <Transaction>2012/02/28 10:20:53.000.238,=IndyProtocols.dcp</Transaction>
+    <Transaction>2012/02/28 10:20:53.000.224,=IndySystem.dcp</Transaction>
+    <Transaction>2012/02/28 10:20:53.000.209,=IndyCore.dcp</Transaction>
   </Transactions>
 </BorlandProject>

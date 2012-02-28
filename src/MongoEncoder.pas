@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit MongoEncoder;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses BSONStream, BSONTypes;

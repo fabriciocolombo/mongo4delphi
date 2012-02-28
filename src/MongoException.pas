@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit MongoException;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses SysUtils;
