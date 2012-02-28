@@ -1,11 +1,11 @@
-MongoDB Driver for Delphi
+MongoDB Driver for Delphi/FreePascal
 -------------------------
 
-A mongodb driver for delphi in early stage with a friendly API based on java driver.
-The delphi native types are mapped onto Delphi OleVariant and the more complex types (like ObjectId, Array, etc) 
+A mongodb driver for Delphi/FreePascal in intermediary stage with a friendly API based on java driver.
+The delphi native types are mapped onto Delphi Variant and the more complex types (like ObjectId, Array, etc) 
 has an specific implementation.
 
-The driver is tested with Delphi 7, Delphi XE and FreePascal (whats version?), and probably work fine with another delphi versions above 7.
+The driver is tested with Delphi 7, Delphi XE and FreePascal (Lazarus 0.9.30.2/FPC 2.4.4), and probably work fine with another delphi versions above 7.
 If someone is willing to test with other versions of Delphi, give me feedback and I will update this documentation. 
 For a complete test, compile the source code, run unit tests and make sure the demo works.
 

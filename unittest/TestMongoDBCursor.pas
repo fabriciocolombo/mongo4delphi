@@ -28,6 +28,8 @@ type
 
 implementation
 
+uses Classes;
+
 { TTestMongoDBCursor }
 
 procedure TTestMongoDBCursor.SetUp;

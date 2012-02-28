@@ -56,6 +56,7 @@ type
 
     function getDB(const ADBname: String): TMongoDB;
     procedure GetDatabaseNames(AList: TStrings);
+    procedure dropDatabase(DBName: String);
   end;
 
   TMongoDB = class
@@ -72,7 +73,8 @@ type
 
     property DBName: String read FDBName;
 
-//    function RunCommand(ACommand: IBSONDocument): IBSONDocument;
+    function RunCommand(ACommand: IBSONObject): ICommandResult;
+    function GetLastError: ICommandResult;
 
     function GetCollection(AName: String): TMongoCollection;
     procedure DropCollection(AName: String);
@@ -110,14 +112,20 @@ type
 
     procedure Drop();
 
-    procedure Insert(const BSONObject: IBSONObject);
+    function Insert(const BSONObject: IBSONObject): IWriteResult;overload;
+    function Insert(const BSONObjects: Array of IBSONObject): IWriteResult;overload;
 
-    function FindOne(Query: IBSONObject): IBSONObject;
+    function Update(Query, BSONObject: IBSONObject): IWriteResult;overload;
+    function Update(Query, BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;overload;
+    function UpdateMulti(Query, BSONObject: IBSONObject): IWriteResult;
+
+    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
+
+    function FindOne(): IBSONObject;overload;
+    function FindOne(Query: IBSONObject): IBSONObject;overload;
+    function FindOne(Query, Fields: IBSONObject): IBSONObject;overload;
 
     //TODO Map/Reduce
-    //TODO remove
-    //TODO update
-
   end;
 
  IMongoDBCursor = interface
@@ -215,8 +223,21 @@ end;
 procedure TMongo.GetDatabaseNames(AList: TStrings);
 var
   vResult: ICommandResult;
+  vDatabases: IBSONArray;
+  i: Integer;
 begin
+  AList.Clear;
+
   vResult := FProvider.RunCommand('admin', TBSONObject.NewFrom('listDatabases', 1));
+
+  vResult.RaiseOnError;
+
+  vDatabases := vResult.Items['databases'].AsBSONArray;
+
+  for i := 0 to vDatabases.Count-1 do
+  begin
+    AList.Add(vDatabases[i].AsBSONObject.Items['name'].AsString);
+  end;
 end;
 
 function TMongo.getDB(const ADBname: String): TMongoDB;
@@ -243,6 +264,11 @@ begin
   FProvider.SetEncoder(FEncoder);
 end;
 
+procedure TMongo.dropDatabase(DBName: String);
+begin
+  FProvider.RunCommand(DBName, TBSONObject.NewFrom('dropDatabase', 1));
+end;
+
 { TMongoDB }
 
 function TMongoDB.Authenticate(AUserName, APassword: String): Boolean;
@@ -266,7 +292,7 @@ end;
 
 procedure TMongoDB.DropCollection(AName: String);
 begin
-
+  Provider.RunCommand(FDBName, TBSONObject.NewFrom('drop', AName));
 end;
 
 function TMongoDB.GetCollection(AName: String): TMongoCollection;
@@ -274,6 +300,11 @@ begin
   Result := TMongoCollection.Create(Self, AName);
 
   FCollectionList.Add(Result);
+end;
+
+function TMongoDB.GetLastError: ICommandResult;
+begin
+  Result := Provider.GetLastError(FDBName);
 end;
 
 function TMongoDB.GetProvider: IMongoProvider;
@@ -284,6 +315,11 @@ end;
 procedure TMongoDB.Logout;
 begin
   Provider.RunCommand(FDBName, TBSONObject.NewFrom('logout', 1));
+end;
+
+function TMongoDB.RunCommand(ACommand: IBSONObject): ICommandResult;
+begin
+  Result := Provider.RunCommand(FDBName, ACommand);
 end;
 
 { TMongoCollection }
@@ -364,11 +400,6 @@ begin
   Result := TMongoDBCursor.Create(Self, Query, Fields);
 end;
 
-function TMongoCollection.FindOne(Query: IBSONObject): IBSONObject;
-begin
-  Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName, Query);
-end;
-
 function TMongoCollection.GetFullName: String;
 begin
   Result := FMongoDatabase.DBName + '.' + FCollectionName;
@@ -377,11 +408,6 @@ end;
 function TMongoCollection.GetProvider: IMongoProvider;
 begin
   Result := FMongoDatabase.Provider;
-end;
-
-procedure TMongoCollection.Insert(const BSONObject: IBSONObject);
-begin
-  Provider.Insert(FMongoDatabase.DBName, FCollectionName, BSONObject);
 end;
 
 function TMongoCollection.GenerateIndexName(KeyFields: IBSONObject): String;
@@ -397,6 +423,51 @@ begin
   end;
 
   Result := vIndexName;
+end;
+
+function TMongoCollection.Insert(const BSONObject: IBSONObject): IWriteResult;
+begin
+  Result := Provider.Insert(FMongoDatabase.DBName, FCollectionName, BSONObject);
+end;
+
+function TMongoCollection.Insert(const BSONObjects: array of IBSONObject): IWriteResult;
+begin
+  Result := Provider.Insert(FMongoDatabase.DBName, FCollectionName, BSONObjects);
+end;
+
+function TMongoCollection.Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
+begin
+  Result := Provider.Remove(DB, Collection, AObject);
+end;
+
+function TMongoCollection.Update(Query, BSONObject: IBSONObject): IWriteResult;
+begin
+  Result := Provider.Update(FMongoDatabase.DBName, FCollectionName, Query, BSONObject);
+end;
+
+function TMongoCollection.Update(Query, BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;
+begin
+  Result := Provider.Update(FMongoDatabase.DBName, FCollectionName, Query, BSONObject, Upsert, Multi);
+end;
+
+function TMongoCollection.UpdateMulti(Query,BSONObject: IBSONObject): IWriteResult;
+begin
+  Result := Provider.UpdateMulti(FMongoDatabase.DBName, FCollectionName, Query, BSONObject);
+end;
+
+function TMongoCollection.FindOne: IBSONObject;
+begin
+  Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName);
+end;
+
+function TMongoCollection.FindOne(Query: IBSONObject): IBSONObject;
+begin
+  Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName, Query);
+end;
+
+function TMongoCollection.FindOne(Query, Fields: IBSONObject): IBSONObject;
+begin
+  Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName, Query, Fields);
 end;
 
 { TMongoDBCursor }
