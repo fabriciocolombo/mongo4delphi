@@ -72,6 +72,9 @@ type
 
     function GetCollection(AName: String): TMongoCollection;
     procedure DropCollection(AName: String);
+
+    function Authenticate(AUserName, APassword: String): Boolean;
+    procedure Logout;
   end;
 
   TMongoCollection = class
@@ -237,6 +240,11 @@ end;
 
 { TMongoDB }
 
+function TMongoDB.Authenticate(AUserName, APassword: String): Boolean;
+begin
+  Result := Provider.Authenticate(FDBName, AUserName, APassword);
+end;
+
 constructor TMongoDB.Create(AMongo: TMongo; ADBName: String);
 begin
   inherited Create;
@@ -266,6 +274,11 @@ end;
 function TMongoDB.GetProvider: IMongoProvider;
 begin
   Result := FMongo.Provider;
+end;
+
+procedure TMongoDB.Logout;
+begin
+  Provider.RunCommand(FDBName, TBSONObject.NewFrom('logout', 1));
 end;
 
 { TMongoCollection }

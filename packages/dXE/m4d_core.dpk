@@ -28,7 +28,10 @@ package m4d_core;
 
 requires
   rtl,
-  inet;
+  inet,
+  IndyCore,
+  IndySystem,
+  IndyProtocols;
 
 contains
   BSON in '..\..\src\BSON.pas',
@@ -38,6 +41,7 @@ contains
   MongoDecoder in '..\..\src\MongoDecoder.pas',
   MongoEncoder in '..\..\src\MongoEncoder.pas',
   MongoException in '..\..\src\MongoException.pas',
+  MongoMD5 in '..\..\src\MongoMD5.pas',
   MongoProvider in '..\..\src\MongoProvider.pas',
   MongoUtils in '..\..\src\MongoUtils.pas';
 

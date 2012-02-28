@@ -6,3 +6,5 @@ __history
 *.~dpr
 *.~dpk
 unittest/backup
+src/backup
+packages/fpc/backup

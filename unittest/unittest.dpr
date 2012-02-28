@@ -36,7 +36,8 @@ uses
   MongoEncoder in '..\src\MongoEncoder.pas',
   MongoException in '..\src\MongoException.pas',
   MongoProvider in '..\src\MongoProvider.pas',
-  MongoUtils in '..\src\MongoUtils.pas';
+  MongoUtils in '..\src\MongoUtils.pas',
+  MongoMD5 in '..\src\MongoMD5.pas';
 
 {$R *.res}
 

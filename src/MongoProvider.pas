@@ -88,6 +88,9 @@ type
 
     procedure KillCursor(ACursorId: Int64);
     procedure KillCursors(ACursorId: Array of Int64);
+
+    function Authenticate(DB: String; AUserName, APassword: String): Boolean;
+    procedure Logout(DB: String);
   end;
 
   TDefaultMongoProvider = class(TInterfacedObject, IMongoProvider)
@@ -112,6 +115,7 @@ type
     procedure BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);overload;
     procedure SendMsg(AStream: TBSONStream);
 
+    function MakeHash(AUserName: String; APassword: String): String;
   public
     constructor Create;
     destructor Destroy; override;
@@ -144,12 +148,16 @@ type
     procedure KillCursor(ACursorId: Int64);
     procedure KillCursors(ACursorId: Array of Int64);
 
+    function Authenticate(DB: String; AUserName: String; APassword: String): Boolean;
+    procedure Logout(DB: String);
+
     //TODO - Assert socket is Connected
+
   end;
 
 implementation
 
-uses MongoException, Windows, BSON, Variants, Math;
+uses MongoException, Windows, BSON, Variants, Math, MongoMD5;
 
 const
   COMMAND_COLLECTION = '$cmd'; 
@@ -613,6 +621,46 @@ begin
   Result := Update(DB, Collection, Query, BSONObject, False, True);
 end;
 
+function TDefaultMongoProvider.Authenticate(DB: String; AUserName, APassword: String): Boolean;
+var
+  vHash, vKey: String;
+  vCommandResult: ICommandResult;
+  vNonce: TBSONItem;
+  vAuthCommand: IBSONObject;
+begin
+  vCommandResult := RunCommand(DB, TBSONObject.NewFrom('getnonce', 1));
+
+  vCommandResult.RaiseOnError;
+
+  vNonce := vCommandResult.Items['nonce'];
+
+  vHash := MakeHash(AUserName, APassword);
+
+  vKey := MD5(vNonce.AsString + AUserName + vHash);
+
+  vAuthCommand := TBSONObject.Create;
+  vAuthCommand.put('authenticate', 1);
+  vAuthCommand.put('user', AUserName);
+  vAuthCommand.put('nonce', vNonce.AsString);
+  vAuthCommand.put('key', vKey);
+
+  vCommandResult := RunCommand(DB, vAuthCommand);
+
+  Result := vCommandResult.Ok;
+
+  vCommandResult.RaiseOnError;
+end;
+
+function TDefaultMongoProvider.MakeHash(AUserName,APassword: String): String;
+begin
+  Result := MD5(AUserName + ':mongo:' + APassword);
+end;
+
+procedure TDefaultMongoProvider.Logout(DB: String);
+begin
+  RunCommand(DB, TBSONObject.NewFrom('logout', 1));
+end;
+
 { TWriteResult }
 
 constructor TWriteResult.Create(const AProvider: IMongoProvider; ADB: String; ARequestId: Integer);
@@ -727,12 +775,6 @@ begin
 end;
 
 procedure TCommandResult.RaiseOnError;
-
-  function ReturnAddr: Pointer;
-  asm
-          MOV     EAX,[EBP+4]
-  end;
-  
 var
   vException: Exception;
 begin
@@ -742,7 +784,7 @@ begin
 
     if (vException <> nil) then
     begin
-      raise vException at ReturnAddr; 
+      raise vException;
     end;
   end;
 end;

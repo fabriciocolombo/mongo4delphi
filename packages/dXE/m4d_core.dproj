@@ -56,6 +56,9 @@
 			</DelphiCompile>
 			<DCCReference Include="rtl.dcp"/>
 			<DCCReference Include="inet.dcp"/>
+			<DCCReference Include="IndyCore.dcp"/>
+			<DCCReference Include="IndySystem.dcp"/>
+			<DCCReference Include="IndyProtocols.dcp"/>
 			<DCCReference Include="..\..\src\BSON.pas"/>
 			<DCCReference Include="..\..\src\BSONStream.pas"/>
 			<DCCReference Include="..\..\src\BSONTypes.pas"/>
@@ -63,6 +66,7 @@
 			<DCCReference Include="..\..\src\MongoDecoder.pas"/>
 			<DCCReference Include="..\..\src\MongoEncoder.pas"/>
 			<DCCReference Include="..\..\src\MongoException.pas"/>
+			<DCCReference Include="..\..\src\MongoMD5.pas"/>
 			<DCCReference Include="..\..\src\MongoProvider.pas"/>
 			<DCCReference Include="..\..\src\MongoUtils.pas"/>
 			<BuildConfiguration Include="Release">

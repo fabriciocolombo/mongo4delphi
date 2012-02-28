@@ -31,15 +31,16 @@ type
     procedure TestUpdateUpsertMulti;
     procedure TestBatchRemove;
     procedure TestBatchInsert;
+    procedure TestAuthentication;
   end;
 
 implementation
 
-uses TestFramework;
-
 const
   sDB = 'test';
   sColl = 'test';
+  sUser = 'username';
+  sPasswd = 'passwd';
   
 { TTestMongoProvider }
 
@@ -73,6 +74,13 @@ procedure TTestMongoProvider.TearDown;
 begin
   FProvider := nil;
   inherited;
+end;
+
+procedure TTestMongoProvider.TestAuthentication;
+begin
+  FProvider.Authenticate(sDB, sUser, sPasswd);
+
+  FProvider.Logout(sDB);
 end;
 
 procedure TTestMongoProvider.TestBatchInsert;

@@ -22,7 +22,7 @@ type
 
 implementation
 
-uses MongoException, SysUtils, TestFramework;
+uses MongoException, SysUtils;
 
 { TTestBSONObject }
 
@@ -34,7 +34,7 @@ begin
   vNewOID := TObjectId.NewFrom;
   vDoc := TBSONObject.NewFrom('_id', vNewOID).Put('code', 1);
 
-  CheckTrue(vDoc.HasOid);
+  Check(vDoc.HasOid);
 
   vOID := vDoc.GetOid;
 
@@ -48,15 +48,18 @@ var
 begin
   vDoc := TBSONObject.NewFrom('code', 1);
 
-  CheckFalse(vDoc.HasOid);
+  CheckFalse(vDoc.HasOid, 'Should not have OID');
 
   vDoc.Put('_id', 123);
 
-  CheckFalse(vDoc.HasOid);
+  CheckFalse(vDoc.HasOid, 'Should not have OID');
 
-  ExpectedException := EBSONObjectHasNoObjectId;
-
-  vDoc.GetOid;  
+  try
+    vDoc.GetOid;
+  except
+    on E: Exception do
+      Check(E is EBSONObjectHasNoObjectId);
+  end;
 end;
 
 procedure TTestBSONObject.PutNewItem;

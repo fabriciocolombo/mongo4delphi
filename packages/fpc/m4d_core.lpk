@@ -52,6 +52,10 @@
         <Filename Value="..\..\src\MongoUtils.pas"/>
         <UnitName Value="MongoUtils"/>
       </Item9>
+      <Item10>
+        <Filename Value="..\..\src\MongoMD5.pas"/>
+        <UnitName Value="MongoMD5"/>
+      </Item10>			
     </Files>
     <RequiredPkgs Count="1">
       <Item1>
