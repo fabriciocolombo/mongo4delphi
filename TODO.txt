@@ -11,11 +11,11 @@ Mongo Driver Requirements	- High priority
 	*	automatic reconnection
 	* authentication
 	* Insert - OK
-	* Update
+	* Update - OK
 	* Remove - OK
-	* batch insert
-	* update
-	* remove - OK, the same method removes one or more records
+	* batch insert - OK
+	* batch update - OK, use the operator Multi to modify multiple records
+	* batch remove - OK, using a query to remove multiple records
 	
 TODO - Replace Exception with typed exception descendents of EMongoException
 TODO - Replace message hard coded string with ResourceString

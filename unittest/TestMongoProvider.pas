@@ -25,10 +25,17 @@ type
     procedure TestFindOne;
     procedure TestRemove;
     procedure TestRemoveMultipleRows;
+    procedure TestUpdate;
+    procedure TestUpdateUpsert;
+    procedure TestUpdateMulti;
+    procedure TestUpdateUpsertMulti;
     procedure TestBatchRemove;
+    procedure TestBatchInsert;
   end;
 
 implementation
+
+uses TestFramework;
 
 const
   sDB = 'test';
@@ -40,7 +47,8 @@ procedure TTestMongoProvider.CheckCommandResult(Result: ICommandResult);
 begin
   CheckNotNull(Result);
   CheckTrue(Result.Ok, 'Is not Ok');
-  CheckFalse(Result.HasError, 'Has an error');
+
+  CheckFalse(Result.HasError, 'Has an error: ' + Result.GetErrorMessage);
 end;
 
 procedure TTestMongoProvider.CheckWriteResult(Result: IWriteResult);
@@ -65,6 +73,27 @@ procedure TTestMongoProvider.TearDown;
 begin
   FProvider := nil;
   inherited;
+end;
+
+procedure TTestMongoProvider.TestBatchInsert;
+var
+  vOne, vTwo, vDoc: IBSONObject;
+begin
+  CheckNull(FProvider.FindOne(sDB, sColl));
+
+  vOne := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vTwo := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+
+  CheckWriteResult(FProvider.Insert(sDB, sColl, [vOne, vTwo]));
+
+  vDoc := FProvider.FindOne(sDB, sColl, TBSONObjectQueryHelper.NewFilterOid(vOne));
+  CheckNotNull(vDoc);
+  CheckEquals(vOne.GetOid.ToStringMongo, vDoc.GetOid.ToStringMongo);
+
+  vDoc := FProvider.FindOne(sDB, sColl, TBSONObjectQueryHelper.NewFilterOid(vTwo));
+  CheckNotNull(vDoc);
+  CheckEquals(vTwo.GetOid.ToStringMongo, vDoc.GetOid.ToStringMongo);
+
 end;
 
 procedure TTestMongoProvider.TestBatchRemove;
@@ -187,6 +216,66 @@ begin
   CheckTrue(vCommandResult.Ok, 'Is not Ok');
   CheckFalse(vCommandResult.HasError, 'Has an error');
   CheckEquals(sDB, vCommandResult.Items['db'].Value);
+end;
+
+procedure TTestMongoProvider.TestUpdate;
+var
+  vInsert, vDoc: IBSONObject;
+begin
+  vInsert := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+
+  CheckWriteResult(FProvider.Insert(sDB, sColl, vInsert));
+
+  vDoc := FProvider.FindOne(sDB, sColl);
+  CheckEquals(2, vDoc.Items['code'].AsInteger);
+
+  vInsert.Items['code'].Value := 7;
+
+  CheckWriteResult(FProvider.Update(sDB, sColl, vDoc, vInsert, False, False));
+
+  vDoc := FProvider.FindOne(sDB, sColl);
+  CheckEquals(7, vDoc.Items['code'].AsInteger);
+end;
+
+procedure TTestMongoProvider.TestUpdateMulti;
+var
+  vOne, vTwo, vDoc: IBSONObject;
+begin
+  vOne := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vTwo := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+
+  CheckWriteResult(FProvider.Insert(sDB, sColl, [vOne, vTwo]));
+
+  CheckWriteResult(FProvider.UpdateMulti(sDB, sColl, TBSONObject.NewFrom('code', 2), TBSONObject.NewFrom('$set', TBSONObject.NewFrom('code', 7))));
+
+  vDoc := FProvider.FindOne(sDB, sColl);
+  CheckEquals(7, vDoc.Items['code'].AsInteger);
+end;
+
+procedure TTestMongoProvider.TestUpdateUpsert;
+var
+  vInsert, vDoc: IBSONObject;
+begin
+  vInsert := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+
+  CheckWriteResult(FProvider.Update(sDB, sColl, TBSONObject.Empty, vInsert, True, False));
+
+  vDoc := FProvider.FindOne(sDB, sColl);
+  CheckEquals(2, vDoc.Items['code'].AsInteger);
+end;
+
+procedure TTestMongoProvider.TestUpdateUpsertMulti;
+var
+  vOne, vTwo, vDoc: IBSONObject;
+begin
+  vOne := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vTwo := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+
+  CheckWriteResult(FProvider.Update(sDB, sColl, TBSONObject.Empty, TBSONObject.NewFrom('$set', TBSONObject.NewFrom('code', 7)), True, True));
+
+  vDoc := FProvider.FindOne(sDB, sColl);
+  CheckEquals(7, vDoc.Items['code'].AsInteger);
+
 end;
 
 initialization

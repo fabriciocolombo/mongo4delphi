@@ -70,7 +70,14 @@ type
     function GetLastError(DB: String; RequestId: Integer=0): ICommandResult;
     function RunCommand(DB: String; Command: IBSONObject): ICommandResult;
 
-    function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;
+    function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;overload;
+    function Insert(DB, Collection: String; BSONObjects: Array of IBSONObject): IWriteResult;overload;
+
+    function Update(DB, Collection: String; Query, BSONObject: IBSONObject): IWriteResult;overload;
+    function Update(DB: String; Collection: String; Query, BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;overload;
+    function UpdateMulti(DB, Collection: String; Query, BSONObject: IBSONObject): IWriteResult;
+
+    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
 
     function FindOne(DB, Collection: String): IBSONObject;overload;
     function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;overload;
@@ -78,8 +85,6 @@ type
 
     function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query, Fields: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
     function HasNext(AStream: TBSONStream; DB: String; Collection: String;  ACursorId: Int64; ABatchSize: Integer): IBSONObject;
-
-    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
 
     procedure KillCursor(ACursorId: Int64);
     procedure KillCursors(ACursorId: Array of Int64);
@@ -106,6 +111,7 @@ type
     procedure BeginMsg(AStream: TBSONStream; OperationCode: Integer);overload;
     procedure BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);overload;
     procedure SendMsg(AStream: TBSONStream);
+
   public
     constructor Create;
     destructor Destroy; override;
@@ -119,7 +125,14 @@ type
     function GetLastError(DB: String; RequestId: Integer=0): ICommandResult;
     function RunCommand(DB: String; Command: IBSONObject): ICommandResult;
 
-    function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;
+    function Insert(DB, Collection: String; BSONObject: IBSONObject): IWriteResult;overload;
+    function Insert(DB, Collection: String; BSONObjects: Array of IBSONObject): IWriteResult;overload;
+
+    function Update(DB: String; Collection: String; Query, BSONObject: IBSONObject): IWriteResult;overload;
+    function Update(DB: String; Collection: String; Query, BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;overload;
+    function UpdateMulti(DB: String; Collection: String;Query: IBSONObject; BSONObject: IBSONObject): IWriteResult;
+
+    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
 
     function FindOne(DB, Collection: String): IBSONObject;overload;
     function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;overload;
@@ -128,10 +141,9 @@ type
     function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query, Fields: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
     function HasNext(AStream: TBSONStream; DB: String; Collection: String;  ACursorId: Int64; ABatchSize: Integer): IBSONObject;
 
-    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
-
     procedure KillCursor(ACursorId: Int64);
     procedure KillCursors(ACursorId: Array of Int64);
+
     //TODO - Assert socket is Connected
   end;
 
@@ -191,22 +203,8 @@ begin
 end;
 
 function TDefaultMongoProvider.Insert(DB, Collection: String;BSONObject: IBSONObject): IWriteResult;
-var
-  vStream: TBSONStream;
 begin
-  vStream := TBSONStream.Create;
-  try
-    BeginMsg(vStream, DB, Collection, OP_INSERT);
-
-    FEncoder.SetBuffer(vStream);
-    FEncoder.Encode(BSONObject);
-
-    SendMsg(vStream);
-
-    Result := TWriteResult.Create(Self, DB, FRequestId);
-  finally
-    vStream.Free;
-  end;
+  Result := Insert(DB, Collection, [BSONObject]);
 end;
 
 procedure TDefaultMongoProvider.Connect(AHost: AnsiString; APort: Integer);
@@ -543,6 +541,76 @@ begin
   AStream.WriteInt(0, vLength);
 
   SendBuf(AStream.Memory, vLength);
+end;
+
+function TDefaultMongoProvider.Insert(DB, Collection: String; BSONObjects: array of IBSONObject): IWriteResult;
+var
+  vStream: TBSONStream;
+  i: Integer;
+begin
+  vStream := TBSONStream.Create;
+  try
+    BeginMsg(vStream, DB, Collection, OP_INSERT);
+
+    FEncoder.SetBuffer(vStream);
+
+    for i := Low(BSONObjects) to High(BSONObjects) do
+    begin
+      FEncoder.Encode(BSONObjects[i]);
+    end;
+
+    SendMsg(vStream);
+
+    Result := TWriteResult.Create(Self, DB, FRequestId);
+  finally
+    vStream.Free;
+  end;
+end;
+
+function TDefaultMongoProvider.Update(DB, Collection: String; Query, BSONObject: IBSONObject): IWriteResult;
+begin
+  Update(DB, Collection, Query, BSONObject, False, False);
+end;
+
+function TDefaultMongoProvider.Update(DB, Collection: String; Query,BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;
+var
+  vStream: TBSONStream;
+  vUpsertOp: Integer;
+begin
+  vStream := TBSONStream.Create;
+  try
+    BeginMsg(vStream, DB, Collection, OP_UPDATE);
+
+    vUpsertOp := 0;
+    if Upsert then
+      Inc(vUpsertOp, 1);
+
+    if Multi then
+      Inc(vUpsertOp, 2);
+
+    vStream.WriteInt(vUpsertOp);
+
+    FEncoder.SetBuffer(vStream);
+
+    if Query.HasOid then
+    begin
+      Query := TBSONObjectQueryHelper.NewFilterOid(Query);
+    end;
+
+    FEncoder.Encode(Query);
+    FEncoder.Encode(BSONObject);
+
+    SendMsg(vStream);
+
+    Result := TWriteResult.Create(Self, DB, FRequestId);
+  finally
+    vStream.Free;
+  end;
+end;
+
+function TDefaultMongoProvider.UpdateMulti(DB, Collection: String; Query,BSONObject: IBSONObject): IWriteResult;
+begin
+  Result := Update(DB, Collection, Query, BSONObject, False, True);
 end;
 
 { TWriteResult }
