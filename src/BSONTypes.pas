@@ -103,8 +103,11 @@ type
 
     function Put(const AKey: String; Value: Variant): IBSONObject;
     function Find(const AKey: String): TBSONItem;overload;
-    function Find(const AKey: String;var AIndex: Integer): TBSONItem;overload;
+    function Find(const AKey: String;var AIndex: Integer): Boolean;overload;
     function PutAll(const ASource: IBSONObject): IBSONObject;
+
+    function HasOid: Boolean;
+    function GetOid: IObjectId;
   end;
 
   IBSONArray = interface(IBSONBasicObject)
@@ -137,10 +140,13 @@ type
 
     function Put(const AKey: String; Value: Variant): IBSONObject;
     function Find(const AKey: String): TBSONItem;overload;
-    function Find(const AKey: String;var AIndex: Integer): TBSONItem;overload;
+    function Find(const AKey: String;var AIndex: Integer): Boolean;overload;
     function Count: Integer;
 
     function PutAll(const ASource: IBSONObject): IBSONObject;
+
+    function HasOid: Boolean;
+    function GetOid: IObjectId;
   end;
 
   TBSONArray = class(TBSONObject, IBSONArray)
@@ -150,6 +156,15 @@ type
     class function NewFrom(Value: Variant): IBSONArray;
     class function NewFromValues(Values:Array of Variant): IBSONArray;
     class function NewFromObject(Value: IBSONObject): IBSONArray;
+  end;
+
+  TBSONObjectQueryHelper = class
+  private
+  public
+    //All items must contain a _id field
+
+    class function NewFilterOid(AObjects: IBSONObject): IBSONObject;
+    class function NewFilterBatchOID(AObjects: Array of IBSONObject): IBSONObject;
   end;
 
 implementation
@@ -314,7 +329,12 @@ function TBSONObject.Find(const AKey: String): TBSONItem;
 var
   vIndex: Integer;
 begin
-  Result := Find(AKey, vIndex);
+  Result := nil;
+
+  if Find(AKey, vIndex) then
+  begin
+    Result := Item[vIndex];
+  end;
 end;
 
 class function TBSONObject.Empty: IBSONObject;
@@ -322,16 +342,11 @@ begin
   Result := TBSONObject.Create;
 end;
 
-function TBSONObject.Find(const AKey: String;var AIndex: Integer): TBSONItem;
+function TBSONObject.Find(const AKey: String;var AIndex: Integer): Boolean;
 begin
-  Result := nil;
-
   AIndex := FMap.IndexOf(AKey);
 
-  if (AIndex >= 0) then
-  begin
-    Result := TBSONItem(FMap.Objects[AIndex]);
-  end;
+  Result := (AIndex >= 0);
 end;
 
 function TBSONObject.GetDuplicatesAction: TDuplicatesAction;
@@ -409,6 +424,35 @@ begin
   end;
 end;
 
+function TBSONObject.HasOid: Boolean;
+var
+  vItem: TBSONItem;
+begin
+  vItem := Find('_id');
+
+  Result := Assigned(vItem) and Assigned(vItem.AsObjectId);
+end;
+
+function TBSONObject.GetOid: IObjectId;
+var
+  vIndex: Integer;
+  vItem: TBSONItem;
+begin
+  Result := nil;
+
+  if Find('_id', vIndex) then
+  begin
+    vItem := Item[vIndex];
+
+    Result := vItem.AsObjectId;
+  end;
+
+  if (Result = nil) then
+  begin
+    raise EBSONObjectHasNoObjectId.Create('Object has no "_id" field.');
+  end;
+end;
+
 { TBSONItem }
 
 function TBSONItem.GetAsBoolean: Boolean;
@@ -416,7 +460,7 @@ begin
   if (FValueType = bvtBoolean) then
     Result := FValue
   else
-    raise EConvertError.Create('Cannot convert the value to Boolean.');
+    raise EBSONValueConvertError.Create('Cannot convert the value to Boolean.');
 end;
 
 function TBSONItem.GetAsBSONArray: IBSONArray;
@@ -442,7 +486,7 @@ begin
   if (FValueType = bvtDateTime) then
     Result := VarToDateTime(FValue)
   else
-    raise EConvertError.Create('Cannot convert the value to TDateTime.');
+    raise EBSONValueConvertError.Create('Cannot convert the value to TDateTime.');
 end;
 
 function TBSONItem.GetAsFloat: Double;
@@ -450,7 +494,7 @@ begin
   if (FValueType = bvtDouble) or IsInteger then
     Result := FValue
   else
-    raise EConvertError.Create('Cannot convert the value to Double.');
+    raise EBSONValueConvertError.Create('Cannot convert the value to Double.');
 end;
 
 function TBSONItem.GetAsInt64: Int64;
@@ -458,7 +502,7 @@ begin
   if IsInteger then
     Result := FValue
   else
-    raise EConvertError.Create('Cannot convert the value to Int64.');
+    raise EBSONValueConvertError.Create('Cannot convert the value to Int64.');
 end;
 
 function TBSONItem.GetAsInteger: Integer;
@@ -526,7 +570,7 @@ begin
     varBoolean: FValueType := bvtBoolean;
     varDispatch, varUnknown: FValueType := bvtInterface;
   else
-    raise Exception.CreateFmt('Type "%s" not implemented.', [IntToHex(VarType(FValue), 4)]);
+    raise EBSONValueTypeUnknown.CreateFmt('Type "%s" not implemented.', [IntToHex(VarType(FValue), 4)]);
   end;
 end;
 
@@ -571,6 +615,30 @@ begin
   inherited Put(vKey, Value);
 
   Result := Self;
+end;
+
+{ TBSONObjectQueryHelper }
+
+class function TBSONObjectQueryHelper.NewFilterBatchOID(AObjects: array of IBSONObject): IBSONObject;
+var
+  i: Integer;
+  vOidArray: IBSONArray;
+begin
+  Result := TBSONObject.Create;
+
+  vOidArray := TBSONArray.Create;
+  
+  for i := Low(AObjects) to High(AObjects) do
+  begin
+    vOidArray.Put(AObjects[i].GetOid);
+  end;
+
+  Result  := TBSONObject.NewFrom('_id', TBSONObject.NewFrom('$in', vOidArray));
+end;
+
+class function TBSONObjectQueryHelper.NewFilterOid(AObjects: IBSONObject): IBSONObject;
+begin
+  Result  := TBSONObject.NewFrom('_id', AObjects.GetOid);
 end;
 
 initialization

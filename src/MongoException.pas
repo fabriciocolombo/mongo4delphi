@@ -37,20 +37,24 @@ type
   EIllegalArgumentException = class(EMongoException);
   EMongoConnectionFailureException = class(EMongoException);
   EMongoBufferIsNotConfigured = class(EMongoException);
-  EBSONDuplicateKeyInList = class(EMongoException);
-  EBSONCannotChangeDuplicateAction = class(EMongoException);
 
   EMongoDBCursorException = class(EMongoException);
   EMongoDBCursorStateException = class(EMongoDBCursorException);
 
   ECommandFailure = class(EMongoException);
- 
+
   EMongoDuplicateKey = class(EMongoException);
 
   EMongoProviderException = class(EMongoException);
   EMongoInvalidResponse = class(EMongoProviderException);
   EMongoReponseAborted = class(EMongoProviderException);
 
+  EBSONTypesException = class(EMongoException);
+  EBSONDuplicateKeyInList = class(EBSONTypesException);
+  EBSONCannotChangeDuplicateAction = class(EBSONTypesException);
+  EBSONObjectHasNoObjectId = class(EBSONTypesException);
+  EBSONValueConvertError = class(EBSONTypesException);
+  EBSONValueTypeUnknown = class(EBSONTypesException);
 
 resourcestring
   sInvalidVariantValueType = 'Can''t serialize type "%s".';

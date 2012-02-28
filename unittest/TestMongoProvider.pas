@@ -25,11 +25,10 @@ type
     procedure TestFindOne;
     procedure TestRemove;
     procedure TestRemoveMultipleRows;
+    procedure TestBatchRemove;
   end;
 
 implementation
-
-uses TestFramework;
 
 const
   sDB = 'test';
@@ -66,6 +65,28 @@ procedure TTestMongoProvider.TearDown;
 begin
   FProvider := nil;
   inherited;
+end;
+
+procedure TTestMongoProvider.TestBatchRemove;
+var
+  vOne, vTwo, vFilter,
+  vDoc: IBSONObject;
+begin
+  vOne := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vTwo := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+
+  CheckWriteResult(FProvider.Insert(sDB, sColl, vOne));
+  CheckWriteResult(FProvider.Insert(sDB, sColl, vTwo));
+
+  vDoc := FProvider.FindOne(sDB, sColl);
+  CheckNotNull(vDoc);
+
+  vFilter := TBSONObjectQueryHelper.NewFilterBatchOID([vOne, vTwo]);
+
+  CheckWriteResult(FProvider.Remove(sDB, sColl, vFilter));
+
+  vDoc := FProvider.FindOne(sDB, sColl);
+  CheckNull(vDoc);
 end;
 
 procedure TTestMongoProvider.TestFindOne;

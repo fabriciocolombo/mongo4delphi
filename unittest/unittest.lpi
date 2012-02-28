@@ -43,10 +43,11 @@
       <Unit0>
         <Filename Value="unittest.dpr"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="54" Y="29"/>
+        <CursorPos X="87" Y="22"/>
         <UsageCount Value="21"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -113,7 +114,6 @@
         <Filename Value="TestMongoProvider.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="TestMongoProvider"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
         <TopLine Value="4"/>
@@ -176,6 +176,7 @@
         <CursorPos X="1" Y="420"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
       <Unit13>
         <Filename Value="..\src\MongoEncoder.pas"/>
@@ -186,6 +187,7 @@
         <CursorPos X="12" Y="157"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit13>
       <Unit14>
         <Filename Value="..\..\..\delphi\dunit\src\TestFramework.pas"/>
@@ -213,6 +215,7 @@
         <CursorPos X="18" Y="50"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit16>
       <Unit17>
         <Filename Value="C:\lazarus\fpc\2.4.4\source\rtl\inc\varianth.inc"/>

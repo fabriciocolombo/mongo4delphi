@@ -13,7 +13,9 @@ Mongo Driver Requirements	- High priority
 	* Insert - OK
 	* Update
 	* Remove - OK
-	* batch insert/update/remove
+	* batch insert
+	* update
+	* remove - OK, the same method removes one or more records
 	
 TODO - Replace Exception with typed exception descendents of EMongoException
 TODO - Replace message hard coded string with ResourceString

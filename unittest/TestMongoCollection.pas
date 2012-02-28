@@ -32,7 +32,7 @@ type
 
 implementation
 
-uses Variants, SysUtils, Math, BSONTypes, MongoUtils, TestFramework;
+uses Variants, SysUtils, Math, BSONTypes, MongoUtils;
 
 { TTestMongoCollection }
 

@@ -26,8 +26,6 @@ type
 
 implementation
 
-uses TestFramework;
-
 { TTestMongoDBCursor }
 
 procedure TTestMongoDBCursor.SetUp;

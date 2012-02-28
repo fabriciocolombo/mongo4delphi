@@ -63,7 +63,7 @@ type
 
     procedure SetEncoder(const AEncoder: IMongoEncoder);
     procedure SetDecoder(const ADecoder: IMongoDecoder);
-        
+
     procedure Connect(AHost: AnsiString; APort: Integer);
     procedure Close;
 
@@ -463,19 +463,21 @@ end;
 function TDefaultMongoProvider.Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
 var
   vStream: TBSONStream;
-  vOID: TBSONItem;
 begin
   vStream := TBSONStream.Create;
   try
     BeginMsg(vStream, DB, Collection, OP_DELETE);
 
-    vOID := AObject.Find('_id');
+    if AObject.HasOid then
+    begin
+      vStream.WriteInt(1); //Single Remove
 
-    if Assigned(vOID) and vOID.IsObjectId then
-      vStream.WriteInt(1) //Single Remove
+      //Optimization to use only _id 
+      AObject := TBSONObjectQueryHelper.NewFilterOid(AObject);
+    end
     else
       vStream.WriteInt(0);
-    
+
     FEncoder.SetBuffer(vStream);
     FEncoder.Encode(AObject);
 

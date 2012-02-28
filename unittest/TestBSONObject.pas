@@ -16,13 +16,48 @@ type
     procedure UpdataExistentItem;
     procedure ShouldRaiseExceptionWithDuplicateActionError;
     procedure ShouldNotBeChangeDuplicateActionAfterAddItems;
+    procedure ExtractOID;
+    procedure ExtractOIDShouldRaiseExceptionWhenNotFound;
   end;
 
 implementation
 
-uses MongoException, SysUtils;
+uses MongoException, SysUtils, TestFramework;
 
 { TTestBSONObject }
+
+procedure TTestBSONObject.ExtractOID;
+var
+  vDoc: IBSONObject;
+  vNewOID, vOID: IObjectId;
+begin
+  vNewOID := TObjectId.NewFrom;
+  vDoc := TBSONObject.NewFrom('_id', vNewOID).Put('code', 1);
+
+  CheckTrue(vDoc.HasOid);
+
+  vOID := vDoc.GetOid;
+
+  CheckNotNull(vOID);
+  CheckEquals(vNewOID.ToStringMongo, vOID.ToStringMongo);
+end;
+
+procedure TTestBSONObject.ExtractOIDShouldRaiseExceptionWhenNotFound;
+var
+  vDoc: IBSONObject;
+begin
+  vDoc := TBSONObject.NewFrom('code', 1);
+
+  CheckFalse(vDoc.HasOid);
+
+  vDoc.Put('_id', 123);
+
+  CheckFalse(vDoc.HasOid);
+
+  ExpectedException := EBSONObjectHasNoObjectId;
+
+  vDoc.GetOid;  
+end;
 
 procedure TTestBSONObject.PutNewItem;
 var
