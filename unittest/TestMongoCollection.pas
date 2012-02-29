@@ -6,18 +6,12 @@ unit TestMongoCollection;
 
 interface
 
-uses BaseTestCase, Mongo;
+uses BaseTestCaseMongo, Mongo;
 
 type
   //Require mongodb service running
-  TTestMongoCollection = class(TBaseTestCase)
+  TTestMongoCollection = class(TBaseTestCaseMongo)
   private
-    FMongo: TMongo;
-    FDB: TMongoDB;
-    FCollection: TMongoCollection;
-  protected
-    procedure SetUp; override;
-    procedure TearDown; override;
   published
     procedure InsertBSONObjectID;
     procedure InsertBSONObjectSimpleTypes;
@@ -28,11 +22,12 @@ type
     procedure InsertBSONObjectUUID;
     procedure FindOne;
     procedure TestCount;
+    procedure TestCreateCollection;
   end;
 
 implementation
 
-uses Variants, SysUtils, Math, BSONTypes, MongoUtils;
+uses Variants, SysUtils, Math, BSONTypes, MongoUtils, TestFramework;
 
 { TTestMongoCollection }
 
@@ -48,7 +43,7 @@ begin
   vBSON.Put('id', 123);
   vBSON.Put('id2', vArray);
 
-  FCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON);
 end;
 
 procedure TTestMongoCollection.InsertBSONArraySimpleTypes;
@@ -65,7 +60,7 @@ begin
   vBSON.Put('id', 123);
   vBSON.Put('id2', vArray);
 
-  FCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON);
 end;
 
 procedure TTestMongoCollection.InsertBSONArrayWithEmbeddedArrays;
@@ -79,7 +74,7 @@ begin
   vBSON.Put('id', 123);
   vBSON.Put('id2', vArray);
 
-  FCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON);
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectSimpleTypes;
@@ -115,7 +110,7 @@ begin
   vBSON.Put('id16', True);
   vBSON.Put('id17', False);
 
-  FCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON);
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectWithEmbeddedObject;
@@ -130,46 +125,28 @@ begin
   vBSON.Put('id', 123);
   vBSON.Put('id2', vEmbedded);
 
-  FCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON);
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectID;
 begin
-  FCollection.Insert(TBSONObject.NewFrom('id', 123).Put('_id', TObjectId.NewFrom));
-end;
-
-procedure TTestMongoCollection.SetUp;
-begin
-  inherited;
-  FMongo := TMongo.Create;
-  FMongo.Connect();
-
-  FDB := FMongo.getDB('unit');
-
-  FCollection := FDB.GetCollection('test');
-  FCollection.Drop;
-end;
-
-procedure TTestMongoCollection.TearDown;
-begin
-  FMongo.Free;
-  inherited;
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 123).Put('_id', TObjectId.NewFrom));
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectUUID;
 begin
-  FCollection.Insert(TBSONObject.NewFrom('uid', TGUIDUtils.NewGuidAsString));
+  DefaultCollection.Insert(TBSONObject.NewFrom('uid', TGUIDUtils.NewGuidAsString));
 end;
 
 procedure TTestMongoCollection.FindOne;
 var
   vDoc: IBSONObject;
 begin
-  FCollection.Insert(TBSONObject.NewFrom('_id', TObjectId.NewFromOID('4f46b9fa65760489cc96ab49')).Put('id', 123));
+  DefaultCollection.Insert(TBSONObject.NewFrom('_id', TObjectId.NewFromOID('4f46b9fa65760489cc96ab49')).Put('id', 123));
 
-//  FCollection.Insert(TBSONObject.NewFrom('id', 123).Put('items', TBSONArray.NewFromValues([1, 2, 3])));
+//  DefaultCollection.Insert(TBSONObject.NewFrom('id', 123).Put('items', TBSONArray.NewFromValues([1, 2, 3])));
 
-  vDoc := FCollection.FindOne(nil);
+  vDoc := DefaultCollection.FindOne(nil);
 
   CheckNotNull(vDoc);
   CheckEquals(2, vDoc.Count);
@@ -183,17 +160,39 @@ procedure TTestMongoCollection.TestCount;
 const
   LIMIT = 2;
 begin
-  CheckEquals(0, FCollection.Count);
+  CheckEquals(0, DefaultCollection.Count);
   
-  FCollection.Insert(TBSONObject.NewFrom('id', 1));
-  FCollection.Insert(TBSONObject.NewFrom('id', 2));
-  FCollection.Insert(TBSONObject.NewFrom('id', 3));
-  FCollection.Insert(TBSONObject.NewFrom('id', 4));
-  FCollection.Insert(TBSONObject.NewFrom('id', 5));
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 1));
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 2));
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 3));
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 4));
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 5));
 
-  CheckEquals(5, FCollection.Count);
-  CheckEquals(LIMIT, FCollection.Count(LIMIT));
-  CheckEquals(1, FCollection.Count(TBSONObject.NewFrom('id', 3)));
+  CheckEquals(5, DefaultCollection.Count);
+  CheckEquals(LIMIT, DefaultCollection.Count(LIMIT));
+  CheckEquals(1, DefaultCollection.Count(TBSONObject.NewFrom('id', 3)));
+end;
+
+procedure TTestMongoCollection.TestCreateCollection;
+var
+  vCollections: IBSONObject;
+  vColl: TMongoCollection;
+begin
+  vCollections := DB.GetUserCollections;
+  CheckEquals(0, vCollections.Count);
+
+  vColl := DB.CreateCollection(sColl, TBSONObject.Empty);
+  CheckEquals(sColl, vColl.CollectionName);
+
+  vCollections := DB.GetUserCollections;
+  CheckEquals(0, vCollections.Count);
+
+  vColl := DB.CreateCollection(sColl, TBSONObject.NewFrom('capped', True).Put('size', 100000));
+  CheckEquals(sColl, vColl.CollectionName);
+
+  vCollections := DB.GetUserCollections;
+  CheckEquals(1, vCollections.Count);
+  CheckEquals(sColl, vCollections.Items['name'].AsString);
 end;
 
 initialization

@@ -27,12 +27,17 @@ unit MongoProvider;
 interface
 
 uses MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
-     {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets, 
+     {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets,
      Classes, SysUtils;
 
 const
   DEFAULT_HOST = 'localhost';
   DEFAULT_PORT = 27017;
+
+  (* Mongo Collections *)
+  COMMAND_COLLECTION = '$cmd';
+  SYSTEM_INDEXES_COLLECTION = 'system.indexes';
+  SYSTEM_NAMESPACES_COLLECTION = 'system.namespaces';
 
 type
   IMongoProvider = interface;
@@ -205,10 +210,6 @@ type
 implementation
 
 uses MongoException, Windows, BSON, Variants, Math, MongoMD5;
-
-const
-  COMMAND_COLLECTION = '$cmd';
-  SYSTEM_INDEXEX_COLLECTION = 'system.indexes';
 
 { TDefaultMongoProvider }
 
@@ -715,7 +716,7 @@ begin
                               .Put('ns', Format('%s.%s', [DB, Collection]))
                               .Put('key', KeyFields);
 
-  Result := Insert(DB, SYSTEM_INDEXEX_COLLECTION, vIndexOptions);
+  Result := Insert(DB, SYSTEM_INDEXES_COLLECTION, vIndexOptions);
 end;
 
 function TDefaultMongoProvider.DropIndex(DB, Collection, AIndexName: String): ICommandResult;

@@ -64,7 +64,9 @@ type
     FMongo: TMongo;
     FDBName: String;
     FCollectionList: TObjectList;
+
     function GetProvider: IMongoProvider;
+    function DoGetCollections(AIncludeSystemCollections: Boolean): IBSONObject;
   protected
     property Provider: IMongoProvider read GetProvider;
   public
@@ -81,6 +83,11 @@ type
 
     function Authenticate(AUserName, APassword: String): Boolean;
     procedure Logout;
+
+    function GetCollections: IBSONObject;
+    function GetUserCollections: IBSONObject;
+
+    function CreateCollection(AName: String; AOptions: IBSONObject): TMongoCollection;
   end;
 
   TMongoCollection = class
@@ -201,7 +208,7 @@ type
 
 implementation
 
-uses SysUtils, MongoException, BSON, Math;
+uses SysUtils, MongoException, BSON, Math, StrUtils;
 
 { TMongo }
 
@@ -302,6 +309,54 @@ begin
   FCollectionList.Add(Result);
 end;
 
+function TMongoDB.GetCollections: IBSONObject;
+begin
+  Result := DoGetCollections(True);
+end;
+
+function TMongoDB.GetUserCollections: IBSONObject;
+begin
+  Result := DoGetCollections(False);
+end;
+
+function TMongoDB.DoGetCollections(AIncludeSystemCollections: Boolean): IBSONObject;
+var
+  vNamespaces: TMongoCollection;
+  vCursor: IMongoDBCursor;
+  vNS: IBSONObject;
+  vPosDot: Integer;
+  vDBName,
+  vFullName,
+  vCollection: String;
+begin
+  Result := TBSONObject.Create;
+
+  vNamespaces := GetCollection(SYSTEM_NAMESPACES_COLLECTION);
+
+  vCursor := vNamespaces.Find;
+
+  while vCursor.HasNext do
+  begin
+    vNS := vCursor.Next;
+
+    vFullName := vNS.Items['name'].AsString;
+
+    vPosDot := Pos('.', vFullName);
+
+    vDBName := LeftStr(vFullName, vPosDot-1);
+
+    if (vDBName = FDBName) and not AnsiContainsStr(vFullName, '$') then
+    begin
+      vCollection := Copy(vFullName, vPosDot+1, MaxInt);
+
+      if not AIncludeSystemCollections and (Pos('system', vCollection) = 1) then
+        Continue;
+        
+      Result.Put('name', vCollection);
+    end;
+  end;
+end;
+
 function TMongoDB.GetLastError: ICommandResult;
 begin
   Result := Provider.GetLastError(FDBName);
@@ -320,6 +375,23 @@ end;
 function TMongoDB.RunCommand(ACommand: IBSONObject): ICommandResult;
 begin
   Result := Provider.RunCommand(FDBName, ACommand);
+end;
+
+function TMongoDB.CreateCollection(AName: String; AOptions: IBSONObject): TMongoCollection;
+var
+  vCommand: IBSONObject;
+  vCommandResult: ICommandResult;
+begin
+  if Assigned(AOptions) and (AOptions.Count > 0) then
+  begin
+    vCommand := TBSONObject.NewFrom('create', AName);
+    vCommand.PutAll(AOptions);
+
+    vCommandResult := Provider.RunCommand(FDBName, vCommand);
+    vCommandResult.RaiseOnError();
+  end;
+
+  Result := GetCollection(AName);
 end;
 
 { TMongoCollection }

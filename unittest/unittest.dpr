@@ -39,7 +39,9 @@ uses
   MongoUtils in '..\src\MongoUtils.pas',
   MongoMD5 in '..\src\MongoMD5.pas',
   ServerError in '..\src\ServerError.pas',
-  TestServerError in 'TestServerError.pas';
+  TestServerError in 'TestServerError.pas',
+  TestMongoDB in 'TestMongoDB.pas',
+  BaseTestCaseMongo in 'BaseTestCaseMongo.pas';
 
 {$R *.res}
 
@@ -48,7 +50,7 @@ begin
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;
   {$ELSE}
-    Application.CreateForm(TGuiTestRunner, TestRunner);
+    Application.CreateForm(TTestRunner, TestRunner);
   {$ENDIF}
   Application.Run;
 end.

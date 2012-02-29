@@ -35,8 +35,9 @@ Fully implemented:
 	* Create/Drop Indexes - OK
 	
 To Fully mongodb support	
-	TODO - Add getCollectionNames to TMongoDB	
-	TODO - Add CreateCollection(name, options) to TMongoDB	
+	OK - Add getCollectionNames to TMongoDB. Splitted into: GetCollections(include system collections) and GetUserCollections(not include system collections)	
+	OK - Add CreateCollection(name, options) to TMongoDB	
+	
 	TODO - Add dropIndexes() to TMongoCollection to drop all indexes
 	TODO - Add List<DBObject> getIndexInfo() to TMongoCollection to return all indexes information
 	TODO - What is QueryOptions in a Collection?
