@@ -1,10 +1,20 @@
+Mongo Driver Checklist
+	http://www.mongodb.org/display/DOCS/Feature+Checklist+for+Mongo+Drivers
+
 Mongo Driver Requirements	- High priority
 	* BSON serialization¹
 	* BSON deserialization¹
-	*	database profiling: set/get profiling level, get profiling info
-	*	advanced connection management (replica sets, slave okay)
-	*	automatic reconnection
+	*	database profiling: set/get profiling level, get profiling info	
+	  getProfilingLevel, setProfilingLevel, getProfilingInfo 
+	*	advanced connection management (slave okay)
+	* Automatically connect to proper server, and failover, when connecting to a Replica Set
+	*	automatic reconnection on connection failure
+	* Support to GridFS
 
+Medium priority
+  * validate a collection in a database
+  * Tailable cursor support - http://www.mongodb.org/display/DOCS/Tailable+Cursors
+	
 Fully implemented:	
 	*	full cursor support (e.g. support OP_GET_MORE operation) - OK, needs design review 
 	*	close exhausted cursors via OP_KILL_CURSORS - OK
@@ -24,19 +34,38 @@ Fully implemented:
 	* batch remove - OK, using a query to remove multiple records
 	* Create/Drop Indexes - OK
 	
-TODO - Replace Exception with typed exception descendents of EMongoException
-TODO - Replace message hard coded string with ResourceString
-TODO - Review naming of ObjectId. Should be contain the BSON prefix?
-TODO - Implementation from TBSONStream.ReadObjectId must be moved to ObjectId implementation
-TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
+To Fully mongodb support	
+	TODO - Add getCollectionNames to TMongoDB	
+	TODO - Add CreateCollection(name, options) to TMongoDB	
+	TODO - Add dropIndexes() to TMongoCollection to drop all indexes
+	TODO - Add List<DBObject> getIndexInfo() to TMongoCollection to return all indexes information
+	TODO - What is QueryOptions in a Collection?
+	TODO - Add size protected to MongoDecoder 16MB. This information could be retrieved with maxBsonObjectSize property of buildinfo or isMaster command:
+				int size = readInt();
+				if ( size <= 0 || size > ( 16 * 1024 * 1024 ) )
+					throw new BSONException( "bad string size: " + size ); (16 * 1024 * 1024)
+	TODO - Make the KillCursor more effecient: "Sending of KillCursors operation when use of a cursor has completed (ideally for efficiently these are sent in batches)"
+	TODO - automatic _id generation in client side
+	TODO - Review error handling http://www.mongodb.org/display/DOCS/Error+Handling+in+Mongo+Drivers
+	TODO - Add EnsureIndex to MongoCollection. EnsureIndex must be cached for optimization.
+	TODO - Cache TMongo.GetDB
+	TODO - Cache TMongoDB.GetCollection
+	TODO - Add eval() to TMongoDB
+	TODO - Add AddUser and RemoveUser in TMongoDB
+	TODO - DBRef support to link objects
 
-TODO - Include a Log for debug with almost Console
-
-TODO - Requests manager. Each request must be a self stream
+To Improve the delphi driver API	
+	TODO - Replace Exception with typed exception descendents of EMongoException
+	TODO - Replace message hard coded string with ResourceString
+	TODO - Review naming of ObjectId. Should be contain the BSON prefix?
+	TODO - Implementation from TBSONStream.ReadObjectId must be moved to ObjectId implementation
+	TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
+	TODO - Include a Log for debug with almost Console
+	TODO - Requests manager. Each request must be a self stream
 
 (1) Types not yet implemented
-  BSON_BINARY       = $05; //
-  BSON_REGEX        = $0B; //
+  BSON_BINARY       = $05; 
+  BSON_REGEX        = $0B; 
   BSON_SYMBOL       = $0E;
   BSON_CODE_W_SCOPE = $0F;
   BSON_TIMESTAMP    = $11;
