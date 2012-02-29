@@ -36,7 +36,6 @@ Demo Application
 	TODO - Requests manager. Each request must be a self stream
 	
 (1) Types not yet implemented
-  BSON_BINARY       = $05; 
   BSON_REGEX        = $0B; 
   BSON_SYMBOL       = $0E;
   BSON_CODE_W_SCOPE = $0F;
@@ -44,8 +43,6 @@ Demo Application
   BSON_MINKEY       = $FF;
   BSON_MAXKEY       = $7F;
   {subtype}
-  BSON_SUBTYPE_GENERIC = $00;
   BSON_SUBTYPE_FUNC    = $01;
-  BSON_SUBTYPE_OLD_BINARY  = $02;
   BSON_SUBTYPE_MD5     = $05;
   BSON_SUBTYPE_USER    = $80;

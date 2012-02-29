@@ -20,7 +20,7 @@ uses
   GuiTestRunner,
   Forms,
   TestBSONItem in 'TestBSONItem.pas',
-  TestBSONObject in 'TestBSONObject.pas',
+  TestBSONTypes in 'TestBSONTypes.pas',
   TestEncoder in 'TestEncoder.pas',
   TestBsonStream in 'TestBsonStream.pas',
   TestDecoder in 'TestDecoder.pas',

@@ -20,6 +20,8 @@ type
     procedure InsertBSONArrayObject;
     procedure InsertBSONArrayWithEmbeddedArrays;
     procedure InsertBSONObjectUUID;
+    procedure InsertBSONBinary;
+    procedure InsertBSONOldBinary;
     procedure FindOne;
     procedure TestCount;
     procedure TestCreateCollection;
@@ -29,7 +31,7 @@ type
 
 implementation
 
-uses Variants, SysUtils, Math, BSONTypes, MongoUtils, TestFramework;
+uses Variants, SysUtils, Math, BSONTypes, MongoUtils, BSON;
 
 { TTestMongoCollection }
 
@@ -136,8 +138,12 @@ begin
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectUUID;
+var
+  vGUID: TGUID;
 begin
-  DefaultCollection.Insert(TBSONObject.NewFrom('uid', TGUIDUtils.NewGuidAsString));
+  vGUID := TGUIDUtils.NewGuid;
+
+  DefaultCollection.Insert(TBSONObject.NewFrom('uid', GUIDToString(vGUID)));
 end;
 
 procedure TTestMongoCollection.FindOne;
@@ -233,6 +239,17 @@ begin
   CheckEquals(2, vIndexes.Count);
 
   CheckEquals('idx_test', vIndexes[1].AsBSONObject.Items['name'].AsString);
+end;
+
+procedure TTestMongoCollection.InsertBSONBinary;
+
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('img', TBSONBinary.NewFromFile('resource\image.gif'))).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.InsertBSONOldBinary;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('img', TBSONBinary.NewFromFile('resource\image.gif', BSON_SUBTYPE_OLD_BINARY))).getLastError.RaiseOnError;
 end;
 
 initialization

@@ -23,6 +23,9 @@ type
     procedure DecodeFindOneEmbeddedArray;
     procedure DecodeExplainBasicCursor;
     procedure DecodeExplainBTreeCursor;
+    procedure DecodeFindOneBinary;
+    procedure DecodeFindOneOldBinary;
+    procedure DecodeFindOneUUID;
   end;
   
 implementation
@@ -53,6 +56,21 @@ begin
 
   CheckEquals(12, vDoc.Count);
   CheckEquals('BtreeCursor idx_id_value', vDoc.Items['cursor'].AsString);
+end;
+
+procedure TTestDecoder.DecodeFindOneBinary;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneBinary.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('img', vDoc[1].Name);
+  CheckEquals(1335, vDoc[1].AsBSONBinary.Size);
 end;
 
 procedure TTestDecoder.DecodeFindOneEmbeddedArray;
@@ -107,6 +125,21 @@ begin
  
 end;
 
+procedure TTestDecoder.DecodeFindOneOldBinary;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneOldBinary.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('img', vDoc[1].Name);
+  CheckEquals(1335, vDoc[1].AsBSONBinary.Size);
+end;
+
 procedure TTestDecoder.DecodeFindOneRow;
 var
   vDoc: IBSONObject;
@@ -159,6 +192,21 @@ begin
   CheckEquals(vCurrency, vDoc.Items['id15'].Value, 0.001);
   CheckTrue(vDoc.Items['id16'].Value, 'Is not true');
   CheckFalse(vDoc.Items['id17'].Value, 'Is not false');
+end;
+
+procedure TTestDecoder.DecodeFindOneUUID;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneUUID.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('uid', vDoc[1].Name);
+  CheckEquals('{5EB1ED6D-1280-4CF6-AD0C-FA9CE1D87B51}', vDoc[1].AsString);
 end;
 
 procedure TTestDecoder.SetUp;

@@ -54,6 +54,7 @@ type
     procedure PutInterfaceField(name: String; const val: IUnknown);
 
     procedure PutObjectField(const AItem: TBSONItem);
+    procedure putBinary(name: String; const val: IBSONBinary);
   public
     procedure SetBuffer(ABuffer: TBSONStream);
     procedure Encode(const ABSONObject: IBSONBasicObject);
@@ -189,8 +190,6 @@ begin
   else
     raise EIllegalArgumentException.CreateResFmt(@sInvalidVariantValueType, [AItem.GetValueTypeDesc]);
   end;
-
-  
 end;
 
 procedure TDefaultMongoEncoder.putString(AName, AValue: String);
@@ -213,21 +212,26 @@ procedure TDefaultMongoEncoder.PutInterfaceField(name: String; const val: IInter
 var
   vBSONObject: IBSONObject;
   vBSONArray: IBSONArray;
-  vObjectId: IBSONObjectId;
+  vBSONObjectId: IBSONObjectId;
+  vBSONBinary: IBSONBinary;
 begin
   if Supports(val, IBSONArray, vBSONArray) then
   begin
     put(BSON_ARRAY, name);
     Encode(vBSONArray);
   end
+  else if Supports(val, IBSONBinary, vBSONBinary) then
+  begin
+    putBinary(name, vBSONBinary);
+  end
   else if Supports(val, IBSONObject, vBSONObject) then
   begin
     put(BSON_DOC, name);
     Encode(vBSONObject);
   end
-  else if Supports(val, IBSONObjectId, vObjectId) then
+  else if Supports(val, IBSONObjectId, vBSONObjectId) then
   begin
-    putObjectId(name, vObjectId);
+    putObjectId(name, vBSONObjectId);
   end;
 end;
 
@@ -275,6 +279,25 @@ end;
 procedure TDefaultMongoEncoder.SetBuffer(ABuffer: TBSONStream);
 begin
   FBuffer := ABuffer;
+end;
+
+procedure TDefaultMongoEncoder.putBinary(name: String;const val: IBSONBinary);
+var
+  vSize: Integer;
+begin
+  put(BSON_BINARY, name);
+
+  vSize := val.Size;
+
+  if (val.SubType = BSON_SUBTYPE_OLD_BINARY) then
+    vSize := vSize + 4;
+
+  FBuffer.WriteInt(vSize);
+  FBuffer.WriteByte(val.SubType);
+  if (val.SubType = BSON_SUBTYPE_OLD_BINARY) then
+    FBuffer.WriteInt(vSize-4);
+
+  FBuffer.WriteStream(val.Stream);
 end;
 
 { TMongoEncoderFactory }

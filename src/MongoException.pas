@@ -78,6 +78,8 @@ resourcestring
   sBSONValueTypeUnknown = 'Type "%s" not implemented.';
   sDecodeBSONTypeException = 'Decoder not implements the type "%d".';
   sDecodeResponseSizeError = 'Bad data. Lengths don''t match read:"%d" != len:"%d"';
+  sInvalidBSONBinarySubtype = 'Invalid subtype "%d", only are accepted values "BSON_SUBTYPE_GENERIC" and "BSON_SUBTYPE_OLD_BINARY(deprecated)".';
+  sInvalidBSONBinarySubtypeSize = 'bad data size subtype "%d" len: %d totalLen: %d';
 
 implementation
 

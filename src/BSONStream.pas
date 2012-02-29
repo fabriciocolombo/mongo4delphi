@@ -36,6 +36,7 @@ type
     procedure WriteInt64(value: Int64);
     procedure WriteByte(value: Byte);
     procedure WriteDouble(value: Double);
+    procedure WriteStream(ASource: TStream);
 
     function ReadInt: Integer;
     function ReadInt64: Int64;
@@ -44,6 +45,7 @@ type
     function ReadObjectId: String;
     function ReadDouble: Double;
     function ReadByte: Byte;
+
   end;
 
 implementation
@@ -178,6 +180,19 @@ end;
 function TBSONStream.ReadByte: Byte;
 begin
   Read(Result, SizeOf(Byte));
+end;
+
+procedure TBSONStream.WriteStream(ASource: TStream);
+var
+  vPos: Int64;
+begin
+  vPos := ASource.Position;
+  try
+    ASource.Position := 0;
+    CopyFrom(ASource, ASource.Size);
+  finally
+    ASource.Position := vPos;
+  end;
 end;
 
 end.

@@ -40,6 +40,7 @@ type
     function DecodeElement(ACurrent: IBSONObject; ABuffer: TBSONStream): Boolean;
     function DecodeObject(ABuffer: TBSONStream): IBSONObject;
     function DecodeArray(ABuffer: TBSONStream): IBSONArray;
+    function DecodeBinary(ABuffer: TBSONStream): Variant;
   public
     function Decode(ABuffer: TBSONStream): IBSONObject;
     function DecodeFromBeginning(ABuffer: TBSONStream): IBSONObject;
@@ -117,6 +118,7 @@ begin
     BSON_DATETIME: ACurrent.Put(vName, VarFromDateTime((ABuffer.ReadInt64/MSecsPerDay) + UnixDateDelta));
     BSON_INT32: ACurrent.Put(vName, ABuffer.ReadInt);
     BSON_INT64: ACurrent.Put(vName, ABuffer.ReadInt64);
+    BSON_BINARY: ACurrent.Put(vName, DecodeBinary(ABuffer));
   else
     raise EDecodeBSONTypeException.CreateResFmt(@sDecodeBSONTypeException, [vType]);
   end;
@@ -139,6 +141,51 @@ begin
   vNumRead := (ABuffer.Position - vPosition);
   if vNumRead <> vLength then
     raise EDecodeResponseSizeError.CreateResFmt(@sDecodeResponseSizeError, [vNumRead, vLength]);
+end;
+
+function TDefaultMongoDecoder.DecodeBinary(ABuffer: TBSONStream): Variant;
+const
+  UUID_SIZE = 16;
+var
+  vSize, vOldBinarySize: Integer;
+  vSubType: Byte;
+  vGUID: TGUID;
+  vBinary: IBSONBinary;
+begin
+  vSize := ABuffer.ReadInt;
+
+  ABuffer.Read(vSubType, 1);
+
+  case vSubType of
+    BSON_SUBTYPE_GENERIC:
+      begin
+        vBinary := TBSONBinary.Create(vSubType);
+        vBinary.Stream.CopyFrom(ABuffer, vSize);
+
+        Result := vBinary;
+      end;
+    BSON_SUBTYPE_OLD_BINARY:
+      begin
+        vOldBinarySize := ABuffer.ReadInt;
+
+        if (vOldBinarySize + 4 <> vSize) then
+          raise EDecodeResponseSizeError.CreateResFmt(@sInvalidBSONBinarySubtypeSize, [vSubType, vOldBinarySize, vSize]);
+
+        vBinary := TBSONBinary.Create(vSubType);
+        vBinary.Stream.CopyFrom(ABuffer, vOldBinarySize);
+
+        Result := vBinary;
+      end;
+    BSON_SUBTYPE_UUID:
+      begin
+        if (vSize <> UUID_SIZE) then
+          raise EDecodeResponseSizeError.CreateResFmt(@sInvalidBSONBinarySubtypeSize, [vSubType, vSize, UUID_SIZE]);
+
+        ABuffer.Read(vGUID, SizeOf(TGUID));
+
+        Result := GUIDToString(vGUID);
+      end;
+  end;
 end;
 
 end.

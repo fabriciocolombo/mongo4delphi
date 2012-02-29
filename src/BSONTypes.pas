@@ -25,12 +25,17 @@ unit BSONTypes;
 
 interface
 
-uses Contnrs, Classes;
+uses Contnrs, Classes, BSON;
 
 type
-  IBSONObject = interface;
-  IBSONArray = interface;
-  
+  TBSONItem = class;
+
+  TDuplicatesAction = (daUpdateValue, daError);
+
+  TBsonValueType = (bvtNull,
+                    bvtBoolean, bvtInteger, bvtInt64, bvtDouble,
+                    bvtDateTime, bvtString, bvtInterface);
+
   TBSONObjectIdByteArray = array[0..11] of byte;
 
   IBSONObjectId = interface
@@ -39,67 +44,17 @@ type
     function ToStringMongo: String;
   end;
 
-  TBSONObjectId = class(TInterfacedObject, IBSONObjectId)
-  private
-    FOID: String;
+  IBSONBinary = interface
+  ['{37130A33-E87F-491B-8061-84C7F4A8AC1A}']
+    function GetStream: TMemoryStream;
+    function GetSize: Integer;
+    function GetSubType: Integer;
 
-    procedure GenId;
-  public
-    constructor Create;overload;
-    constructor Create(const OID: String);overload;
-
-    class function NewFrom(): IBSONObjectId;
-    class function NewFromOID(const OID: String): IBSONObjectId;
-
-    function AsByteArray: TBSONObjectIdByteArray;
-    function ToStringMongo: String;
+    property Stream: TMemoryStream read GetStream;
+    property Size: Integer read GetSize;
+    property SubType: Integer read GetSubType;
   end;
-
-  TBsonValueType = (bvtNull,
-                    bvtBoolean, bvtInteger, bvtInt64, bvtDouble,
-                    bvtDateTime, bvtString, bvtInterface);
-
-  TBSONItem = class
-  private
-    FName: String;
-    FValue: Variant;
-    FValueType: TBsonValueType;
-
-    procedure SetValue(const Value: Variant);
-
-    function GetAsObjectId: IBSONObjectId;
-    function GetAsInteger: Integer;
-    function GetAsInt64: Int64;
-    function GetAsString: String;
-    function GetAsDateTime: TDateTime;
-    function GetAsFloat: Double;
-    function GetAsBoolean: Boolean;
-    function GetAsBSONObject: IBSONObject;
-    function GetAsBSONArray: IBSONArray;
-  public
-    property Name: String read FName;
-    property Value: Variant read FValue write SetValue;
-    property ValueType: TBsonValueType read FValueType;
-    property AsObjectId: IBSONObjectId read GetAsObjectId;
-    property AsInteger: Integer read GetAsInteger;
-    property AsInt64: Int64 read GetAsInt64;
-    property AsString: String read GetAsString;
-    property AsDateTime: TDateTime read GetAsDateTime;
-    property AsFloat: Double read GetAsFloat;
-    property AsBoolean: Boolean read GetAsBoolean;
-    property AsBSONObject: IBSONObject read GetAsBSONObject;
-    property AsBSONArray: IBSONArray read GetAsBSONArray;
-
-    function GetValueTypeDesc: String;
-
-    function IsInteger: Boolean;
-    function IsObjectId: Boolean;
-
-    class function NewFrom(AName: String;const AValue: Variant): TBSONItem;
-  end;
-
-  TDuplicatesAction = (daUpdateValue, daError);
-
+                      
   IBSONBasicObject = interface
     ['{FF4178D1-D45B-480D-9704-85ACD5BA02E9}']
     function GetItem(AIndex: Integer): TBSONItem;
@@ -133,6 +88,82 @@ type
     ['{ADA231EC-9BD6-4FEB-BCB7-56D88580319E}']
 
     function Put(Value: Variant): IBSONArray;
+  end;
+
+  TBSONObjectId = class(TInterfacedObject, IBSONObjectId)
+  private
+    FOID: String;
+
+    procedure GenId;
+  public
+    constructor Create;overload;
+    constructor Create(const OID: String);overload;
+
+    class function NewFrom(): IBSONObjectId;
+    class function NewFromOID(const OID: String): IBSONObjectId;
+
+    function AsByteArray: TBSONObjectIdByteArray;
+    function ToStringMongo: String;
+  end;
+
+  TBSONBinary = class(TInterfacedObject, IBSONBinary)
+  private
+    FStream: TMemoryStream;
+    FSubType: Integer;
+    function GetStream: TMemoryStream;
+    function GetSubType: Integer;
+    function GetSize: Integer;
+  public
+    constructor Create(ASubType: Integer = BSON_SUBTYPE_GENERIC);
+
+    class function NewFromFile(AFileName: String; ASubType: Integer = BSON_SUBTYPE_GENERIC): IBSONBinary;
+
+    destructor Destroy; override;
+
+    property Stream: TMemoryStream read GetStream;
+    property SubType: Integer read GetSubType;
+    property Size: Integer read GetSize;
+  end;
+
+  TBSONItem = class
+  private
+    FName: String;
+    FValue: Variant;
+    FValueType: TBsonValueType;
+
+    procedure SetValue(const Value: Variant);
+
+    function GetAsObjectId: IBSONObjectId;
+    function GetAsInteger: Integer;
+    function GetAsInt64: Int64;
+    function GetAsString: String;
+    function GetAsDateTime: TDateTime;
+    function GetAsFloat: Double;
+    function GetAsBoolean: Boolean;
+    function GetAsBSONObject: IBSONObject;
+    function GetAsBSONArray: IBSONArray;
+    function GetAsBSONBinary: IBSONBinary;
+  public
+    property Name: String read FName;
+    property Value: Variant read FValue write SetValue;
+    property ValueType: TBsonValueType read FValueType;
+    property AsObjectId: IBSONObjectId read GetAsObjectId;
+    property AsInteger: Integer read GetAsInteger;
+    property AsInt64: Int64 read GetAsInt64;
+    property AsString: String read GetAsString;
+    property AsDateTime: TDateTime read GetAsDateTime;
+    property AsFloat: Double read GetAsFloat;
+    property AsBoolean: Boolean read GetAsBoolean;
+    property AsBSONObject: IBSONObject read GetAsBSONObject;
+    property AsBSONArray: IBSONArray read GetAsBSONArray;
+    property AsBSONBinary: IBSONBinary read GetAsBSONBinary;
+
+    function GetValueTypeDesc: String;
+
+    function IsInteger: Boolean;
+    function IsObjectId: Boolean;
+
+    class function NewFrom(AName: String;const AValue: Variant): TBSONItem;
   end;
 
   TBSONObject = class(TInterfacedObject, IBSONObject)
@@ -188,7 +219,7 @@ type
 
 implementation
 
-uses BSON, windows, Registry, SysUtils, Variants, MongoUtils,
+uses windows, Registry, SysUtils, Variants, MongoUtils,
   MongoException, TypInfo;
 
 var
@@ -474,6 +505,15 @@ end;
 
 { TBSONItem }
 
+function TBSONItem.GetAsBSONBinary: IBSONBinary;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONBinary, Result);
+  end;
+end;
+
 function TBSONItem.GetAsBoolean: Boolean;
 begin
   if (FValueType = bvtBoolean) then
@@ -658,6 +698,48 @@ end;
 class function TBSONObjectQueryHelper.NewFilterOid(AObjects: IBSONObject): IBSONObject;
 begin
   Result  := TBSONObject.NewFrom('_id', AObjects.GetOid);
+end;
+
+{ TBSONBinary }
+
+constructor TBSONBinary.Create(ASubType: Integer);
+begin
+  inherited Create;
+
+  if not(ASubType in [BSON_SUBTYPE_GENERIC, BSON_SUBTYPE_OLD_BINARY]) then
+  begin
+    raise EIllegalArgumentException.CreateResFmt(@sInvalidBSONBinarySubtype, [ASubType]);
+  end;
+
+  FStream := TMemoryStream.Create;
+  FSubType := ASubType;
+end;
+
+destructor TBSONBinary.Destroy;
+begin
+  FStream.Free;
+  inherited;
+end;
+
+function TBSONBinary.GetSize: Integer;
+begin
+  Result := FStream.Size;
+end;
+
+function TBSONBinary.GetStream: TMemoryStream;
+begin
+  Result := FStream;
+end;
+
+function TBSONBinary.GetSubType: Integer;
+begin
+  Result := FSubType;
+end;
+
+class function TBSONBinary.NewFromFile(AFileName: String; ASubType: Integer): IBSONBinary;
+begin
+  Result := TBSONBinary.Create(ASubType);
+  Result.Stream.LoadFromFile(AFileName);
 end;
 
 initialization

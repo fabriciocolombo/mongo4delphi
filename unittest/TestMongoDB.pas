@@ -17,7 +17,7 @@ type
 
 implementation
 
-uses BSONTypes, TestFramework;
+uses BSONTypes;
 
 { TTestMongoDB }
 

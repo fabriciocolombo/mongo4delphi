@@ -29,11 +29,14 @@ type
     procedure EncodeUUID;
     procedure EncodeUnicodeKey;
     procedure EncodeJavaScriptWhere;
+    procedure EncodeBinary;
+    procedure EncodeBinarySubTypeOldBinary;
   end;
 
 implementation
 
-uses Variants, SysUtils, BSONTypes, ComObj, MongoUtils, MongoException;
+uses Variants, SysUtils, BSONTypes, ComObj, MongoUtils, MongoException,
+  BSON;
 
 { TTestEncoder }
 
@@ -214,6 +217,7 @@ begin
   try
     FEncoder.SetBuffer(nil);
     FEncoder.Encode(nil);
+    Fail('Not raise exception');
   except
     on E: Exception do
       CheckTrue(E is EMongoBufferIsNotConfigured, E.Message);
@@ -261,6 +265,54 @@ begin
   FEncoder.Encode(vBSON);
 
   CheckEquals(26, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeBinary;
+var
+  vBSON: IBSONObject;
+  vBinary: IBSONBinary;
+begin
+  vBinary := TBSONBinary.Create;
+  vBinary.Stream.LoadFromFile('resource\image.gif'); //size 1.335
+
+  vBSON := TBSONObject.Create;
+  vBSON.Put('img', vBinary);
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'img' size 4 in UTF8
+  //Write valueSize size 4
+  //Write subtype size 1
+  //Write binary size 1335
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(1350, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeBinarySubTypeOldBinary;
+var
+  vBSON: IBSONObject;
+  vBinary: IBSONBinary;
+begin
+  vBinary := TBSONBinary.Create(BSON_SUBTYPE_OLD_BINARY);
+  vBinary.Stream.LoadFromFile('resource\image.gif'); //size 1.335
+
+  vBSON := TBSONObject.Create;
+  vBSON.Put('img', vBinary);
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'img' size 4 in UTF8
+  //Write valueSize size 4
+  //Write subtype size 1
+  //Write binary size 1335
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(1354, FStream.Size);
 end;
 
 initialization
