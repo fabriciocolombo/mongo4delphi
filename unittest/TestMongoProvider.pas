@@ -92,8 +92,8 @@ var
 begin
   CheckNull(FProvider.FindOne(sDB, sColl));
 
-  vOne := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
-  vTwo := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vOne := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vTwo := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
 
   CheckWriteResult(FProvider.Insert(sDB, sColl, [vOne, vTwo]));
 
@@ -112,8 +112,8 @@ var
   vOne, vTwo, vFilter,
   vDoc: IBSONObject;
 begin
-  vOne := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
-  vTwo := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vOne := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vTwo := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
 
   CheckWriteResult(FProvider.Insert(sDB, sColl, vOne));
   CheckWriteResult(FProvider.Insert(sDB, sColl, vTwo));
@@ -261,7 +261,7 @@ procedure TTestMongoProvider.TestUpdate;
 var
   vInsert, vDoc: IBSONObject;
 begin
-  vInsert := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vInsert := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
 
   CheckWriteResult(FProvider.Insert(sDB, sColl, vInsert));
 
@@ -280,8 +280,8 @@ procedure TTestMongoProvider.TestUpdateMulti;
 var
   vOne, vTwo, vDoc: IBSONObject;
 begin
-  vOne := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
-  vTwo := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vOne := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vTwo := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
 
   CheckWriteResult(FProvider.Insert(sDB, sColl, [vOne, vTwo]));
 
@@ -295,7 +295,7 @@ procedure TTestMongoProvider.TestUpdateUpsert;
 var
   vInsert, vDoc: IBSONObject;
 begin
-  vInsert := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vInsert := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
 
   CheckWriteResult(FProvider.Update(sDB, sColl, TBSONObject.Empty, vInsert, True, False));
 
@@ -307,8 +307,8 @@ procedure TTestMongoProvider.TestUpdateUpsertMulti;
 var
   vOne, vTwo, vDoc: IBSONObject;
 begin
-  vOne := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
-  vTwo := TBSONObject.NewFrom('_id', TObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vOne := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
+  vTwo := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('id', 123).Put('code', 2);
 
   CheckWriteResult(FProvider.Update(sDB, sColl, TBSONObject.Empty, TBSONObject.NewFrom('$set', TBSONObject.NewFrom('code', 7)), True, True));
 

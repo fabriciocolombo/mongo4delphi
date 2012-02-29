@@ -132,7 +132,7 @@ end;
 
 procedure TTestMongoCollection.InsertBSONObjectID;
 begin
-  DefaultCollection.Insert(TBSONObject.NewFrom('id', 123).Put('_id', TObjectId.NewFrom));
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 123).Put('_id', TBSONObjectId.NewFrom));
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectUUID;
@@ -144,7 +144,7 @@ procedure TTestMongoCollection.FindOne;
 var
   vDoc: IBSONObject;
 begin
-  DefaultCollection.Insert(TBSONObject.NewFrom('_id', TObjectId.NewFromOID('4f46b9fa65760489cc96ab49')).Put('id', 123));
+  DefaultCollection.Insert(TBSONObject.NewFrom('_id', TBSONObjectId.NewFromOID('4f46b9fa65760489cc96ab49')).Put('id', 123));
 
 //  DefaultCollection.Insert(TBSONObject.NewFrom('id', 123).Put('items', TBSONArray.NewFromValues([1, 2, 3])));
 

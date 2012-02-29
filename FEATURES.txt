@@ -16,7 +16,11 @@
 		OK - GetDatabaseNames
 		OK - DropDatabase
 		OK - DropCollection(CollName) or Collection.Drop()
-
+		OK - Added getCollectionNames to TMongoDB. Splitted into: GetCollections(include system collections) and GetUserCollections(not include system collections)	
+		OK - Added CreateCollection(name, options) to TMongoDB	
+		OK - Added List<DBObject> getIndexInfo() to TMongoCollection to return all indexes information
+		OK - Added dropIndexes() to TMongoCollection to drop all indexes
+	
     TODO - [Automatically connect to proper server, and failover], when connecting to a Replica Set
     TODO - ensureIndex commands should be cached to prevent excessive communication with the database. (Or, the driver user should be informed that
 			    ensureIndex is not a lightweight operation for the particular driver.)

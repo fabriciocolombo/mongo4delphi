@@ -29,9 +29,9 @@ uses MongoException, SysUtils;
 procedure TTestBSONObject.ExtractOID;
 var
   vDoc: IBSONObject;
-  vNewOID, vOID: IObjectId;
+  vNewOID, vOID: IBSONObjectId;
 begin
-  vNewOID := TObjectId.NewFrom;
+  vNewOID := TBSONObjectId.NewFrom;
   vDoc := TBSONObject.NewFrom('_id', vNewOID).Put('code', 1);
 
   Check(vDoc.HasOid);

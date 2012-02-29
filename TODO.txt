@@ -1,45 +1,12 @@
-Mongo Driver Checklist
-	http://www.mongodb.org/display/DOCS/Feature+Checklist+for+Mongo+Drivers
+Mongo Delphi Driver API	
+	Use typed exception descendents of EMongoException when raise.
+	Use resourcestring for exception messages rather than hard coded strings.
 
-Mongo Driver Requirements	- High priority
-	* BSON serialization¹
-	* BSON deserialization¹
-	*	database profiling: set/get profiling level, get profiling info	
-	  getProfilingLevel, setProfilingLevel, getProfilingInfo 
-	*	advanced connection management (slave okay)
-	* Automatically connect to proper server, and failover, when connecting to a Replica Set
-	*	automatic reconnection on connection failure
-	* Support to GridFS
-
-Medium priority
-  * validate a collection in a database
-  * Tailable cursor support - http://www.mongodb.org/display/DOCS/Tailable+Cursors
 	
-Fully implemented:	
-	*	full cursor support (e.g. support OP_GET_MORE operation) - OK, needs design review 
-	*	close exhausted cursors via OP_KILL_CURSORS - OK
-	*	support for running database commands - OK
-	*	handle query errors - OK, support to GetLastError
-	*	hint - Ok
-	* explain - OK
-	* count - OK
-	* snapshot queries - OK
-	* $where - OK
-	* authentication - OK
-	* Insert - OK
-	* Update - OK
-	* Remove - OK
-	* batch insert - OK
-	* batch update - OK, use the operator Multi to modify multiple records
-	* batch remove - OK, using a query to remove multiple records
-	* Create/Drop Indexes - OK
+Mongo Driver Requirements	- High priority
+	PARTIAL - BSON serialization/deserialization¹
 	
 To Fully mongodb support	
-	OK - Add getCollectionNames to TMongoDB. Splitted into: GetCollections(include system collections) and GetUserCollections(not include system collections)	
-	OK - Add CreateCollection(name, options) to TMongoDB	
-	OK - Add List<DBObject> getIndexInfo() to TMongoCollection to return all indexes information
-	OK - Add dropIndexes() to TMongoCollection to drop all indexes
-	
 	TODO - Add size protected to MongoDecoder 16MB. This information could be retrieved with maxBsonObjectSize property of buildinfo or isMaster command:
 				int size = readInt();
 				if ( size <= 0 || size > ( 16 * 1024 * 1024 ) )
@@ -53,12 +20,17 @@ To Fully mongodb support
 	TODO - Add eval() to TMongoDB
 	TODO - Add AddUser and RemoveUser in TMongoDB
 	TODO - DBRef support to link objects
+  TODO - validate a collection in a database
+  TODO - Tailable cursor support - http://www.mongodb.org/display/DOCS/Tailable+Cursors
+	TODO - database profiling: set/get profiling level, get profiling info(getProfilingLevel, setProfilingLevel, getProfilingInfo) 
+	TODO - advanced connection management (slave okay)
+	TODO - Automatically connect to proper server, and failover, when connecting to a Replica Set
+	TODO - automatic reconnection on connection failure
+	TODO - Support to GridFS
 
-To Improve the delphi driver API	
-	TODO - Replace Exception with typed exception descendents of EMongoException
-	TODO - Replace message hard coded string with ResourceString
-	TODO - Review naming of ObjectId. Should be contain the BSON prefix?
-	TODO - Implementation from TBSONStream.ReadObjectId must be moved to ObjectId implementation
+Demo Application
+  TODO - Create a demo application with basic features
+	 
 	TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
 	TODO - Include a Log for debug with almost Console
 	TODO - Requests manager. Each request must be a self stream

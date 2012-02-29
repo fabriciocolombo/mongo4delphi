@@ -112,13 +112,13 @@ begin
     BSON_STRING: ACurrent.Put(vName, ABuffer.ReadUTF8String);
     BSON_DOC: ACurrent.Put(vName, DecodeObject(ABuffer));
     BSON_ARRAY: ACurrent.Put(vName, DecodeArray(ABuffer));
-    BSON_OBJECTID: ACurrent.Put(vName, TObjectId.NewFromOID(ABuffer.ReadObjectId));
+    BSON_OBJECTID: ACurrent.Put(vName, TBSONObjectId.NewFromOID(ABuffer.ReadObjectId));
     BSON_BOOLEAN: ACurrent.Put(vName, (ABuffer.ReadByte = BSON_BOOL_TRUE));
     BSON_DATETIME: ACurrent.Put(vName, VarFromDateTime((ABuffer.ReadInt64/MSecsPerDay) + UnixDateDelta));
     BSON_INT32: ACurrent.Put(vName, ABuffer.ReadInt);
     BSON_INT64: ACurrent.Put(vName, ABuffer.ReadInt64);
   else
-    raise EIllegalArgumentException.CreateFmt('Decoder not implements the type "%d".', [vType]);
+    raise EDecodeBSONTypeException.CreateResFmt(@sDecodeBSONTypeException, [vType]);
   end;
   Result := True;
 end;
@@ -138,7 +138,7 @@ begin
 
   vNumRead := (ABuffer.Position - vPosition);
   if vNumRead <> vLength then
-    raise EIllegalArgumentException.CreateFmt('Bad data. Lengths don''t match read:"%d" != len:"%d"', [vNumRead, vLength]);
+    raise EDecodeResponseSizeError.CreateResFmt(@sDecodeResponseSizeError, [vNumRead, vLength]);
 end;
 
 end.

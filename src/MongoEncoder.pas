@@ -48,7 +48,7 @@ type
     procedure putFloat(AName: String; AValue: Extended);
     procedure putString(AName: String; AValue: String);
     procedure putBoolean(AName: String; AValue: Boolean);
-    procedure putObjectId(AName: String; const AValue: IObjectId);
+    procedure putObjectId(AName: String; const AValue: IBSONObjectId);
     procedure putUUID(AName: String; AValue: TGUID);
 
     procedure PutInterfaceField(name: String; const val: IUnknown);
@@ -213,7 +213,7 @@ procedure TDefaultMongoEncoder.PutInterfaceField(name: String; const val: IInter
 var
   vBSONObject: IBSONObject;
   vBSONArray: IBSONArray;
-  vObjectId: IObjectId;
+  vObjectId: IBSONObjectId;
 begin
   if Supports(val, IBSONArray, vBSONArray) then
   begin
@@ -225,15 +225,15 @@ begin
     put(BSON_DOC, name);
     Encode(vBSONObject);
   end
-  else if Supports(val, IObjectId, vObjectId) then
+  else if Supports(val, IBSONObjectId, vObjectId) then
   begin
     putObjectId(name, vObjectId);
   end;
 end;
 
-procedure TDefaultMongoEncoder.putObjectId(AName: String; const AValue: IObjectId);
+procedure TDefaultMongoEncoder.putObjectId(AName: String; const AValue: IBSONObjectId);
 var
-  OID: TObjectIdByteArray;
+  OID: TBSONObjectIdByteArray;
 begin
   put(BSON_OBJECTID, AName);
 

@@ -31,15 +31,15 @@ type
   IBSONObject = interface;
   IBSONArray = interface;
   
-  TObjectIdByteArray = array[0..11] of byte;
+  TBSONObjectIdByteArray = array[0..11] of byte;
 
-  IObjectId = interface
+  IBSONObjectId = interface
     ['{B666B7F9-2E6A-45EA-A686-BCF212821AAA}']
-    function AsByteArray: TObjectIdByteArray;
+    function AsByteArray: TBSONObjectIdByteArray;
     function ToStringMongo: String;
   end;
 
-  TObjectId = class(TInterfacedObject, IObjectId)
+  TBSONObjectId = class(TInterfacedObject, IBSONObjectId)
   private
     FOID: String;
 
@@ -48,10 +48,10 @@ type
     constructor Create;overload;
     constructor Create(const OID: String);overload;
 
-    class function NewFrom(): IObjectId;
-    class function NewFromOID(const OID: String): IObjectId;
+    class function NewFrom(): IBSONObjectId;
+    class function NewFromOID(const OID: String): IBSONObjectId;
 
-    function AsByteArray: TObjectIdByteArray;
+    function AsByteArray: TBSONObjectIdByteArray;
     function ToStringMongo: String;
   end;
 
@@ -67,7 +67,7 @@ type
 
     procedure SetValue(const Value: Variant);
 
-    function GetAsObjectId: IObjectId;
+    function GetAsObjectId: IBSONObjectId;
     function GetAsInteger: Integer;
     function GetAsInt64: Int64;
     function GetAsString: String;
@@ -80,7 +80,7 @@ type
     property Name: String read FName;
     property Value: Variant read FValue write SetValue;
     property ValueType: TBsonValueType read FValueType;
-    property AsObjectId: IObjectId read GetAsObjectId;
+    property AsObjectId: IBSONObjectId read GetAsObjectId;
     property AsInteger: Integer read GetAsInteger;
     property AsInt64: Int64 read GetAsInt64;
     property AsString: String read GetAsString;
@@ -126,7 +126,7 @@ type
     function PutAll(const ASource: IBSONObject): IBSONObject;
 
     function HasOid: Boolean;
-    function GetOid: IObjectId;
+    function GetOid: IBSONObjectId;
   end;
 
   IBSONArray = interface(IBSONBasicObject)
@@ -165,7 +165,7 @@ type
     function PutAll(const ASource: IBSONObject): IBSONObject;
 
     function HasOid: Boolean;
-    function GetOid: IObjectId;
+    function GetOid: IBSONObjectId;
   end;
 
   TBSONArray = class(TBSONObject, IBSONArray)
@@ -236,9 +236,9 @@ begin
   _mongoObjectID_Counter := GetTickCount;
 end;
 
-{ TObjectId }
+{ TBSONObjectId }
 
-function TObjectId.AsByteArray: TObjectIdByteArray;
+function TBSONObjectId.AsByteArray: TBSONObjectIdByteArray;
 var
   vStringOID: String;
   i, j: Integer;
@@ -264,21 +264,21 @@ begin
   end;
 end;
 
-constructor TObjectId.Create;
+constructor TBSONObjectId.Create;
 begin
   inherited;
   
   GenId;
 end;
 
-constructor TObjectId.Create(const OID: String);
+constructor TBSONObjectId.Create(const OID: String);
 begin
   inherited Create;
 
   FOID := OID;
 end;
 
-procedure TObjectId.GenId;
+procedure TBSONObjectId.GenId;
 var
   st:TSystemTime;
   a,b,c,d:integer;
@@ -309,17 +309,17 @@ begin
     hex[(d shr  4) and $F]+hex[(d       ) and $F];
 end;
 
-class function TObjectId.NewFrom: IObjectId;
+class function TBSONObjectId.NewFrom: IBSONObjectId;
 begin
-  Result := TObjectId.Create;
+  Result := TBSONObjectId.Create;
 end;
 
-class function TObjectId.NewFromOID(const OID: String): IObjectId;
+class function TBSONObjectId.NewFromOID(const OID: String): IBSONObjectId;
 begin
-  Result := TObjectId.Create(OID);
+  Result := TBSONObjectId.Create(OID);
 end;
 
-function TObjectId.ToStringMongo: String;
+function TBSONObjectId.ToStringMongo: String;
 begin
   Result := Format('%s%s%s', [BSON_OBJECTID_PREFIX, FOID, BSON_OBJECTID_SUFIX]);
 end;
@@ -452,7 +452,7 @@ begin
   Result := Assigned(vItem) and Assigned(vItem.AsObjectId);
 end;
 
-function TBSONObject.GetOid: IObjectId;
+function TBSONObject.GetOid: IBSONObjectId;
 var
   vIndex: Integer;
   vItem: TBSONItem;
@@ -468,7 +468,7 @@ begin
 
   if (Result = nil) then
   begin
-    raise EBSONObjectHasNoObjectId.Create('Object has no "_id" field.');
+    raise EBSONObjectHasNoObjectId.CreateRes(@sBSONObjectHasNoObjectId);
   end;
 end;
 
@@ -479,7 +479,7 @@ begin
   if (FValueType = bvtBoolean) then
     Result := FValue
   else
-    raise EBSONValueConvertError.Create('Cannot convert the value to Boolean.');
+    raise EBSONValueConvertError.CreateResFmt(@sBSONValueConvertError, ['Boolean']);
 end;
 
 function TBSONItem.GetAsBSONArray: IBSONArray;
@@ -505,7 +505,7 @@ begin
   if (FValueType = bvtDateTime) then
     Result := VarToDateTime(FValue)
   else
-    raise EBSONValueConvertError.Create('Cannot convert the value to TDateTime.');
+    raise EBSONValueConvertError.CreateResFmt(@sBSONValueConvertError, ['TDateTime']);
 end;
 
 function TBSONItem.GetAsFloat: Double;
@@ -513,7 +513,7 @@ begin
   if (FValueType = bvtDouble) or IsInteger then
     Result := FValue
   else
-    raise EBSONValueConvertError.Create('Cannot convert the value to Double.');
+    raise EBSONValueConvertError.CreateResFmt(@sBSONValueConvertError, ['Double']);
 end;
 
 function TBSONItem.GetAsInt64: Int64;
@@ -521,7 +521,7 @@ begin
   if IsInteger then
     Result := FValue
   else
-    raise EBSONValueConvertError.Create('Cannot convert the value to Int64.');
+    raise EBSONValueConvertError.CreateResFmt(@sBSONValueConvertError, ['Int64']);
 end;
 
 function TBSONItem.GetAsInteger: Integer;
@@ -529,12 +529,12 @@ begin
   Result := AsInt64;
 end;
 
-function TBSONItem.GetAsObjectId: IObjectId;
+function TBSONItem.GetAsObjectId: IBSONObjectId;
 begin
   Result := nil;
   if (FValueType = bvtInterface) then
   begin
-    Supports(IUnknown(FValue), IObjectId, Result);
+    Supports(IUnknown(FValue), IBSONObjectId, Result);
   end;
 end;
 
@@ -556,7 +556,7 @@ end;
 function TBSONItem.IsObjectId: Boolean;
 begin
   Result := (FValueType = bvtInterface) and
-              Supports(IUnknown(FValue), IObjectId);
+              Supports(IUnknown(FValue), IBSONObjectId);
 end;
 
 class function TBSONItem.NewFrom(AName: String;const AValue: Variant): TBSONItem;
@@ -589,7 +589,7 @@ begin
     varBoolean: FValueType := bvtBoolean;
     varDispatch, varUnknown: FValueType := bvtInterface;
   else
-    raise EBSONValueTypeUnknown.CreateFmt('Type "%s" not implemented.', [IntToHex(VarType(FValue), 4)]);
+    raise EBSONValueTypeUnknown.CreateResFmt(@sBSONValueTypeUnknown, [IntToHex(VarType(FValue), 4)]);
   end;
 end;
 

@@ -60,6 +60,10 @@ type
   EBSONValueConvertError = class(EBSONTypesException);
   EBSONValueTypeUnknown = class(EBSONTypesException);
 
+  EMongoDecoderException = class(EMongoException);
+  EDecodeBSONTypeException = class(EMongoDecoderException);
+  EDecodeResponseSizeError = class(EMongoDecoderException);
+
 resourcestring
   sInvalidVariantValueType = 'Can''t serialize type "%s".';
   sMongoConnectionFailureException = 'failed to connect to "%s:%d"';
@@ -67,9 +71,13 @@ resourcestring
   sBSONDuplicateKeyInList = 'Key "%s" already exist.';
   sBSONCannotChangeDuplicateAction = 'Cannot change duplicate action after items added ';
   sMongoDBCursorStateException = 'Cannot change state after open query.';
-
   sMongoInvalidResponse = 'Invalid response for requestId "%d".';
   sMongoReponseAborted = 'Response aborted for requestId "%d".';
+  sBSONObjectHasNoObjectId = 'Object has no "_id" field.';
+  sBSONValueConvertError = 'Cannot convert the value to %s.';
+  sBSONValueTypeUnknown = 'Type "%s" not implemented.';
+  sDecodeBSONTypeException = 'Decoder not implements the type "%d".';
+  sDecodeResponseSizeError = 'Bad data. Lengths don''t match read:"%d" != len:"%d"';
 
 implementation
 
