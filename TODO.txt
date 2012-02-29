@@ -37,10 +37,9 @@ Fully implemented:
 To Fully mongodb support	
 	OK - Add getCollectionNames to TMongoDB. Splitted into: GetCollections(include system collections) and GetUserCollections(not include system collections)	
 	OK - Add CreateCollection(name, options) to TMongoDB	
+	OK - Add List<DBObject> getIndexInfo() to TMongoCollection to return all indexes information
+	OK - Add dropIndexes() to TMongoCollection to drop all indexes
 	
-	TODO - Add dropIndexes() to TMongoCollection to drop all indexes
-	TODO - Add List<DBObject> getIndexInfo() to TMongoCollection to return all indexes information
-	TODO - What is QueryOptions in a Collection?
 	TODO - Add size protected to MongoDecoder 16MB. This information could be retrieved with maxBsonObjectSize property of buildinfo or isMaster command:
 				int size = readInt();
 				if ( size <= 0 || size > ( 16 * 1024 * 1024 ) )
@@ -63,7 +62,7 @@ To Improve the delphi driver API
 	TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
 	TODO - Include a Log for debug with almost Console
 	TODO - Requests manager. Each request must be a self stream
-
+	
 (1) Types not yet implemented
   BSON_BINARY       = $05; 
   BSON_REGEX        = $0B; 

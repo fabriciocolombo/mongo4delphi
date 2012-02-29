@@ -35,7 +35,6 @@ type
     procedure TestBatchInsert;
     procedure TestAuthentication;
     procedure TestCreateIndex;
-    procedure TestDropIndex;
   end;
 
 implementation
@@ -133,13 +132,6 @@ end;
 procedure TTestMongoProvider.TestCreateIndex;
 begin
   CheckWriteResult(FProvider.CreateIndex(sDB, sColl, TBSONObject.NewFrom('id', 1), 'idx_teste'));
-end;
-
-procedure TTestMongoProvider.TestDropIndex;
-begin
-  CheckWriteResult(FProvider.CreateIndex(sDB, sColl, TBSONObject.NewFrom('id', 1), 'idx_teste'));
-
-  CheckCommandResult(FProvider.DropIndex(sDB, sColl, 'idx_teste'));
 end;
 
 procedure TTestMongoProvider.TestFindOne;

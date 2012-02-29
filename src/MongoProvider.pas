@@ -118,7 +118,6 @@ type
     procedure Logout(DB: String);
 
     function CreateIndex(DB: String; Collection: String; KeyFields: IBSONObject; AIndexName: String = ''): IWriteResult;
-    function DropIndex(DB: String; Collection: String; AIndexName: String): ICommandResult;
   end;
 
   TResponse = class
@@ -202,7 +201,6 @@ type
     procedure Logout(DB: String);
 
     function CreateIndex(DB: String; Collection: String; KeyFields: IBSONObject; AIndexName: String): IWriteResult;
-    function DropIndex(DB: String; Collection: String; AIndexName: String): ICommandResult;
 
    //TODO - Assert socket is Connected
   end;
@@ -717,16 +715,6 @@ begin
                               .Put('key', KeyFields);
 
   Result := Insert(DB, SYSTEM_INDEXES_COLLECTION, vIndexOptions);
-end;
-
-function TDefaultMongoProvider.DropIndex(DB, Collection, AIndexName: String): ICommandResult;
-var
-  vIndexOptions: IBSONObject;
-begin
-  vIndexOptions := TBSONObject.NewFrom('deleteIndexes', Collection)
-                              .Put('index', AIndexName);
-
-  Result := RunCommand(DB, vIndexOptions);
 end;
 
 { TWriteResult }

@@ -115,7 +115,8 @@ type
     function Count(Query: IBSONObject; Limit: Integer = 0): Integer;overload;
 
     function CreateIndex(KeyFields: IBSONObject; AIndexName: String = ''): IWriteResult;
-    function DropIndex(AIndexName: String): ICommandResult;
+    procedure DropIndex(AIndexName: String);
+    procedure DropIndexes;
 
     procedure Drop();
 
@@ -132,6 +133,7 @@ type
     function FindOne(Query: IBSONObject): IBSONObject;overload;
     function FindOne(Query, Fields: IBSONObject): IBSONObject;overload;
 
+    function GetIndexInfo: IBSONArray;
     //TODO Map/Reduce
   end;
 
@@ -462,9 +464,24 @@ begin
   Result := Find(Query, TBSONObject.Create as IBSONObject);
 end;
 
-function TMongoCollection.DropIndex(AIndexName: String): ICommandResult;
+procedure TMongoCollection.DropIndex(AIndexName: String);
+var
+  vCommand: IBSONObject;
+  vCommandResult: ICommandResult;
 begin
-  Result := Provider.DropIndex(FMongoDatabase.DBName, FCollectionName, AIndexName);
+  vCommand := TBSONObject.NewFrom('deleteIndexes', FCollectionName)
+                         .Put('index' , AIndexName);
+
+  //TODO - Cache of EnsureIndex
+  //ResetIndexCache();
+
+  vCommandResult := FMongoDatabase.RunCommand(vCommand);
+
+  if (not vCommandResult.Ok) or
+     (not SameText(vCommandResult.GetErrorMessage, 'ns not found')) then
+  begin
+    vCommandResult.RaiseOnError;
+  end;
 end;
 
 function TMongoCollection.Find(Query, Fields: IBSONObject): IMongoDBCursor;
@@ -540,6 +557,28 @@ end;
 function TMongoCollection.FindOne(Query, Fields: IBSONObject): IBSONObject;
 begin
   Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName, Query, Fields);
+end;
+
+function TMongoCollection.GetIndexInfo: IBSONArray;
+var
+  vCommand: IBSONObject;
+  vCursor: IMongoDBCursor;
+begin
+  Result := TBSONArray.Create;
+
+  vCommand := TBSONObject.NewFrom('ns', FullName);
+
+  vCursor := FMongoDatabase.GetCollection(SYSTEM_INDEXES_COLLECTION).Find(vCommand);
+
+  while (vCursor.HasNext) do
+  begin
+    Result.Put(vCursor.Next);
+  end;
+end;
+
+procedure TMongoCollection.DropIndexes;
+begin
+  DropIndex('*');
 end;
 
 { TMongoDBCursor }

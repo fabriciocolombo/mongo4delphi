@@ -155,7 +155,7 @@ begin
   vDoc := DefaultCollection.Find.Hint(TBSONObject.NewFrom('idHint', 1)).Explain;
   CheckEquals('BtreeCursor idx_test_hint', vDoc.Items['cursor'].AsString);
 
-  Check(DefaultCollection.DropIndex('idx_test_hint').Ok);
+  DefaultCollection.DropIndex('idx_test_hint');
 end;
 
 initialization

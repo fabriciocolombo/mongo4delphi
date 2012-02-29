@@ -23,6 +23,8 @@ type
     procedure FindOne;
     procedure TestCount;
     procedure TestCreateCollection;
+    procedure TestGetIndexInfo;
+    procedure TestDropIndexes;
   end;
 
 implementation
@@ -193,6 +195,44 @@ begin
   vCollections := DB.GetUserCollections;
   CheckEquals(1, vCollections.Count);
   CheckEquals(sColl, vCollections.Items['name'].AsString);
+end;
+
+procedure TTestMongoCollection.TestDropIndexes;
+var
+  vIndexes: IBSONArray;
+begin
+  vIndexes := DefaultCollection.GetIndexInfo;
+  CheckNotNull(vIndexes);
+  CheckEquals(0, vIndexes.Count);
+
+  DefaultCollection.CreateIndex(TBSONObject.NewFrom('id', 1), 'idx_test');
+
+  vIndexes := DefaultCollection.GetIndexInfo;
+  CheckNotNull(vIndexes);
+  CheckEquals(2, vIndexes.Count); //One more to _id
+
+  DefaultCollection.DropIndexes;
+  
+  vIndexes := DefaultCollection.GetIndexInfo;
+  CheckNotNull(vIndexes);
+  CheckEquals(1, vIndexes.Count); //Index for _id is not deleted  
+end;
+
+procedure TTestMongoCollection.TestGetIndexInfo;
+var
+  vIndexes: IBSONArray;
+begin
+  vIndexes := DefaultCollection.GetIndexInfo;
+  CheckNotNull(vIndexes);
+  CheckEquals(0, vIndexes.Count);
+
+  DefaultCollection.CreateIndex(TBSONObject.NewFrom('id', 1), 'idx_test');
+
+  vIndexes := DefaultCollection.GetIndexInfo;
+  CheckNotNull(vIndexes);
+  CheckEquals(2, vIndexes.Count);
+
+  CheckEquals('idx_test', vIndexes[1].AsBSONObject.Items['name'].AsString);
 end;
 
 initialization
