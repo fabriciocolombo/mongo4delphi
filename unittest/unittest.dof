@@ -141,16 +141,15 @@ Item0=FASTMM
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=9
-Item0=..\external\TPerlRegEx
-Item1=..\..\src
-Item2=D:\Desenvolvimento\OpenSource\delphi\TMongoWire;D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src
-Item3=D:\Desenvolvimento\OpenSource\delphi\TMongoWire
-Item4=sdk;..\public;FastMM
-Item5=sdk;..\public;FastMM4
-Item6=sdk;..\public
-Item7=C:\Program Files\Indy9
-Item8=..\..\public
+Count=8
+Item0=..\..\src
+Item1=D:\Desenvolvimento\OpenSource\delphi\TMongoWire;D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src
+Item2=D:\Desenvolvimento\OpenSource\delphi\TMongoWire
+Item3=sdk;..\public;FastMM
+Item4=sdk;..\public;FastMM4
+Item5=sdk;..\public
+Item6=C:\Program Files\Indy9
+Item7=..\..\public
 [HistoryLists\hlUnitOutputDirectory]
 Count=3
 Item0=lib

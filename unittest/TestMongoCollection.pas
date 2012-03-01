@@ -26,6 +26,7 @@ type
     procedure InsertBSONSymbol;
     procedure InsertBSONCode;
     procedure InsertBSONCode_W_Scope;
+    procedure InsertTimeStamp;
     procedure FindOne;
     procedure FindOneWithRegEx;
     procedure TestCount;
@@ -304,6 +305,18 @@ end;
 procedure TTestMongoCollection.InsertBSONCode_W_Scope;
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('code_w_scope', TBSONCode_W_Scope.NewFrom('this.a>3', TBSONObject.NewFrom('id', 1)))).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.InsertTimeStamp;
+var
+  vDoc: IBSONObject;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('ts', TBSONTimeStamp.NewFrom(0, 0)));
+
+  vDoc := DefaultCollection.FindOne;
+
+  Check(vDoc.Items['ts'].AsBSONTimeStamp.Time > 0);
+  Check(vDoc.Items['ts'].AsBSONTimeStamp.Inc > 0);
 end;
 
 initialization

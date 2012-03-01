@@ -115,6 +115,18 @@ type
     property Scope: IBSONObject read GetScope write SetScope;
   end;
 
+  IBSONTimeStamp = interface
+  ['{F0DC0073-5623-4D08-9A9B-67E97646579C}']
+
+    procedure SetInc(const Value: Integer);
+    procedure SetTime(const Value: Integer);
+    function GetInc: Integer;
+    function GetTime: Integer;
+
+    property Time: Integer read GetTime write SetTime;
+    property Inc: Integer read GetInc write SetInc;
+  end;
+
   IBSONBasicObject = interface
     ['{FF4178D1-D45B-480D-9704-85ACD5BA02E9}']
     function GetItem(AIndex: Integer): TBSONItem;
@@ -261,6 +273,21 @@ type
     class function NewFrom(const ACode: String;const AScope: IBSONObject): IBSONCode_W_Scope;
   end;
 
+  TBSONTimeStamp = class(TInterfacedObject, IBSONTimeStamp)
+  private
+    FTime: Integer;
+    FInc: Integer;
+    procedure SetInc(const Value: Integer);
+    procedure SetTime(const Value: Integer);
+    function GetInc: Integer;
+    function GetTime: Integer;
+  public
+    property Time: Integer read GetTime write SetTime;
+    property Inc: Integer read GetInc write SetInc;
+
+    class function NewFrom(const ATime, AInc: Integer): IBSONTimeStamp;
+  end;
+
   TBSONItem = class
   private
     FName: String;
@@ -283,6 +310,7 @@ type
     function GetAsBSONSymbol: IBSONSymbol;
     function GetAsBSONCode: IBSONCode;
     function GetAsBSONCode_W_Scope: IBSONCode_W_Scope;
+    function GetAsBSONTimeStamp: IBSONTimeStamp;
   public
     property Name: String read FName;
     property Value: Variant read FValue write SetValue;
@@ -300,7 +328,8 @@ type
     property AsBSONRegEx: IBSONRegEx read GetAsBSONRegEx;
     property AsBSONSymbol: IBSONSymbol read GetAsBSONSymbol;
     property AsBSONCode: IBSONCode read GetAsBSONCode;
-    property AsBSONCode_W_Scope: IBSONCode_W_Scope read GetAsBSONCode_W_Scope; 
+    property AsBSONCode_W_Scope: IBSONCode_W_Scope read GetAsBSONCode_W_Scope;
+    property AsBSONTimeStamp: IBSONTimeStamp read GetAsBSONTimeStamp;
 
     function GetValueTypeDesc: String;
 
@@ -364,7 +393,7 @@ type
 implementation
 
 uses windows, Registry, SysUtils, Variants, MongoUtils,
-  MongoException, TypInfo, StrUtils;
+  MongoException, TypInfo, StrUtils, DateUtils;
 
 var
   _mongoObjectID_MachineID: Integer;
@@ -813,6 +842,15 @@ begin
   end;
 end;
 
+function TBSONItem.GetAsBSONTimeStamp: IBSONTimeStamp;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONTimeStamp, Result);
+  end;
+end;
+
 { TBSONArray }
 
 class function TBSONArray.NewFrom(Value: Variant): IBSONArray;
@@ -1093,6 +1131,35 @@ end;
 procedure TBSONCode_W_Scope.SetScope(const Value: IBSONObject);
 begin
   FScope := Value;
+end;
+
+{ TBSONTimeStamp }
+
+function TBSONTimeStamp.GetInc: Integer;
+begin
+  Result := FInc;
+end;
+
+function TBSONTimeStamp.GetTime: Integer;
+begin
+  Result := FTime;
+end;
+
+class function TBSONTimeStamp.NewFrom(const ATime,AInc: Integer): IBSONTimeStamp;
+begin
+  Result := TBSONTimeStamp.Create;
+  Result.Time := ATime;
+  Result.Inc := AInc;
+end;
+
+procedure TBSONTimeStamp.SetInc(const Value: Integer);
+begin
+  FInc := Value;
+end;
+
+procedure TBSONTimeStamp.SetTime(const Value: Integer);
+begin
+  FTime := Value;
 end;
 
 initialization

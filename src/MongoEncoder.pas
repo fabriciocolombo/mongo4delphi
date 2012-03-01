@@ -53,6 +53,7 @@ type
     procedure putBinary(name: String; const val: IBSONBinary);
     procedure putRegEx(name: String; const val: IBSONRegEx);
     procedure putCodeWScope(name: String; const val: IBSONCode_W_Scope);
+    procedure putTimeStamp(name: String; const val: IBSONTimeStamp);
 
     procedure PutObjectField(const AItem: TBSONItem);
     procedure PutInterfaceField(name: String; const val: IUnknown);
@@ -198,6 +199,7 @@ var
   vBSONSymbol: IBSONSymbol;
   vBSONCode: IBSONCode;
   vBSONCode_W_Scope: IBSONCode_W_Scope;
+  vBSONTimeStamp: IBSONTimeStamp;
 begin
   if Supports(val, IBSONArray, vBSONArray) then
   begin
@@ -225,9 +227,13 @@ begin
   begin
     putString(name, vBSONCode.Code, BSON_CODE);
   end
-   else if Supports(val, IBSONCode_W_Scope, vBSONCode_W_Scope) then
+  else if Supports(val, IBSONCode_W_Scope, vBSONCode_W_Scope) then
   begin
     putCodeWScope(name, vBSONCode_W_Scope);
+  end
+  else if Supports(val, IBSONTimeStamp, vBSONTimeStamp) then
+  begin
+    putTimeStamp(name, vBSONTimeStamp);
   end
   else if Supports(val, IBSONObjectId, vBSONObjectId) then
   begin
@@ -320,6 +326,13 @@ begin
   Encode(val.Scope);
 
   FBuffer.WriteInt(vPos, FBuffer.Position - vPos);
+end;
+
+procedure TDefaultMongoEncoder.putTimeStamp(name: String; const val: IBSONTimeStamp);
+begin
+  put(BSON_TIMESTAMP, name);
+  FBuffer.WriteInt(val.Inc);
+  FBuffer.WriteInt(val.Time);
 end;
 
 { TMongoEncoderFactory }

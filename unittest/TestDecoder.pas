@@ -30,6 +30,7 @@ type
     procedure DecodeFindOneSymbol;
     procedure DecodeFindOneCode;
     procedure DecodeFindOneCode_W_Scope;
+    procedure DecodeFindOneTimeStamp;
   end;
   
 implementation
@@ -259,6 +260,22 @@ begin
   CheckEquals('_id', vDoc[0].Name);
   CheckEquals('symbol', vDoc[1].Name);
   CheckEquals('any symbol', vDoc[1].AsBSONSymbol.Symbol);
+end;
+
+procedure TTestDecoder.DecodeFindOneTimeStamp;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneTimeStamp.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('ts', vDoc[1].Name);
+  CheckEquals(1330623393, vDoc[1].AsBSONTimeStamp.Time);
+  CheckEquals(1, vDoc[1].AsBSONTimeStamp.Inc);
 end;
 
 procedure TTestDecoder.DecodeFindOneUUID;

@@ -35,6 +35,7 @@ type
     procedure EncodeSymbol;
     procedure EncodeCode;
     procedure EncodeCode_W_Scope;
+    procedure EncodeTimeStamp;
   end;
 
 implementation
@@ -411,6 +412,25 @@ begin
   FEncoder.Encode(vBSON);
 
   CheckEquals(49, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeTimeStamp;
+var
+  vBSON: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('ts', TBSONTimeStamp.NewFrom(0, 0));
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'ts' size 3 in UTF8
+  //Write inc size 4
+  //Write time size 4
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(17, FStream.Size);
 end;
 
 initialization

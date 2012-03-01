@@ -30,7 +30,6 @@
 
 
 (1) Types not yet implemented  
-  BSON_TIMESTAMP    = $11;
   BSON_MINKEY       = $FF;
   BSON_MAXKEY       = $7F;
   {subtype}
