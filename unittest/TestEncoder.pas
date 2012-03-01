@@ -31,12 +31,12 @@ type
     procedure EncodeJavaScriptWhere;
     procedure EncodeBinary;
     procedure EncodeBinarySubTypeOldBinary;
+    procedure EncodeRegEx;
   end;
 
 implementation
 
-uses Variants, SysUtils, BSONTypes, ComObj, MongoUtils, MongoException,
-  BSON;
+uses Variants, SysUtils, BSONTypes, ComObj, MongoUtils, MongoException, BSON;
 
 { TTestEncoder }
 
@@ -313,6 +313,37 @@ begin
   FEncoder.Encode(vBSON);
 
   CheckEquals(1354, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeRegEx;
+var
+  vBSON: IBSONObject;
+  vRegEx: IBSONRegEx;
+begin
+  vRegEx := TBSONRegEx.Create;
+  vRegEx.Pattern := 'acme.*corp';
+  vRegEx.CaseInsensitive_I := True;
+  vRegEx.Multiline_M := True;
+  vRegEx.Verbose_X := True;
+  vRegEx.DotAll_S := True;
+  vRegEx.LocaleDependent_L := True;
+  vRegEx.Unicode_U := True;
+
+  CheckEquals('ilmsux', vRegEx.GetOptions);
+
+  vBSON := TBSONObject.Create;
+  vBSON.Put('reg', vRegEx);
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'reg' size 4 in UTF8
+  //Write pattern size 11
+  //Write flags size 7
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(28, FStream.Size);
 end;
 
 initialization

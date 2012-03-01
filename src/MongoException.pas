@@ -59,6 +59,7 @@ type
   EBSONObjectHasNoObjectId = class(EBSONTypesException);
   EBSONValueConvertError = class(EBSONTypesException);
   EBSONValueTypeUnknown = class(EBSONTypesException);
+  EBSONUnrecognizedRegExOption = class(EBSONTypesException);
 
   EMongoDecoderException = class(EMongoException);
   EDecodeBSONTypeException = class(EMongoDecoderException);
@@ -80,6 +81,7 @@ resourcestring
   sDecodeResponseSizeError = 'Bad data. Lengths don''t match read:"%d" != len:"%d"';
   sInvalidBSONBinarySubtype = 'Invalid subtype "%d", only are accepted values "BSON_SUBTYPE_GENERIC" and "BSON_SUBTYPE_OLD_BINARY(deprecated)".';
   sInvalidBSONBinarySubtypeSize = 'bad data size subtype "%d" len: %d totalLen: %d';
+  sBSONUnrecognizedRegExOption = 'Unrecognized regex flag "%s".';
 
 implementation
 

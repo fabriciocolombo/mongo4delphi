@@ -50,11 +50,11 @@ type
     procedure putBoolean(AName: String; AValue: Boolean);
     procedure putObjectId(AName: String; const AValue: IBSONObjectId);
     procedure putUUID(AName: String; AValue: TGUID);
-
-    procedure PutInterfaceField(name: String; const val: IUnknown);
+    procedure putBinary(name: String; const val: IBSONBinary);
+    procedure putRegEx(name: String; const val: IBSONRegEx);
 
     procedure PutObjectField(const AItem: TBSONItem);
-    procedure putBinary(name: String; const val: IBSONBinary);
+    procedure PutInterfaceField(name: String; const val: IUnknown);
   public
     procedure SetBuffer(ABuffer: TBSONStream);
     procedure Encode(const ABSONObject: IBSONBasicObject);
@@ -214,6 +214,7 @@ var
   vBSONArray: IBSONArray;
   vBSONObjectId: IBSONObjectId;
   vBSONBinary: IBSONBinary;
+  vBSONRegEx: IBSONRegEx;
 begin
   if Supports(val, IBSONArray, vBSONArray) then
   begin
@@ -223,6 +224,10 @@ begin
   else if Supports(val, IBSONBinary, vBSONBinary) then
   begin
     putBinary(name, vBSONBinary);
+  end
+  else if Supports(val, IBSONRegEx, vBSONRegEx) then
+  begin
+    putRegEx(name, vBSONRegEx);
   end
   else if Supports(val, IBSONObject, vBSONObject) then
   begin
@@ -298,6 +303,13 @@ begin
     FBuffer.WriteInt(vSize-4);
 
   FBuffer.WriteStream(val.Stream);
+end;
+
+procedure TDefaultMongoEncoder.putRegEx(name: String;const val: IBSONRegEx);
+begin
+  put(BSON_REGEX, name);
+  put(val.Pattern);
+  put(val.GetOptions);
 end;
 
 { TMongoEncoderFactory }

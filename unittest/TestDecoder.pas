@@ -26,6 +26,7 @@ type
     procedure DecodeFindOneBinary;
     procedure DecodeFindOneOldBinary;
     procedure DecodeFindOneUUID;
+    procedure DecodeFindOneRegEx;
   end;
   
 implementation
@@ -138,6 +139,23 @@ begin
   CheckEquals('_id', vDoc[0].Name);
   CheckEquals('img', vDoc[1].Name);
   CheckEquals(1335, vDoc[1].AsBSONBinary.Size);
+end;
+
+procedure TTestDecoder.DecodeFindOneRegEx;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneRegEx.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('reg', vDoc[1].Name);
+  CheckEquals('acme.*corp', vDoc[1].AsBSONRegEx.Pattern);
+  CheckEquals(True, vDoc[1].AsBSONRegEx.CaseInsensitive_I);
+  CheckEquals('ilmsux', vDoc[1].AsBSONRegEx.GetOptions);
 end;
 
 procedure TTestDecoder.DecodeFindOneRow;

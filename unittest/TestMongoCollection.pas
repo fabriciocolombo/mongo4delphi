@@ -22,6 +22,7 @@ type
     procedure InsertBSONObjectUUID;
     procedure InsertBSONBinary;
     procedure InsertBSONOldBinary;
+    procedure InsertBSONRegEx;
     procedure FindOne;
     procedure TestCount;
     procedure TestCreateCollection;
@@ -250,6 +251,22 @@ end;
 procedure TTestMongoCollection.InsertBSONOldBinary;
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('img', TBSONBinary.NewFromFile('resource\image.gif', BSON_SUBTYPE_OLD_BINARY))).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.InsertBSONRegEx;
+var
+  vRegEx: IBSONRegEx;
+begin
+  vRegEx := TBSONRegEx.Create;
+  vRegEx.Pattern := 'acme.*corp';
+  vRegEx.CaseInsensitive_I := True;
+  vRegEx.Multiline_M := True;
+  vRegEx.Verbose_X := True;
+  vRegEx.DotAll_S := True;
+  vRegEx.LocaleDependent_L := True;
+  vRegEx.Unicode_U := True;
+
+  DefaultCollection.Insert(TBSONObject.NewFrom('reg', vRegEx));
 end;
 
 initialization

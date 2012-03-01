@@ -24,3 +24,7 @@ del /F /S /Q packages\*.ppu
 del /F /S /Q packages\*.rst
 del /F /S /Q packages\*.compiled
 del /F /S /Q packages\*.identcache
+
+del /F /S /Q external\TPerlRegEx\*.dcu
+del /F /S /Q external\TPerlRegEx\*.GID
+del /F /S /Q external\TPerlRegEx\*.~pas

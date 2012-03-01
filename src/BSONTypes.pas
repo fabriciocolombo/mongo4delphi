@@ -26,6 +26,7 @@ unit BSONTypes;
 interface
 
 uses Contnrs, Classes, BSON;
+//     {$IF CompilerVersion >= 22}RegularExpressionsCore{$ELSE}PerlRegEx{$IFEND};
 
 type
   TBSONItem = class;
@@ -54,7 +55,36 @@ type
     property Size: Integer read GetSize;
     property SubType: Integer read GetSubType;
   end;
-                      
+
+  IBSONRegEx = interface
+  ['{504A4D84-3C11-49CA-8F11-2FAE90A18A38}']
+    procedure SetCaseInsensitive_I(const Value: Boolean);
+    procedure SetDotAll_S(const Value: Boolean);
+    procedure SetVerbose_X(const Value: Boolean);
+    procedure SetMultiline_M(const Value: Boolean);
+    procedure SetPattern(const Value: String);
+    procedure SetLocaleDependent_L(const Value: Boolean);
+    procedure SetUnicode_U(const Value: Boolean);
+    function GetCaseInsensitive_I: Boolean;
+    function GetDotAll_S: Boolean;
+    function GetVerbose_X: Boolean;
+    function GetMultiline_M: Boolean;
+    function GetPattern: String;
+    function GetLocaleDependent_L: Boolean;
+    function GetUnicode_U: Boolean;
+
+    property Pattern: String read GetPattern write SetPattern;
+    property CaseInsensitive_I: Boolean read GetCaseInsensitive_I write SetCaseInsensitive_I;
+    property Multiline_M: Boolean read GetMultiline_M write SetMultiline_M;
+    property Verbose_X: Boolean read GetVerbose_X write SetVerbose_X;
+    property DotAll_S: Boolean read GetDotAll_S write SetDotAll_S;
+    property LocaleDependent_L: Boolean read GetLocaleDependent_L write SetLocaleDependent_L;
+    property Unicode_U: Boolean read GetUnicode_U write SetUnicode_U;
+
+    function GetOptions: String;
+    procedure SetOptions(const AOptions: String);
+  end;
+
   IBSONBasicObject = interface
     ['{FF4178D1-D45B-480D-9704-85ACD5BA02E9}']
     function GetItem(AIndex: Integer): TBSONItem;
@@ -125,6 +155,45 @@ type
     property Size: Integer read GetSize;
   end;
 
+  //Do not match the pattern in client-side
+  TBSONRegEx = class(TInterfacedObject, IBSONRegEx)
+  private
+    FDotAll_S: Boolean;
+    FMultiline_M: Boolean;
+    FVerbose_X: Boolean;
+    FCaseInsensitive_I: Boolean;
+    FPattern: String;
+    FUnicode_U: Boolean;
+    FLocaleDependent_L: Boolean;
+    procedure SetCaseInsensitive_I(const Value: Boolean);
+    procedure SetDotAll_S(const Value: Boolean);
+    procedure SetVerbose_X(const Value: Boolean);
+    procedure SetMultiline_M(const Value: Boolean);
+    procedure SetPattern(const Value: String);
+    procedure SetLocaleDependent_L(const Value: Boolean);
+    procedure SetUnicode_U(const Value: Boolean);
+    function GetCaseInsensitive_I: Boolean;
+    function GetDotAll_S: Boolean;
+    function GetVerbose_X: Boolean;
+    function GetMultiline_M: Boolean;
+    function GetPattern: String;
+    function GetLocaleDependent_L: Boolean;
+    function GetUnicode_U: Boolean;
+  public
+    property Pattern: String read GetPattern write SetPattern;
+    property CaseInsensitive_I: Boolean read GetCaseInsensitive_I write SetCaseInsensitive_I;
+    property Multiline_M: Boolean read GetMultiline_M write SetMultiline_M;
+    property Verbose_X: Boolean read GetVerbose_X write SetVerbose_X;
+    property DotAll_S: Boolean read GetDotAll_S write SetDotAll_S;
+    property LocaleDependent_L: Boolean read GetLocaleDependent_L write SetLocaleDependent_L;
+    property Unicode_U: Boolean read GetUnicode_U write SetUnicode_U;
+
+    function GetOptions: String;
+    procedure SetOptions(const AOptions: String);
+
+    //db.customers.find( { name : { $regex : 'acme.*corp', $options: 'i' } } );
+  end;
+
   TBSONItem = class
   private
     FName: String;
@@ -143,6 +212,7 @@ type
     function GetAsBSONObject: IBSONObject;
     function GetAsBSONArray: IBSONArray;
     function GetAsBSONBinary: IBSONBinary;
+    function GetAsBSONRegEx: IBSONRegEx;
   public
     property Name: String read FName;
     property Value: Variant read FValue write SetValue;
@@ -157,6 +227,7 @@ type
     property AsBSONObject: IBSONObject read GetAsBSONObject;
     property AsBSONArray: IBSONArray read GetAsBSONArray;
     property AsBSONBinary: IBSONBinary read GetAsBSONBinary;
+    property AsBSONRegEx: IBSONRegEx read GetAsBSONRegEx; 
 
     function GetValueTypeDesc: String;
 
@@ -220,7 +291,7 @@ type
 implementation
 
 uses windows, Registry, SysUtils, Variants, MongoUtils,
-  MongoException, TypInfo;
+  MongoException, TypInfo, StrUtils;
 
 var
   _mongoObjectID_MachineID: Integer;
@@ -633,6 +704,15 @@ begin
   end;
 end;
 
+function TBSONItem.GetAsBSONRegEx: IBSONRegEx;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONRegEx, Result);
+  end; 
+end;
+
 { TBSONArray }
 
 class function TBSONArray.NewFrom(Value: Variant): IBSONArray;
@@ -740,6 +820,107 @@ class function TBSONBinary.NewFromFile(AFileName: String; ASubType: Integer): IB
 begin
   Result := TBSONBinary.Create(ASubType);
   Result.Stream.LoadFromFile(AFileName);
+end;
+
+{ TBSONRegEx }
+
+function TBSONRegEx.GetCaseInsensitive_I: Boolean;
+begin
+  Result := FCaseInsensitive_I;
+end;
+
+function TBSONRegEx.GetDotAll_S: Boolean;
+begin
+  Result := FDotAll_S;
+end;
+
+function TBSONRegEx.GetVerbose_X: Boolean;
+begin
+  Result := FVerbose_X;
+end;
+
+function TBSONRegEx.GetMultiline_M: Boolean;
+begin
+  Result := FMultiline_M;
+end;
+
+function TBSONRegEx.GetOptions: String;
+begin
+  Result := IfThen(FCaseInsensitive_I, 'i');
+  Result := Result + IfThen(FLocaleDependent_L, 'l');
+  Result := Result + IfThen(FMultiline_M, 'm');
+  Result := Result + IfThen(FDotAll_S, 's');
+  Result := Result + IfThen(FUnicode_U, 'u');
+  Result := Result + IfThen(FVerbose_X, 'x');
+end;
+
+function TBSONRegEx.GetPattern: String;
+begin
+  Result := FPattern;
+end;
+
+procedure TBSONRegEx.SetCaseInsensitive_I(const Value: Boolean);
+begin
+  FCaseInsensitive_I := Value;
+end;
+
+procedure TBSONRegEx.SetDotAll_S(const Value: Boolean);
+begin
+  FDotAll_S := Value;
+end;
+
+procedure TBSONRegEx.SetVerbose_X(const Value: Boolean);
+begin
+  FVerbose_X := Value;
+end;
+
+procedure TBSONRegEx.SetMultiline_M(const Value: Boolean);
+begin
+  FMultiline_M := Value;
+end;
+
+procedure TBSONRegEx.SetOptions(const AOptions: String);
+var
+  i: Integer;
+begin
+  for i := 1 to Length(AOptions) do
+  begin
+    case AOptions[i] of
+      'i', 'I': FCaseInsensitive_I := True;
+      'l', 'L': FLocaleDependent_L := True;
+      'm', 'M': FMultiline_M := True;
+      's', 'S': FDotAll_S := True;
+      'u', 'U': FUnicode_U := True;
+      'x', 'X': FVerbose_X := True;  
+    else
+      raise EBSONUnrecognizedRegExOption.CreateResFmt(@sBSONUnrecognizedRegExOption, [AOptions[i]]); 
+    end;
+  end;
+end;
+
+procedure TBSONRegEx.SetPattern(const Value: String);
+begin
+  FPattern := Value;
+end;
+
+procedure TBSONRegEx.SetLocaleDependent_L(const Value: Boolean);
+begin
+  FLocaleDependent_L := Value;
+end;
+
+procedure TBSONRegEx.SetUnicode_U(const Value: Boolean);
+begin
+  FUnicode_U := Value;
+end;
+
+function TBSONRegEx.GetLocaleDependent_L: Boolean;
+begin
+  Result := FLocaleDependent_L;
+end;
+
+function TBSONRegEx.GetUnicode_U: Boolean;
+begin
+  Result := FUnicode_U;
 end;
 
 initialization
