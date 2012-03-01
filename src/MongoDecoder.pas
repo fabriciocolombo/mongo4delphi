@@ -126,7 +126,9 @@ begin
     BSON_SYMBOL: ACurrent.Put(vName, TBSONSymbol.NewFrom(ABuffer.ReadUTF8String));
     BSON_CODE: ACurrent.Put(vName, TBSONCode.NewFrom(ABuffer.ReadUTF8String));
     BSON_CODE_W_SCOPE: ACurrent.Put(vName, DecodeCode_W_Scope(ABuffer));
-    BSON_TIMESTAMP: ACurrent.Put(vName, DecodeTimeStamp(ABuffer ));
+    BSON_TIMESTAMP: ACurrent.Put(vName, DecodeTimeStamp(ABuffer));
+    BSON_MINKEY: ACurrent.Put(vName, MIN_KEY);
+    BSON_MAXKEY: ACurrent.Put(vName, MAX_KEY);
   else
     raise EDecodeBSONTypeException.CreateResFmt(@sDecodeBSONTypeException, [vType]);
   end;

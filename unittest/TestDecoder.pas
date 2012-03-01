@@ -31,6 +31,8 @@ type
     procedure DecodeFindOneCode;
     procedure DecodeFindOneCode_W_Scope;
     procedure DecodeFindOneTimeStamp;
+    procedure DecodeFindOneMinKey;
+    procedure DecodeFindOneMaxKey;
   end;
   
 implementation
@@ -159,6 +161,36 @@ begin
   CheckEquals('name', vItems[1].Name);
   CheckEquals('Fabricio', vItems[1].AsString);
  
+end;
+
+procedure TTestDecoder.DecodeFindOneMaxKey;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneMaxKey.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('maxkey', vDoc[1].Name);
+  Check(vDoc[1].IsMaxKey)
+end;
+
+procedure TTestDecoder.DecodeFindOneMinKey;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneMinKey.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('minkey', vDoc[1].Name);
+  Check(vDoc[1].IsMinKey)
 end;
 
 procedure TTestDecoder.DecodeFindOneOldBinary;

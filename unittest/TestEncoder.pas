@@ -36,6 +36,8 @@ type
     procedure EncodeCode;
     procedure EncodeCode_W_Scope;
     procedure EncodeTimeStamp;
+    procedure EncodeMinKey;
+    procedure EncodeMaxKey;
   end;
 
 implementation
@@ -431,6 +433,40 @@ begin
   FEncoder.Encode(vBSON);
 
   CheckEquals(17, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeMinKey;
+var
+  vBSON: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('minkey', MIN_KEY);
+
+  //Write object size - 4
+  //Write type size 1
+  //Write MinKey size 7
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(13, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeMaxKey;
+var
+  vBSON: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('maxkey', MAX_KEY);
+
+  //Write object size - 4
+  //Write type size 1
+  //Write MaxKey size 7
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(13, FStream.Size);
 end;
 
 initialization

@@ -50,7 +50,7 @@ begin
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;
   {$ELSE}
-    Application.CreateForm(TTestRunner, TestRunner);
+    Application.CreateForm(TGuiTestRunner, TestRunner);
   {$ENDIF}
   Application.Run;
 end.

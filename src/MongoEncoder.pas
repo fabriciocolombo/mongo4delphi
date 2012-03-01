@@ -69,7 +69,7 @@ type
 
 implementation
 
-uses DateUtils, SysUtils, Variants, BSON, MongoException, Classes, Math,
+uses DateUtils, SysUtils, Variants, BSON, MongoException, Classes, 
   MongoUtils, Windows;
 
 { TDefaultMongoEncoder }
@@ -132,7 +132,8 @@ end;
 procedure TDefaultMongoEncoder.PutObjectField(const AItem: TBSONItem);
 var
   vGUID: TGUID;
-  name: String;
+  name,
+  value: String;
 begin
   name := AItem.Name;
 
@@ -152,10 +153,16 @@ begin
     bvtDouble: putFloat(name, AItem.AsFloat);
     bvtDateTime: putDate( name , AItem.AsDateTime);
     bvtString:  begin
-                  if TGUIDUtils.TryStringToGuid(AItem.AsString, vGUID) then
+                  value := AItem.AsString;
+
+                  if TGUIDUtils.TryStringToGuid(value, vGUID) then
                     putUUID(name, vGUID)
+                  else if (AItem.IsMinKey) then
+                    put(BSON_MINKEY, name)
+                  else if (AItem.IsMaxKey) then
+                    put(BSON_MAXKEY, name)
                   else
-                    putString(name, AItem.AsString, BSON_STRING);
+                    putString(name, value, BSON_STRING);
                 end;
     bvtInterface: PutInterfaceField(name, IUnknown(AItem.Value));
 

@@ -25,8 +25,12 @@ unit BSONTypes;
 
 interface
 
-uses Contnrs, Classes, BSON;
+uses Classes, BSON;
 //     {$IF CompilerVersion >= 22}RegularExpressionsCore{$ELSE}PerlRegEx{$IFEND};
+
+const
+  MIN_KEY = 'MinKey';
+  MAX_KEY = 'MaxKey';
 
 type
   TBSONItem = class;
@@ -335,6 +339,8 @@ type
 
     function IsInteger: Boolean;
     function IsObjectId: Boolean;
+    function IsMinKey: Boolean;
+    function IsMaxKey: Boolean;
 
     class function NewFrom(AName: String;const AValue: Variant): TBSONItem;
   end;
@@ -849,6 +855,16 @@ begin
   begin
     Supports(IUnknown(FValue), IBSONTimeStamp, Result);
   end;
+end;
+
+function TBSONItem.IsMinKey: Boolean;
+begin
+  Result := (FValue = MIN_KEY);
+end;
+
+function TBSONItem.IsMaxKey: Boolean;
+begin
+  Result := (FValue = MAX_KEY);
 end;
 
 { TBSONArray }

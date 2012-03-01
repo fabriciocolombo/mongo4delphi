@@ -38,7 +38,7 @@ type
 
 implementation
 
-uses SysUtils, StrUtils;
+uses SysUtils;
 
 { TServerError }
 

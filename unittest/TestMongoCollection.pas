@@ -27,6 +27,8 @@ type
     procedure InsertBSONCode;
     procedure InsertBSONCode_W_Scope;
     procedure InsertTimeStamp;
+    procedure InsertMinKey;
+    procedure InsertMaxKey;
     procedure FindOne;
     procedure FindOneWithRegEx;
     procedure TestCount;
@@ -317,6 +319,16 @@ begin
 
   Check(vDoc.Items['ts'].AsBSONTimeStamp.Time > 0);
   Check(vDoc.Items['ts'].AsBSONTimeStamp.Inc > 0);
+end;
+
+procedure TTestMongoCollection.InsertMaxKey;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('maxkey', MAX_KEY)).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.InsertMinKey;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('minkey', MIN_KEY)).getLastError.RaiseOnError;
 end;
 
 initialization

@@ -37,10 +37,7 @@ Demo Application
 	
 	TODO - Automated build and unit test for target environments
 	
-(1) Types not yet implemented
-  BSON_MINKEY       = $FF;
-  BSON_MAXKEY       = $7F;
-  {subtype}
+(1) Types not yet implemented subtypes
   BSON_SUBTYPE_FUNC    = $01;
   BSON_SUBTYPE_MD5     = $05;
   BSON_SUBTYPE_USER    = $80;
