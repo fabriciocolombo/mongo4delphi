@@ -39,5 +39,4 @@ Demo Application
 	
 (1) Types not yet implemented subtypes
   BSON_SUBTYPE_FUNC    = $01;
-  BSON_SUBTYPE_MD5     = $05;
-  BSON_SUBTYPE_USER    = $80;
+  BSON_SUBTYPE_MD5     = $05;  

@@ -31,6 +31,7 @@ type
     procedure EncodeJavaScriptWhere;
     procedure EncodeBinary;
     procedure EncodeBinarySubTypeOldBinary;
+    procedure EncodeBinaryUserDefined;
     procedure EncodeRegEx;
     procedure EncodeSymbol;
     procedure EncodeCode;
@@ -467,6 +468,30 @@ begin
   FEncoder.Encode(vBSON);
 
   CheckEquals(13, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeBinaryUserDefined;
+var
+  vBSON: IBSONObject;
+  vBinary: IBSONBinary;
+begin
+  vBinary := TBSONBinary.Create(BSON_SUBTYPE_USER);
+  vBinary.Stream.LoadFromFile('resource\image.gif'); //size 1.335
+
+  vBSON := TBSONObject.Create;
+  vBSON.Put('img', vBinary);
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'img' size 4 in UTF8
+  //Write valueSize size 4
+  //Write subtype size 1
+  //Write binary size 1335
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(1350, FStream.Size);
 end;
 
 initialization

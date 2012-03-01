@@ -940,7 +940,7 @@ constructor TBSONBinary.Create(ASubType: Integer);
 begin
   inherited Create;
 
-  if not(ASubType in [BSON_SUBTYPE_GENERIC, BSON_SUBTYPE_OLD_BINARY]) then
+  if not(ASubType in [BSON_SUBTYPE_GENERIC, BSON_SUBTYPE_OLD_BINARY, BSON_SUBTYPE_USER]) then
   begin
     raise EIllegalArgumentException.CreateResFmt(@sInvalidBSONBinarySubtype, [ASubType]);
   end;

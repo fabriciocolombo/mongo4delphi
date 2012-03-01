@@ -167,7 +167,8 @@ begin
   ABuffer.Read(vSubType, 1);
 
   case vSubType of
-    BSON_SUBTYPE_GENERIC:
+    BSON_SUBTYPE_GENERIC,
+    BSON_SUBTYPE_USER:
       begin
         vBinary := TBSONBinary.Create(vSubType);
         vBinary.Stream.CopyFrom(ABuffer, vSize);

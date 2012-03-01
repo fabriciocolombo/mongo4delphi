@@ -22,6 +22,7 @@ type
     procedure InsertBSONObjectUUID;
     procedure InsertBSONBinary;
     procedure InsertBSONOldBinary;
+    procedure InsertBSONBinaryUserDefined;
     procedure InsertBSONRegEx;
     procedure InsertBSONSymbol;
     procedure InsertBSONCode;
@@ -248,7 +249,6 @@ begin
 end;
 
 procedure TTestMongoCollection.InsertBSONBinary;
-
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('img', TBSONBinary.NewFromFile('resource\image.gif'))).getLastError.RaiseOnError;
 end;
@@ -329,6 +329,11 @@ end;
 procedure TTestMongoCollection.InsertMinKey;
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('minkey', MIN_KEY)).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.InsertBSONBinaryUserDefined;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('img', TBSONBinary.NewFromFile('resource\image.gif', BSON_SUBTYPE_USER))).getLastError.RaiseOnError;
 end;
 
 initialization

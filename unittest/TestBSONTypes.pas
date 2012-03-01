@@ -159,6 +159,7 @@ var
 begin
   vBinary := TBSONBinary.Create(BSON_SUBTYPE_GENERIC);
   vBinary := TBSONBinary.Create(BSON_SUBTYPE_OLD_BINARY);
+  vBinary := TBSONBinary.Create(BSON_SUBTYPE_USER);
 
   try
     TBSONBinary.Create(BSON_SUBTYPE_FUNC);
@@ -178,14 +179,6 @@ begin
 
   try
     TBSONBinary.Create(BSON_SUBTYPE_MD5);
-    Fail('Not raise exception');
-  except
-    on E: Exception do
-      Check(E is EIllegalArgumentException);
-  end;
-
-  try
-    TBSONBinary.Create(BSON_SUBTYPE_USER);
     Fail('Not raise exception');
   except
     on E: Exception do

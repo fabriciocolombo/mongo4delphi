@@ -25,6 +25,7 @@ type
     procedure DecodeExplainBTreeCursor;
     procedure DecodeFindOneBinary;
     procedure DecodeFindOneOldBinary;
+    procedure DecodeFindOneBinaryUserDefined;
     procedure DecodeFindOneUUID;
     procedure DecodeFindOneRegEx;
     procedure DecodeFindOneSymbol;
@@ -37,7 +38,7 @@ type
   
 implementation
 
-uses BSONTypes, Variants, SysUtils, DateUtils;
+uses BSONTypes, Variants, SysUtils, DateUtils, BSON;
 
 { TTestDecoder }
 
@@ -78,6 +79,23 @@ begin
   CheckEquals('_id', vDoc[0].Name);
   CheckEquals('img', vDoc[1].Name);
   CheckEquals(1335, vDoc[1].AsBSONBinary.Size);
+  CheckEquals(BSON_SUBTYPE_GENERIC, vDoc[1].AsBSONBinary.SubType);
+end;
+
+procedure TTestDecoder.DecodeFindOneBinaryUserDefined;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneBinaryUserDefined.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('img', vDoc[1].Name);
+  CheckEquals(1335, vDoc[1].AsBSONBinary.Size);
+  CheckEquals(BSON_SUBTYPE_USER, vDoc[1].AsBSONBinary.SubType);
 end;
 
 procedure TTestDecoder.DecodeFindOneCode;
@@ -206,6 +224,7 @@ begin
   CheckEquals('_id', vDoc[0].Name);
   CheckEquals('img', vDoc[1].Name);
   CheckEquals(1335, vDoc[1].AsBSONBinary.Size);
+  CheckEquals(BSON_SUBTYPE_OLD_BINARY, vDoc[1].AsBSONBinary.SubType);
 end;
 
 procedure TTestDecoder.DecodeFindOneRegEx;
