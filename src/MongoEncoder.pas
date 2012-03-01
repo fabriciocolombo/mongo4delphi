@@ -215,6 +215,7 @@ var
   vBSONBinary: IBSONBinary;
   vBSONRegEx: IBSONRegEx;
   vBSONSymbol: IBSONSymbol;
+  vBSONCode: IBSONCode;
 begin
   if Supports(val, IBSONArray, vBSONArray) then
   begin
@@ -237,6 +238,10 @@ begin
   else if Supports(val, IBSONSymbol, vBSONSymbol) then
   begin
     putString(name, vBSONSymbol.Symbol, BSON_SYMBOL);
+  end
+  else if Supports(val, IBSONCode, vBSONCode) then
+  begin
+    putString(name, vBSONCode.Code, BSON_CODE);
   end
   else if Supports(val, IBSONObjectId, vBSONObjectId) then
   begin

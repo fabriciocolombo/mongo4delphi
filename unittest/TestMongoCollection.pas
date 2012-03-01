@@ -24,6 +24,7 @@ type
     procedure InsertBSONOldBinary;
     procedure InsertBSONRegEx;
     procedure InsertBSONSymbol;
+    procedure InsertBSONCode;
     procedure FindOne;
     procedure FindOneWithRegEx;
     procedure TestCount;
@@ -292,6 +293,11 @@ end;
 procedure TTestMongoCollection.InsertBSONSymbol;
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('symbol', TBSONSymbol.NewFrom('any symbol'))).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.InsertBSONCode;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('code', TBSONCode.NewFrom('this.a>3'))).getLastError.RaiseOnError;
 end;
 
 initialization

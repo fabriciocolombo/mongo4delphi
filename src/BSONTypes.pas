@@ -94,6 +94,14 @@ type
     property Symbol: String read GetSymbol write SetSymbol;
   end;
 
+  IBSONCode = interface
+  ['{40331741-7564-4696-A687-2623CFFEF828}']
+
+    procedure SetCode(const Value: String);
+    function GetCode: String;
+    property Code: String read GetCode write SetCode;
+  end;
+
   IBSONBasicObject = interface
     ['{FF4178D1-D45B-480D-9704-85ACD5BA02E9}']
     function GetItem(AIndex: Integer): TBSONItem;
@@ -214,6 +222,17 @@ type
     class function NewFrom(const ASymbol: String): IBSONSymbol;
   end;
 
+  TBSONCode = class(TInterfacedObject, IBSONCode)
+  private
+    FCode: String;
+    procedure SetCode(const Value: String);
+    function GetCode: String;
+  public
+    property Code: String read GetCode write SetCode;
+
+    class function NewFrom(const ACode: String): IBSONCode;
+  end;
+
   TBSONItem = class
   private
     FName: String;
@@ -234,6 +253,7 @@ type
     function GetAsBSONBinary: IBSONBinary;
     function GetAsBSONRegEx: IBSONRegEx;
     function GetAsBSONSymbol: IBSONSymbol;
+    function GetAsBSONCode: IBSONCode;
   public
     property Name: String read FName;
     property Value: Variant read FValue write SetValue;
@@ -249,7 +269,8 @@ type
     property AsBSONArray: IBSONArray read GetAsBSONArray;
     property AsBSONBinary: IBSONBinary read GetAsBSONBinary;
     property AsBSONRegEx: IBSONRegEx read GetAsBSONRegEx;
-    property AsBSONSymbol: IBSONSymbol read GetAsBSONSymbol; 
+    property AsBSONSymbol: IBSONSymbol read GetAsBSONSymbol;
+    property AsBSONCode: IBSONCode read GetAsBSONCode; 
 
     function GetValueTypeDesc: String;
 
@@ -744,6 +765,15 @@ begin
   end;
 end;
 
+function TBSONItem.GetAsBSONCode: IBSONCode;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONCode, Result);
+  end;
+end;
+
 { TBSONArray }
 
 class function TBSONArray.NewFrom(Value: Variant): IBSONArray;
@@ -977,6 +1007,24 @@ end;
 procedure TBSONSymbol.SetSymbol(const Value: String);
 begin
   FSymbol := Value;
+end;
+
+{ TBSONCode }
+
+function TBSONCode.GetCode: String;
+begin
+  Result := FCode;
+end;
+
+class function TBSONCode.NewFrom(const ACode: String): IBSONCode;
+begin
+  Result := TBSONCode.Create;
+  Result.Code := ACode;
+end;
+
+procedure TBSONCode.SetCode(const Value: String);
+begin
+  FCode := Value;
 end;
 
 initialization

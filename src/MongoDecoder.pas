@@ -122,6 +122,7 @@ begin
     BSON_BINARY: ACurrent.Put(vName, DecodeBinary(ABuffer));
     BSON_REGEX: ACurrent.Put(vName, DecodeRegEx(ABuffer));
     BSON_SYMBOL: ACurrent.Put(vName, TBSONSymbol.NewFrom(ABuffer.ReadUTF8String));
+    BSON_CODE: ACurrent.Put(vName, TBSONCode.NewFrom(ABuffer.ReadUTF8String));
   else
     raise EDecodeBSONTypeException.CreateResFmt(@sDecodeBSONTypeException, [vType]);
   end;

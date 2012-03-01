@@ -28,6 +28,7 @@ type
     procedure DecodeFindOneUUID;
     procedure DecodeFindOneRegEx;
     procedure DecodeFindOneSymbol;
+    procedure DecodeFindOneCode;
   end;
   
 implementation
@@ -73,6 +74,21 @@ begin
   CheckEquals('_id', vDoc[0].Name);
   CheckEquals('img', vDoc[1].Name);
   CheckEquals(1335, vDoc[1].AsBSONBinary.Size);
+end;
+
+procedure TTestDecoder.DecodeFindOneCode;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneCode.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('code', vDoc[1].Name);
+  CheckEquals('this.a>3', vDoc[1].AsBSONCode.Code);
 end;
 
 procedure TTestDecoder.DecodeFindOneEmbeddedArray;
