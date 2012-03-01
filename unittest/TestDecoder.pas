@@ -29,6 +29,7 @@ type
     procedure DecodeFindOneRegEx;
     procedure DecodeFindOneSymbol;
     procedure DecodeFindOneCode;
+    procedure DecodeFindOneCode_W_Scope;
   end;
   
 implementation
@@ -89,6 +90,22 @@ begin
   CheckEquals('_id', vDoc[0].Name);
   CheckEquals('code', vDoc[1].Name);
   CheckEquals('this.a>3', vDoc[1].AsBSONCode.Code);
+end;
+
+procedure TTestDecoder.DecodeFindOneCode_W_Scope;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneCode_W_Scope.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('code_w_scope', vDoc[1].Name);
+  CheckEquals('this.a>3', vDoc[1].AsBSONCode_W_Scope.Code);
+  CheckEquals(1, vDoc[1].AsBSONCode_W_Scope.Scope.Items['id'].AsInteger);
 end;
 
 procedure TTestDecoder.DecodeFindOneEmbeddedArray;

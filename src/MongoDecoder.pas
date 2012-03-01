@@ -42,6 +42,7 @@ type
     function DecodeArray(ABuffer: TBSONStream): IBSONArray;
     function DecodeBinary(ABuffer: TBSONStream): Variant;
     function DecodeRegEx(ABuffer: TBSONStream): IBSONRegEx;
+    function DecodeCode_W_Scope(ABuffer: TBSONStream): IBSONCode_W_Scope;
   public
     function Decode(ABuffer: TBSONStream): IBSONObject;
     function DecodeFromBeginning(ABuffer: TBSONStream): IBSONObject;
@@ -123,6 +124,7 @@ begin
     BSON_REGEX: ACurrent.Put(vName, DecodeRegEx(ABuffer));
     BSON_SYMBOL: ACurrent.Put(vName, TBSONSymbol.NewFrom(ABuffer.ReadUTF8String));
     BSON_CODE: ACurrent.Put(vName, TBSONCode.NewFrom(ABuffer.ReadUTF8String));
+    BSON_CODE_W_SCOPE: ACurrent.Put(vName, DecodeCode_W_Scope(ABuffer));
   else
     raise EDecodeBSONTypeException.CreateResFmt(@sDecodeBSONTypeException, [vType]);
   end;
@@ -197,6 +199,19 @@ begin
   Result := TBSONRegEx.Create;
   Result.Pattern := ABuffer.ReadCString;
   Result.SetOptions(ABuffer.ReadCString);
+end;
+
+function TDefaultMongoDecoder.DecodeCode_W_Scope(ABuffer: TBSONStream): IBSONCode_W_Scope;
+var
+  vCode: String;
+  vScope: IBSONObject;
+begin
+  ABuffer.ReadInt;
+
+  vCode := ABuffer.ReadUTF8String;
+  vScope := DecodeObject(ABuffer);
+
+  Result := TBSONCode_W_Scope.NewFrom(vCode, vScope);
 end;
 
 end.

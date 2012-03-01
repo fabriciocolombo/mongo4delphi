@@ -154,9 +154,11 @@ end;
 { TTestBSONBinary }
 
 procedure TTestBSONBinary.TestAcceptableBinarySubtypes;
+var
+  vBinary: IBSONBinary;
 begin
-  TBSONBinary.Create(BSON_SUBTYPE_GENERIC);
-  TBSONBinary.Create(BSON_SUBTYPE_OLD_BINARY);
+  vBinary := TBSONBinary.Create(BSON_SUBTYPE_GENERIC);
+  vBinary := TBSONBinary.Create(BSON_SUBTYPE_OLD_BINARY);
 
   try
     TBSONBinary.Create(BSON_SUBTYPE_FUNC);

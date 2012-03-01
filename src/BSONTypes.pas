@@ -30,6 +30,7 @@ uses Contnrs, Classes, BSON;
 
 type
   TBSONItem = class;
+  IBSONObject = interface;
 
   TDuplicatesAction = (daUpdateValue, daError);
 
@@ -100,6 +101,18 @@ type
     procedure SetCode(const Value: String);
     function GetCode: String;
     property Code: String read GetCode write SetCode;
+  end;
+
+  IBSONCode_W_Scope = interface
+  ['{C108B8AC-0520-40FB-992F-D160A0160F77}']
+
+    procedure SetCode(const Value: String);
+    procedure SetScope(const Value: IBSONObject);
+    function GetCode: String;
+    function GetScope: IBSONObject;
+
+    property Code: String read GetCode write SetCode;
+    property Scope: IBSONObject read GetScope write SetScope;
   end;
 
   IBSONBasicObject = interface
@@ -233,6 +246,21 @@ type
     class function NewFrom(const ACode: String): IBSONCode;
   end;
 
+  TBSONCode_W_Scope = class(TInterfacedObject, IBSONCode_W_Scope)
+  private
+    FCode: String;
+    FScope: IBSONObject;
+    procedure SetCode(const Value: String);
+    procedure SetScope(const Value: IBSONObject);
+    function GetCode: String;
+    function GetScope: IBSONObject;
+  public
+    property Code: String read GetCode write SetCode;
+    property Scope: IBSONObject read GetScope write SetScope;
+
+    class function NewFrom(const ACode: String;const AScope: IBSONObject): IBSONCode_W_Scope;
+  end;
+
   TBSONItem = class
   private
     FName: String;
@@ -254,6 +282,7 @@ type
     function GetAsBSONRegEx: IBSONRegEx;
     function GetAsBSONSymbol: IBSONSymbol;
     function GetAsBSONCode: IBSONCode;
+    function GetAsBSONCode_W_Scope: IBSONCode_W_Scope;
   public
     property Name: String read FName;
     property Value: Variant read FValue write SetValue;
@@ -270,7 +299,8 @@ type
     property AsBSONBinary: IBSONBinary read GetAsBSONBinary;
     property AsBSONRegEx: IBSONRegEx read GetAsBSONRegEx;
     property AsBSONSymbol: IBSONSymbol read GetAsBSONSymbol;
-    property AsBSONCode: IBSONCode read GetAsBSONCode; 
+    property AsBSONCode: IBSONCode read GetAsBSONCode;
+    property AsBSONCode_W_Scope: IBSONCode_W_Scope read GetAsBSONCode_W_Scope; 
 
     function GetValueTypeDesc: String;
 
@@ -774,6 +804,15 @@ begin
   end;
 end;
 
+function TBSONItem.GetAsBSONCode_W_Scope: IBSONCode_W_Scope;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONCode_W_Scope, Result);
+  end;
+end;
+
 { TBSONArray }
 
 class function TBSONArray.NewFrom(Value: Variant): IBSONArray;
@@ -1025,6 +1064,35 @@ end;
 procedure TBSONCode.SetCode(const Value: String);
 begin
   FCode := Value;
+end;
+
+{ TBSONCode_W_Scope }
+
+function TBSONCode_W_Scope.GetCode: String;
+begin
+  Result := FCode;
+end;
+
+function TBSONCode_W_Scope.GetScope: IBSONObject;
+begin
+  Result := FScope;
+end;
+
+class function TBSONCode_W_Scope.NewFrom(const ACode: String; const AScope: IBSONObject): IBSONCode_W_Scope;
+begin
+  Result := TBSONCode_W_Scope.Create;
+  Result.Code := ACode;
+  Result.Scope := AScope;
+end;
+
+procedure TBSONCode_W_Scope.SetCode(const Value: String);
+begin
+  FCode := Value;
+end;
+
+procedure TBSONCode_W_Scope.SetScope(const Value: IBSONObject);
+begin
+  FScope := Value;
 end;
 
 initialization

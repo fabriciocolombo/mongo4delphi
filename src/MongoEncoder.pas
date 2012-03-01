@@ -52,6 +52,7 @@ type
     procedure putUUID(AName: String; AValue: TGUID);
     procedure putBinary(name: String; const val: IBSONBinary);
     procedure putRegEx(name: String; const val: IBSONRegEx);
+    procedure putCodeWScope(name: String; const val: IBSONCode_W_Scope);
 
     procedure PutObjectField(const AItem: TBSONItem);
     procedure PutInterfaceField(name: String; const val: IUnknown);
@@ -156,27 +157,7 @@ begin
                     putString(name, AItem.AsString, BSON_STRING);
                 end;
     bvtInterface: PutInterfaceField(name, IUnknown(AItem.Value));
-{    varError,
-    varAny,
-    varTypeMask,
-    varArray,
-    varByRef: ;
-    varVariant:;
-}
-//  if ( val instanceof Pattern )
-//      putPattern(name, (Pattern)val );
-//  else if ( val instanceof byte[] )
-//      putBinary( name , (byte[])val );
-//  else if ( val instanceof Binary )
-//      putBinary( name , (Binary)val );
-//  else if ( val instanceof UUID )
-//      putUUID( name , (UUID)val );
-//  else if (val instanceof Symbol)
-//      putSymbol(name, (Symbol) val);
-//  else if (val instanceof CodeWScope)
-//      putCodeWScope( name , (CodeWScope)val );
-//  else if (val instanceof Code)
-//      putCode( name , (Code)val );
+
 //  else if (val instanceof DBRefBase)
 //      BSONObject temp = new BasicBSONObject();
 //      temp.put("$ref", ((DBRefBase)val).getRef());
@@ -216,6 +197,7 @@ var
   vBSONRegEx: IBSONRegEx;
   vBSONSymbol: IBSONSymbol;
   vBSONCode: IBSONCode;
+  vBSONCode_W_Scope: IBSONCode_W_Scope;
 begin
   if Supports(val, IBSONArray, vBSONArray) then
   begin
@@ -242,6 +224,10 @@ begin
   else if Supports(val, IBSONCode, vBSONCode) then
   begin
     putString(name, vBSONCode.Code, BSON_CODE);
+  end
+   else if Supports(val, IBSONCode_W_Scope, vBSONCode_W_Scope) then
+  begin
+    putCodeWScope(name, vBSONCode_W_Scope);
   end
   else if Supports(val, IBSONObjectId, vBSONObjectId) then
   begin
@@ -319,6 +305,21 @@ begin
   put(BSON_REGEX, name);
   put(val.Pattern);
   put(val.GetOptions);
+end;
+
+procedure TDefaultMongoEncoder.putCodeWScope(name: String;const val: IBSONCode_W_Scope);
+var
+  vPos: Integer;
+begin
+  put(BSON_CODE_W_SCOPE, name );
+  vPos := FBuffer.Position;
+
+  FBuffer.WriteInt(0); //reserved size
+  putValueString(val.Code);
+
+  Encode(val.Scope);
+
+  FBuffer.WriteInt(vPos, FBuffer.Position - vPos);
 end;
 
 { TMongoEncoderFactory }

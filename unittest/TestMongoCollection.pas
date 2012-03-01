@@ -25,6 +25,7 @@ type
     procedure InsertBSONRegEx;
     procedure InsertBSONSymbol;
     procedure InsertBSONCode;
+    procedure InsertBSONCode_W_Scope;
     procedure FindOne;
     procedure FindOneWithRegEx;
     procedure TestCount;
@@ -298,6 +299,11 @@ end;
 procedure TTestMongoCollection.InsertBSONCode;
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('code', TBSONCode.NewFrom('this.a>3'))).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.InsertBSONCode_W_Scope;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('code_w_scope', TBSONCode_W_Scope.NewFrom('this.a>3', TBSONObject.NewFrom('id', 1)))).getLastError.RaiseOnError;
 end;
 
 initialization

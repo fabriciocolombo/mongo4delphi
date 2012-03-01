@@ -287,10 +287,13 @@ var
   vResponse: TResponse;
 begin
   vResponse := ReadResponse(AStream, ARequestId);
-
-  AFlags := vResponse.Flags;
-  ANumberReturned := vResponse.NumberReturned;
-  ACursorId := vResponse.CursorId;
+  try
+    AFlags := vResponse.Flags;
+    ANumberReturned := vResponse.NumberReturned;
+    ACursorId := vResponse.CursorId;
+  finally
+    vResponse.Free;
+  end;
 end;
 
 function TDefaultMongoProvider.RunCommand(DB: String; Command: IBSONObject): ICommandResult;
@@ -452,16 +455,19 @@ begin
     SendMsg(vStream);
 
     vResponse := ReadResponse(vStream, FRequestId);
+    try
+     //To capture a response
+      vStream.Position := 0;
+//      vStream.SaveToFile('XXX.stream');
+      vStream.Position := 36;
 
-//To capture a response    
-    vStream.Position := 0;
-//    vStream.SaveToFile('XXX.stream');
-    vStream.Position := 36;
-
-    if vResponse.NumberReturned = 0 then
-      Result := nil
-    else
-      Result := FDecoder.Decode(vStream);
+      if vResponse.NumberReturned = 0 then
+        Result := nil
+      else
+        Result := FDecoder.Decode(vStream);
+    finally
+      vResponse.Free;
+    end;
   finally
     vStream.Free;
   end;

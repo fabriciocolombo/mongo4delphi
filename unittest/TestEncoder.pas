@@ -34,6 +34,7 @@ type
     procedure EncodeRegEx;
     procedure EncodeSymbol;
     procedure EncodeCode;
+    procedure EncodeCode_W_Scope;
   end;
 
 implementation
@@ -384,6 +385,32 @@ begin
   FEncoder.Encode(vBSON);
 
   CheckEquals(24, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeCode_W_Scope;
+var
+  vBSON: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('code_w_scope', TBSONCode_W_Scope.NewFrom('this.a>3', TBSONObject.NewFrom('id', 1)));
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'code_w_scope' size 13 in UTF8
+  //Write valueSize size 4
+  //Write codeSize size 4
+  //Write this.a>3 size 9
+  //Write scope size size 13 
+    //Write object size - 4
+    //Write type size 1
+    //Write string 'id' size 3 in UTF8
+    //Write value size 4
+    //Write EOO size 1
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(49, FStream.Size);
 end;
 
 initialization
