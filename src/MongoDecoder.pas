@@ -120,7 +120,8 @@ begin
     BSON_INT32: ACurrent.Put(vName, ABuffer.ReadInt);
     BSON_INT64: ACurrent.Put(vName, ABuffer.ReadInt64);
     BSON_BINARY: ACurrent.Put(vName, DecodeBinary(ABuffer));
-    BSON_REGEX: ACurrent.Put(vName, DecodeRegEx(ABuffer))
+    BSON_REGEX: ACurrent.Put(vName, DecodeRegEx(ABuffer));
+    BSON_SYMBOL: ACurrent.Put(vName, TBSONSymbol.NewFrom(ABuffer.ReadUTF8String));
   else
     raise EDecodeBSONTypeException.CreateResFmt(@sDecodeBSONTypeException, [vType]);
   end;

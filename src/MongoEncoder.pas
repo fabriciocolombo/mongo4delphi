@@ -46,7 +46,7 @@ type
     procedure putInt(AName: String; AValue: LongWord);
     procedure putInt64(AName: String; AValue: Int64);
     procedure putFloat(AName: String; AValue: Extended);
-    procedure putString(AName: String; AValue: String);
+    procedure putString(AName: String; AValue: String; AType: Integer);
     procedure putBoolean(AName: String; AValue: Boolean);
     procedure putObjectId(AName: String; const AValue: IBSONObjectId);
     procedure putUUID(AName: String; AValue: TGUID);
@@ -138,9 +138,8 @@ begin
 
   if SameText(name, '$where') and (AItem.ValueType = bvtString) then
   begin
-      put(BSON_CODE, name);
-      putValueString(AItem.AsString);
-      Exit;
+    putString(name, AItem.AsString, BSON_CODE);
+    Exit;
   end;
 
   case AItem.ValueType of
@@ -154,7 +153,7 @@ begin
                   if TGUIDUtils.TryStringToGuid(AItem.AsString, vGUID) then
                     putUUID(name, vGUID)
                   else
-                    putString(name, AItem.AsString);
+                    putString(name, AItem.AsString, BSON_STRING);
                 end;
     bvtInterface: PutInterfaceField(name, IUnknown(AItem.Value));
 {    varError,
@@ -192,9 +191,9 @@ begin
   end;
 end;
 
-procedure TDefaultMongoEncoder.putString(AName, AValue: String);
+procedure TDefaultMongoEncoder.putString(AName, AValue: String; AType: Integer);
 begin
-  put(BSON_STRING, AName);
+  put(AType, AName);
   putValueString(AValue);
 end;
 
@@ -215,6 +214,7 @@ var
   vBSONObjectId: IBSONObjectId;
   vBSONBinary: IBSONBinary;
   vBSONRegEx: IBSONRegEx;
+  vBSONSymbol: IBSONSymbol;
 begin
   if Supports(val, IBSONArray, vBSONArray) then
   begin
@@ -233,6 +233,10 @@ begin
   begin
     put(BSON_DOC, name);
     Encode(vBSONObject);
+  end
+  else if Supports(val, IBSONSymbol, vBSONSymbol) then
+  begin
+    putString(name, vBSONSymbol.Symbol, BSON_SYMBOL);
   end
   else if Supports(val, IBSONObjectId, vBSONObjectId) then
   begin

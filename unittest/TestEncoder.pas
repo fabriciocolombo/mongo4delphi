@@ -32,6 +32,7 @@ type
     procedure EncodeBinary;
     procedure EncodeBinarySubTypeOldBinary;
     procedure EncodeRegEx;
+    procedure EncodeSymbol;
   end;
 
 implementation
@@ -339,6 +340,25 @@ begin
   //Write string 'reg' size 4 in UTF8
   //Write pattern size 11
   //Write flags size 7
+  //Write EOO size 1
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(28, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeSymbol;
+var
+  vBSON: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('symbol', TBSONSymbol.NewFrom('any symbol'));
+
+  //Write object size - 4
+  //Write type size 1
+  //Write string 'symbol' size 7 in UTF8
+  //Write valueSize size 4
+  //Write 'any symbol' size 11
   //Write EOO size 1
 
   FEncoder.Encode(vBSON);

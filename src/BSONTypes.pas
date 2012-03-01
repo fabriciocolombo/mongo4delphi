@@ -85,6 +85,15 @@ type
     procedure SetOptions(const AOptions: String);
   end;
 
+  IBSONSymbol = interface
+  ['{D1889152-5905-494F-9F20-5EB2DC74130F}']
+
+    procedure SetSymbol(const Value: String);
+    function GetSymbol: String;
+
+    property Symbol: String read GetSymbol write SetSymbol;
+  end;
+
   IBSONBasicObject = interface
     ['{FF4178D1-D45B-480D-9704-85ACD5BA02E9}']
     function GetItem(AIndex: Integer): TBSONItem;
@@ -191,7 +200,18 @@ type
     function GetOptions: String;
     procedure SetOptions(const AOptions: String);
 
-    //db.customers.find( { name : { $regex : 'acme.*corp', $options: 'i' } } );
+    class function NewFrom(APattern: String; AOptions: String=''): IBSONRegEx;
+  end;
+
+  TBSONSymbol = class(TInterfacedObject, IBSONSymbol)
+  private
+    FSymbol: String;
+    procedure SetSymbol(const Value: String);
+    function GetSymbol: String;
+  public
+    property Symbol: String read GetSymbol write SetSymbol;
+
+    class function NewFrom(const ASymbol: String): IBSONSymbol;
   end;
 
   TBSONItem = class
@@ -213,6 +233,7 @@ type
     function GetAsBSONArray: IBSONArray;
     function GetAsBSONBinary: IBSONBinary;
     function GetAsBSONRegEx: IBSONRegEx;
+    function GetAsBSONSymbol: IBSONSymbol;
   public
     property Name: String read FName;
     property Value: Variant read FValue write SetValue;
@@ -227,7 +248,8 @@ type
     property AsBSONObject: IBSONObject read GetAsBSONObject;
     property AsBSONArray: IBSONArray read GetAsBSONArray;
     property AsBSONBinary: IBSONBinary read GetAsBSONBinary;
-    property AsBSONRegEx: IBSONRegEx read GetAsBSONRegEx; 
+    property AsBSONRegEx: IBSONRegEx read GetAsBSONRegEx;
+    property AsBSONSymbol: IBSONSymbol read GetAsBSONSymbol; 
 
     function GetValueTypeDesc: String;
 
@@ -710,7 +732,16 @@ begin
   if (FValueType = bvtInterface) then
   begin
     Supports(IUnknown(FValue), IBSONRegEx, Result);
-  end; 
+  end;
+end;
+
+function TBSONItem.GetAsBSONSymbol: IBSONSymbol;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONSymbol, Result);
+  end;
 end;
 
 { TBSONArray }
@@ -921,6 +952,31 @@ end;
 function TBSONRegEx.GetUnicode_U: Boolean;
 begin
   Result := FUnicode_U;
+end;
+
+class function TBSONRegEx.NewFrom(APattern, AOptions: String): IBSONRegEx;
+begin
+  Result := TBSONRegEx.Create;
+  Result.Pattern := APattern;
+  Result.SetOptions(AOptions);
+end;
+
+{ TBSONSymbol }
+
+function TBSONSymbol.GetSymbol: String;
+begin
+  Result := FSymbol;
+end;
+
+class function TBSONSymbol.NewFrom(const ASymbol: String): IBSONSymbol;
+begin
+  Result := TBSONSymbol.Create;
+  Result.Symbol := ASymbol;
+end;
+
+procedure TBSONSymbol.SetSymbol(const Value: String);
+begin
+  FSymbol := Value;
 end;
 
 initialization

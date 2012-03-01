@@ -23,7 +23,9 @@ type
     procedure InsertBSONBinary;
     procedure InsertBSONOldBinary;
     procedure InsertBSONRegEx;
+    procedure InsertBSONSymbol;
     procedure FindOne;
+    procedure FindOneWithRegEx;
     procedure TestCount;
     procedure TestCreateCollection;
     procedure TestGetIndexInfo;
@@ -48,7 +50,7 @@ begin
   vBSON.Put('id', 123);
   vBSON.Put('id2', vArray);
 
-  DefaultCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON).getLastError.RaiseOnError;;
 end;
 
 procedure TTestMongoCollection.InsertBSONArraySimpleTypes;
@@ -65,7 +67,7 @@ begin
   vBSON.Put('id', 123);
   vBSON.Put('id2', vArray);
 
-  DefaultCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON).getLastError.RaiseOnError;;
 end;
 
 procedure TTestMongoCollection.InsertBSONArrayWithEmbeddedArrays;
@@ -79,7 +81,7 @@ begin
   vBSON.Put('id', 123);
   vBSON.Put('id2', vArray);
 
-  DefaultCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON).getLastError.RaiseOnError;;
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectSimpleTypes;
@@ -115,7 +117,7 @@ begin
   vBSON.Put('id16', True);
   vBSON.Put('id17', False);
 
-  DefaultCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON).getLastError.RaiseOnError;;
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectWithEmbeddedObject;
@@ -130,12 +132,12 @@ begin
   vBSON.Put('id', 123);
   vBSON.Put('id2', vEmbedded);
 
-  DefaultCollection.Insert(vBSON);
+  DefaultCollection.Insert(vBSON).getLastError.RaiseOnError;
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectID;
 begin
-  DefaultCollection.Insert(TBSONObject.NewFrom('id', 123).Put('_id', TBSONObjectId.NewFrom));
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 123).Put('_id', TBSONObjectId.NewFrom)).getLastError.RaiseOnError;;
 end;
 
 procedure TTestMongoCollection.InsertBSONObjectUUID;
@@ -144,7 +146,7 @@ var
 begin
   vGUID := TGUIDUtils.NewGuid;
 
-  DefaultCollection.Insert(TBSONObject.NewFrom('uid', GUIDToString(vGUID)));
+  DefaultCollection.Insert(TBSONObject.NewFrom('uid', GUIDToString(vGUID))).getLastError.RaiseOnError;;
 end;
 
 procedure TTestMongoCollection.FindOne;
@@ -152,8 +154,6 @@ var
   vDoc: IBSONObject;
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('_id', TBSONObjectId.NewFromOID('4f46b9fa65760489cc96ab49')).Put('id', 123));
-
-//  DefaultCollection.Insert(TBSONObject.NewFrom('id', 123).Put('items', TBSONArray.NewFromValues([1, 2, 3])));
 
   vDoc := DefaultCollection.FindOne(nil);
 
@@ -266,7 +266,32 @@ begin
   vRegEx.LocaleDependent_L := True;
   vRegEx.Unicode_U := True;
 
-  DefaultCollection.Insert(TBSONObject.NewFrom('reg', vRegEx));
+  DefaultCollection.Insert(TBSONObject.NewFrom('reg', vRegEx)).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.FindOneWithRegEx;
+const
+  REG_EX_EMAIL = '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$';
+var
+  vDoc: IBSONObject;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 1).Put('email', ''));
+  DefaultCollection.Insert(TBSONObject.NewFrom('id', 2).Put('email', 'name@domain.com'));
+
+  vDoc := DefaultCollection.FindOne(TBSONObject.NewFrom('email', TBSONRegEx.NewFrom(REG_EX_EMAIL)));
+
+  CheckNotNull(vDoc);
+  CheckEquals(3, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('id', vDoc[1].Name);
+  CheckEquals(2, vDoc[1].AsInteger);
+  CheckEquals('email', vDoc[2].Name);
+  CheckEquals('name@domain.com', vDoc[2].AsString);
+end;
+
+procedure TTestMongoCollection.InsertBSONSymbol;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('symbol', TBSONSymbol.NewFrom('any symbol'))).getLastError.RaiseOnError;
 end;
 
 initialization

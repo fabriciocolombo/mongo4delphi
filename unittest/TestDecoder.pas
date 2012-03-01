@@ -27,6 +27,7 @@ type
     procedure DecodeFindOneOldBinary;
     procedure DecodeFindOneUUID;
     procedure DecodeFindOneRegEx;
+    procedure DecodeFindOneSymbol;
   end;
   
 implementation
@@ -210,6 +211,21 @@ begin
   CheckEquals(vCurrency, vDoc.Items['id15'].Value, 0.001);
   CheckTrue(vDoc.Items['id16'].Value, 'Is not true');
   CheckFalse(vDoc.Items['id17'].Value, 'Is not false');
+end;
+
+procedure TTestDecoder.DecodeFindOneSymbol;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneSymbol.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream);
+
+  CheckNotNull(vDoc);
+  CheckEquals(2, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('symbol', vDoc[1].Name);
+  CheckEquals('any symbol', vDoc[1].AsBSONSymbol.Symbol);
 end;
 
 procedure TTestDecoder.DecodeFindOneUUID;
