@@ -48,6 +48,10 @@ type
     ['{B666B7F9-2E6A-45EA-A686-BCF212821AAA}']
     function AsByteArray: TBSONObjectIdByteArray;
     function ToStringMongo: String;
+
+    function GetOID: String;
+
+    property OID: String read GetOID;
   end;
 
   IBSONBinary = interface
@@ -156,6 +160,8 @@ type
     function Find(const AKey: String;var AIndex: Integer): Boolean;overload;
     function PutAll(const ASource: IBSONObject): IBSONObject;
 
+    function Contain(const AKey: String): Boolean;
+
     function HasOid: Boolean;
     function GetOid: IBSONObjectId;
   end;
@@ -166,11 +172,26 @@ type
     function Put(Value: Variant): IBSONArray;
   end;
 
+  IBSONDBRef = interface(IBSONObject)
+  ['{91B86F07-6E5A-4308-AFB2-B1493F84EB91}']
+    function GetCollection: String;
+    function GetDB: String;
+    function GetObjectId: IBSONObjectId;
+
+    function Fetch: IBSONObject;
+
+    property DB: String read GetDB;
+    property Collection: String read GetCollection;
+    property ObjectId: IBSONObjectId read GetObjectId;
+  end;
+
   TBSONObjectId = class(TInterfacedObject, IBSONObjectId)
   private
     FOID: String;
 
     procedure GenId;
+
+    function GetOID: String;
   public
     constructor Create;overload;
     constructor Create(const OID: String);overload;
@@ -180,6 +201,8 @@ type
 
     function AsByteArray: TBSONObjectIdByteArray;
     function ToStringMongo: String;
+
+    property OID: String read GetOID;
   end;
 
   TBSONBinary = class(TInterfacedObject, IBSONBinary)
@@ -315,6 +338,7 @@ type
     function GetAsBSONCode: IBSONCode;
     function GetAsBSONCode_W_Scope: IBSONCode_W_Scope;
     function GetAsBSONTimeStamp: IBSONTimeStamp;
+    function GetAsBSONDBRef: IBSONDBRef;
   public
     property Name: String read FName;
     property Value: Variant read FValue write SetValue;
@@ -334,6 +358,7 @@ type
     property AsBSONCode: IBSONCode read GetAsBSONCode;
     property AsBSONCode_W_Scope: IBSONCode_W_Scope read GetAsBSONCode_W_Scope;
     property AsBSONTimeStamp: IBSONTimeStamp read GetAsBSONTimeStamp;
+    property AsBSONDBRef: IBSONDBRef read GetAsBSONDBRef; 
 
     function GetValueTypeDesc: String;
 
@@ -376,6 +401,8 @@ type
 
     function HasOid: Boolean;
     function GetOid: IBSONObjectId;
+
+    function Contain(const AKey: String): Boolean;
   end;
 
   TBSONArray = class(TBSONObject, IBSONArray)
@@ -517,6 +544,11 @@ begin
     hex[(d shr 20) and $F]+hex[(d shr 16) and $F]+
     hex[(d shr 12) and $F]+hex[(d shr  8) and $F]+
     hex[(d shr  4) and $F]+hex[(d       ) and $F];
+end;
+
+function TBSONObjectId.GetOID: String;
+begin
+  Result := FOID;
 end;
 
 class function TBSONObjectId.NewFrom: IBSONObjectId;
@@ -680,6 +712,13 @@ begin
   begin
     raise EBSONObjectHasNoObjectId.CreateRes(@sBSONObjectHasNoObjectId);
   end;
+end;
+
+function TBSONObject.Contain(const AKey: String): Boolean;
+var
+  vIndex: Integer;
+begin
+  Result := Find(AKey, vIndex);
 end;
 
 { TBSONItem }
@@ -865,6 +904,15 @@ end;
 function TBSONItem.IsMaxKey: Boolean;
 begin
   Result := (FValue = MAX_KEY);
+end;
+
+function TBSONItem.GetAsBSONDBRef: IBSONDBRef;
+begin
+  Result := nil;
+  if (FValueType = bvtInterface) then
+  begin
+    Supports(IUnknown(FValue), IBSONDBRef, Result);
+  end;
 end;
 
 { TBSONArray }

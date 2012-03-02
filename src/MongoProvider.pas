@@ -26,7 +26,7 @@ unit MongoProvider;
 
 interface
 
-uses MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
+uses AbstractMongo, MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
      {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets,
      Classes, SysUtils;
 
@@ -107,6 +107,7 @@ type
     function FindOne(DB, Collection: String): IBSONObject;overload;
     function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;overload;
     function FindOne(DB, Collection: String; Query, Fields: IBSONObject): IBSONObject;overload;
+    function FindOne(Collection: TAbstractMongoCollection; Query, Fields: IBSONObject): IBSONObject;overload;
 
     function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query, Fields: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
     function HasNext(AStream: TBSONStream; DB: String; Collection: String; ACursorId: Int64; ABatchSize: Integer): IBSONObject;
@@ -190,6 +191,7 @@ type
     function FindOne(DB, Collection: String): IBSONObject;overload;
     function FindOne(DB, Collection: String; Query: IBSONObject): IBSONObject;overload;
     function FindOne(DB, Collection: String; Query, Fields: IBSONObject): IBSONObject;overload;
+    function FindOne(Collection: TAbstractMongoCollection; Query, Fields: IBSONObject): IBSONObject;overload;
 
     function OpenQuery(AStream: TBSONStream; DB: String; Collection: String; Query, Fields: IBSONObject; ASkip, ABatchSize: Integer): IBSONObject;
     function HasNext(AStream: TBSONStream; DB: String; Collection: String;  ACursorId: Int64; ABatchSize: Integer): IBSONObject;
@@ -207,7 +209,8 @@ type
 
 implementation
 
-uses MongoException, Windows, BSON, Variants, Math, MongoMD5;
+uses MongoException, Windows, BSON, Variants, Math, MongoMD5,
+  DecoderCallback;
 
 { TDefaultMongoProvider }
 
@@ -726,6 +729,51 @@ begin
                               .Put('key', KeyFields);
 
   Result := Insert(DB, SYSTEM_INDEXES_COLLECTION, vIndexOptions);
+end;
+
+function TDefaultMongoProvider.FindOne(Collection: TAbstractMongoCollection; Query, Fields: IBSONObject): IBSONObject;
+var
+  vStream: TBSONStream;
+  vResponse: TResponse;
+begin
+  vStream := TBSONStream.Create;
+  try
+    BeginMsg(vStream, Collection.DBName, Collection.CollectionName, OP_QUERY);
+    vStream.WriteInt(0); //NumberToSkip
+    vStream.WriteInt(1); //NumberToReturn
+
+    if (Query = nil) then
+    begin
+      Query := TBSONObject.Create;
+    end;
+
+    FEncoder.SetBuffer(vStream);
+    FEncoder.Encode(Query);
+
+    if (Fields <> nil) and (Fields.Count > 0) then
+    begin
+      FEncoder.Encode(Fields);
+    end;
+
+    SendMsg(vStream);
+
+    vResponse := ReadResponse(vStream, FRequestId);
+    try
+     //To capture a response
+      vStream.Position := 0;
+//      vStream.SaveToFile('XXX.stream');
+      vStream.Position := 36;
+
+      if vResponse.NumberReturned = 0 then
+        Result := nil
+      else
+        Result := FDecoder.Decode(vStream, TDecoderCallback.Create(Collection));
+    finally
+      vResponse.Free;
+    end;
+  finally
+    vStream.Free;
+  end;
 end;
 
 { TWriteResult }

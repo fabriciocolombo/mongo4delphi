@@ -25,18 +25,20 @@ unit MongoDecoder;
 
 interface
 
-uses BSONStream, BSONTypes;
+uses BSONStream, BSONTypes, DecoderCallback;
 
 type
   IMongoDecoder = interface
     ['{FE47DC70-7349-4818-998C-BB0B15D78683}']
 
-    function Decode(ABuffer: TBSONStream): IBSONObject;
-    function DecodeFromBeginning(ABuffer: TBSONStream): IBSONObject;
+    function Decode(ABuffer: TBSONStream;const DecoderCallback: IDecoderCallback=nil): IBSONObject;
+    function DecodeFromBeginning(ABuffer: TBSONStream;const DecoderCallback: IDecoderCallback=nil): IBSONObject;
   end;
 
   TDefaultMongoDecoder = class(TInterfacedObject, IMongoDecoder)
   private
+    FDecoderCallback: IDecoderCallback;
+    
     function DecodeElement(ACurrent: IBSONObject; ABuffer: TBSONStream): Boolean;
     function DecodeObject(ABuffer: TBSONStream): IBSONObject;
     function DecodeArray(ABuffer: TBSONStream): IBSONArray;
@@ -45,8 +47,8 @@ type
     function DecodeCode_W_Scope(ABuffer: TBSONStream): IBSONCode_W_Scope;
     function DecodeTimeStamp(ABuffer: TBSONStream): IBSONTimeStamp;
   public
-    function Decode(ABuffer: TBSONStream): IBSONObject;
-    function DecodeFromBeginning(ABuffer: TBSONStream): IBSONObject;
+    function Decode(ABuffer: TBSONStream;const DecoderCallback: IDecoderCallback=nil): IBSONObject;
+    function DecodeFromBeginning(ABuffer: TBSONStream;const DecoderCallback: IDecoderCallback=nil): IBSONObject;
   end;
 
   TMongoDecoderFactory = class
@@ -56,7 +58,7 @@ type
 
 implementation
 
-uses MongoException, Classes, BSON, Variants, SysUtils;
+uses MongoException, Classes, BSON, Variants, SysUtils, BSONDBRef;
 
 { TMongoDecoderFactory }
 
@@ -67,7 +69,7 @@ end;
 
 { TDefaultMongoDecoder }
 
-function TDefaultMongoDecoder.DecodeFromBeginning(ABuffer: TBSONStream): IBSONObject;
+function TDefaultMongoDecoder.DecodeFromBeginning(ABuffer: TBSONStream;const DecoderCallback: IDecoderCallback): IBSONObject;
 begin
   ABuffer.ReadInt; //Length
   ABuffer.ReadInt; //RequestId
@@ -78,11 +80,13 @@ begin
   ABuffer.ReadInt; //StartingFrom
   ABuffer.ReadInt; //NumberReturned
 
-  Result := Decode(ABuffer);
+  Result := Decode(ABuffer, DecoderCallback);
 end;
 
-function TDefaultMongoDecoder.Decode(ABuffer: TBSONStream): IBSONObject;
+function TDefaultMongoDecoder.Decode(ABuffer: TBSONStream;const DecoderCallback: IDecoderCallback): IBSONObject;
 begin
+  FDecoderCallback := DecoderCallback; 
+
   Result := DecodeObject(ABuffer);
 end;
 
@@ -147,6 +151,11 @@ begin
   Result := TBSONObject.Create;
 
   while DecodeElement(Result, ABuffer) do;
+
+  if Assigned(FDecoderCallback) and Result.Contain('$ref') and Result.Contain('$id') then
+  begin
+    Result := TBSONDBRef.NewFrom(FDecoderCallback.GetCollection.DB.FindCollection(Result.Items['$ref'].AsString), TBSONObjectId.NewFromOID(Result.Items['$id'].AsString));
+  end;
 
   vNumRead := (ABuffer.Position - vPosition);
   if vNumRead <> vLength then

@@ -16,8 +16,7 @@ uses
   FastMM4,
   {$ELSE}
   Interfaces,
-  {$ENDIF}
-  GuiTestRunner,
+  {$ENDIF}  GuiTestRunner,
   Forms,
   TestBSONItem in 'TestBSONItem.pas',
   TestBSONTypes in 'TestBSONTypes.pas',
@@ -41,7 +40,10 @@ uses
   ServerError in '..\src\ServerError.pas',
   TestServerError in 'TestServerError.pas',
   TestMongoDB in 'TestMongoDB.pas',
-  BaseTestCaseMongo in 'BaseTestCaseMongo.pas';
+  BaseTestCaseMongo in 'BaseTestCaseMongo.pas',
+  BSONDBRef in '..\src\BSONDBRef.pas',
+  DecoderCallback in '..\src\DecoderCallback.pas',
+  AbstractMongo in '..\src\AbstractMongo.pas';
 
 {$R *.res}
 
@@ -50,7 +52,7 @@ begin
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;
   {$ELSE}
-    Application.CreateForm(TGuiTestRunner, TestRunner);
+    Application.CreateForm(TTestRunner, TestRunner);
   {$ENDIF}
   Application.Run;
 end.

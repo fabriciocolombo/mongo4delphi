@@ -29,6 +29,5 @@
     TODO - File chunking (GridFS)
 
 
-(1) Types not yet implemented subtypes  
-  BSON_SUBTYPE_FUNC    = $01;
-  BSON_SUBTYPE_MD5     = $05;  
+(1) Types not yet implemented
+	BSON_REF  

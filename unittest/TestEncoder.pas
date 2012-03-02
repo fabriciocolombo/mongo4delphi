@@ -6,13 +6,13 @@ unit TestEncoder;
 
 interface
 
-uses BaseTestCase, MongoEncoder, BSONStream;
+uses BaseTestCaseMongo, MongoEncoder, BSONStream;
 
 type
 
   { TTestEncoder }
 
-  TTestEncoder = class(TBaseTestCase)
+  TTestEncoder = class(TBaseTestCaseMongo)
   private
     FStream: TBSONStream;
     FEncoder: IMongoEncoder;
@@ -39,11 +39,14 @@ type
     procedure EncodeTimeStamp;
     procedure EncodeMinKey;
     procedure EncodeMaxKey;
+    procedure EncodeManualDBRef;
+    procedure EncodeDBRef;
   end;
 
 implementation
 
-uses Variants, SysUtils, BSONTypes, ComObj, MongoUtils, MongoException, BSON;
+uses Variants, SysUtils, BSONTypes, ComObj, MongoUtils, MongoException, BSON,
+  BSONDBRef;
 
 { TTestEncoder }
 
@@ -492,6 +495,56 @@ begin
   FEncoder.Encode(vBSON);
 
   CheckEquals(1350, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeDBRef;
+var
+  vBSON: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('id', 1);
+  vBSON.Put('ref', TBSONDBRef.NewFrom(DefaultCollection, TBSONObjectId.NewFrom));
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(72, FStream.Size);
+end;
+
+procedure TTestEncoder.EncodeManualDBRef;
+var
+  vBSON,
+  vEmbedded: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('id', 1);
+
+  //Write object size - 4
+  //Write type size 1                   1 + 4 = 5
+  //Write string 'id' size 3 in UTF8    5 + 3 = 8
+  //Write value '123' size 4            8 + 4 = 12
+
+  vEmbedded := TBSONObject.Create;
+  vEmbedded.Put('$ref', 'colref');
+  vEmbedded.Put('$id', TBSONObjectId.NewFrom.OID);
+
+  vBSON.Put('ref', vEmbedded);
+  //Write type size 1                    12 +  1 = 13
+  //Write string 'ref' size 4 in UTF8    13 +  4 = 17
+    //Write object size - 4              17 +  4 = 21
+    //Write type  size 1                  1 + 21 = 22
+    //Write string '$ref' size 5 in UTF8  5 + 22 = 27
+    //Write value size 'colref' size 4    4 + 27 = 31
+    //Write value 'colref' size 7         7 + 31 = 38
+    //Write type  size 1                  1 + 38 = 39
+    //Write string '$id' size 4 in UTF8   4 + 39 = 43
+    //Write value size 'oid' size 4       4 + 43 = 47
+    //Write value oid size 25            25 + 47 = 72
+    //Write EOO size 1                    1 + 72 = 73
+  //Write EOO size 1                      1 + 73 = 74
+
+  FEncoder.Encode(vBSON);
+
+  CheckEquals(74, FStream.Size);
 end;
 
 initialization

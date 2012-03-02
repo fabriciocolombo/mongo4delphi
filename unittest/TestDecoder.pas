@@ -6,10 +6,10 @@ unit TestDecoder;
 
 interface
 
-uses BaseTestCase, MongoDecoder, BSONStream, Classes;
+uses BaseTestCaseMongo, MongoDecoder, BSONStream, Classes;
 
 type
-  TTestDecoder = class(TBaseTestCase)
+  TTestDecoder = class(TBaseTestCaseMongo)
   private
     FStream: TBSONStream;
     FDecoder: IMongoDecoder;
@@ -34,11 +34,12 @@ type
     procedure DecodeFindOneTimeStamp;
     procedure DecodeFindOneMinKey;
     procedure DecodeFindOneMaxKey;
+    procedure DecodeFindOneRef;
   end;
   
 implementation
 
-uses BSONTypes, Variants, SysUtils, DateUtils, BSON;
+uses BSONTypes, Variants, SysUtils, DateUtils, BSON, DecoderCallback;
 
 { TTestDecoder }
 
@@ -225,6 +226,24 @@ begin
   CheckEquals('img', vDoc[1].Name);
   CheckEquals(1335, vDoc[1].AsBSONBinary.Size);
   CheckEquals(BSON_SUBTYPE_OLD_BINARY, vDoc[1].AsBSONBinary.SubType);
+end;
+
+procedure TTestDecoder.DecodeFindOneRef;
+var
+  vDoc: IBSONObject;
+begin
+  FStream.LoadFromFile('.\response\FindOneRef.stream');
+
+  vDoc := FDecoder.DecodeFromBeginning(FStream, TDecoderCallback.Create(DefaultCollection));
+
+  CheckNotNull(vDoc);
+  CheckEquals(3, vDoc.Count);
+  CheckEquals('_id', vDoc[0].Name);
+  CheckEquals('id', vDoc[1].Name);
+  CheckEquals('ref', vDoc[2].Name);
+  CheckNotNull(vDoc[2].AsBSONDBRef, 'Is not a BSONDBRef');
+  CheckEquals('colref', vDoc[2].AsBSONDBRef.Collection);
+  CheckEquals('4f50294f0ff7660738451101', vDoc[2].AsBSONDBRef.ObjectId.OID);
 end;
 
 procedure TTestDecoder.DecodeFindOneRegEx;
