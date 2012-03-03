@@ -25,7 +25,7 @@ unit Mongo;
 
 interface
 
-uses Sockets, AbstractMongo, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider,
+uses Sockets, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider,
      Contnrs, Classes;
 
 
@@ -59,7 +59,7 @@ type
     procedure dropDatabase(DBName: String);
   end;
 
-  TMongoDB = class(TAbstractMongoDB)
+  TMongoDB = class
   private
     FMongo: TMongo;
     FDBName: String;
@@ -68,18 +68,16 @@ type
     function GetProvider: IMongoProvider;
     function DoGetCollections(AIncludeSystemCollections: Boolean): IBSONObject;
   protected
-    function GetDBName: String;override;
     property Provider: IMongoProvider read GetProvider;
   public
     constructor Create(AMongo: TMongo; ADBName: String);
     destructor Destroy; override;
 
-    property DBName: String read GetDBName;
+    property DBName: String read FDBName;
 
     function RunCommand(ACommand: IBSONObject): ICommandResult;
     function GetLastError: ICommandResult;
 
-    function FindCollection(AName: String): TAbstractMongoCollection;override;
     function GetCollection(AName: String): TMongoCollection;
     procedure DropCollection(AName: String);
 
@@ -92,11 +90,12 @@ type
     function CreateCollection(AName: String; AOptions: IBSONObject): TMongoCollection;
   end;
 
-  TMongoCollection = class(TAbstractMongoCollection)
+  TMongoCollection = class
   private
     FMongoDatabase: TMongoDB;
     FCollectionName: String;
 
+    function GetFullName: String;
     function GetProvider: IMongoProvider;
 
     function GenerateIndexName(KeyFields: IBSONObject): String;
@@ -105,7 +104,8 @@ type
   public
     constructor Create(AMongoDatabase: TMongoDB; AName: String);
 
-    property DB: TMongoDB read FMongoDatabase;
+    property CollectionName: String read FCollectionName;
+    property FullName: String read GetFullName;
 
     function Find: IMongoDBCursor;overload;
     function Find(Query: IBSONObject): IMongoDBCursor;overload;
@@ -129,9 +129,9 @@ type
 
     function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
 
-    function FindOne(): IBSONObject;overload;override;
-    function FindOne(Query: IBSONObject): IBSONObject;overload;override;
-    function FindOne(Query, Fields: IBSONObject): IBSONObject;overload;override;
+    function FindOne(): IBSONObject;overload;
+    function FindOne(Query: IBSONObject): IBSONObject;overload;
+    function FindOne(Query, Fields: IBSONObject): IBSONObject;overload;
 
     function GetIndexInfo: IBSONArray;
     //TODO Map/Reduce
@@ -396,16 +396,6 @@ begin
   Result := GetCollection(AName);
 end;
 
-function TMongoDB.GetDBName: String;
-begin
-  Result := FDBName; 
-end;
-
-function TMongoDB.FindCollection(AName: String): TAbstractMongoCollection;
-begin
-  Result := GetCollection(AName);
-end;
-
 { TMongoCollection }
 
 function TMongoCollection.Count(Limit: Integer): Integer;
@@ -441,6 +431,12 @@ begin
   end
   else
     Result := vCommandResult.Items['n'].AsInteger;
+end;
+
+constructor TMongoCollection.Create(AMongoDatabase: TMongoDB; AName: String);
+begin
+  FMongoDatabase := AMongoDatabase;
+  FCollectionName := AName;
 end;
 
 function TMongoCollection.CreateIndex(KeyFields: IBSONObject; AIndexName: String): IWriteResult;
@@ -491,6 +487,11 @@ end;
 function TMongoCollection.Find(Query, Fields: IBSONObject): IMongoDBCursor;
 begin
   Result := TMongoDBCursor.Create(Self, Query, Fields);
+end;
+
+function TMongoCollection.GetFullName: String;
+begin
+  Result := FMongoDatabase.DBName + '.' + FCollectionName;
 end;
 
 function TMongoCollection.GetProvider: IMongoProvider;
@@ -545,17 +546,17 @@ end;
 
 function TMongoCollection.FindOne: IBSONObject;
 begin
-  Result := FindOne(TBSONObject.Empty);
+  Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName);
 end;
 
 function TMongoCollection.FindOne(Query: IBSONObject): IBSONObject;
 begin
-  Result := FindOne(Query, TBSONObject.Empty);
+  Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName, Query);
 end;
 
 function TMongoCollection.FindOne(Query, Fields: IBSONObject): IBSONObject;
 begin
-  Result := Provider.FindOne(Self, Query, Fields);
+  Result := Provider.FindOne(FMongoDatabase.DBName, FCollectionName, Query, Fields);
 end;
 
 function TMongoCollection.GetIndexInfo: IBSONArray;
@@ -578,14 +579,6 @@ end;
 procedure TMongoCollection.DropIndexes;
 begin
   DropIndex('*');
-end;
-
-constructor TMongoCollection.Create(AMongoDatabase: TMongoDB; AName: String);
-begin
-  FMongoDatabase := AMongoDatabase;
-  FCollectionName := AName;
-
-  inherited Create(FMongoDatabase, FCollectionName);
 end;
 
 { TMongoDBCursor }

@@ -54,8 +54,6 @@ type
     procedure putRegEx(name: String; const val: IBSONRegEx);
     procedure putCodeWScope(name: String; const val: IBSONCode_W_Scope);
     procedure putTimeStamp(name: String; const val: IBSONTimeStamp);
-    procedure putDBRef(name: String; const val: IBSONDBRef);
-    procedure putObject(name: String; const val: IBSONObject);
 
     procedure PutObjectField(const AItem: TBSONItem);
     procedure PutInterfaceField(name: String; const val: IUnknown);
@@ -163,8 +161,6 @@ begin
                     put(BSON_MINKEY, name)
                   else if (AItem.IsMaxKey) then
                     put(BSON_MAXKEY, name)
-                  else if (name = '_id') then
-                    putObjectId(name, TBSONObjectId.NewFromOID(value))                    
                   else
                     putString(name, value, BSON_STRING);
                 end;
@@ -175,6 +171,10 @@ begin
 //      temp.put("$ref", ((DBRefBase)val).getRef());
 //      temp.put("$id", ((DBRefBase)val).getId());
 //      putObject( name, temp );
+//  else if ( val instanceof MinKey )
+//      putMinKey( name );
+//  else if ( val instanceof MaxKey )
+//      putMaxKey( name );
   else
     raise EIllegalArgumentException.CreateResFmt(@sInvalidVariantValueType, [AItem.GetValueTypeDesc]);
   end;
@@ -207,7 +207,6 @@ var
   vBSONCode: IBSONCode;
   vBSONCode_W_Scope: IBSONCode_W_Scope;
   vBSONTimeStamp: IBSONTimeStamp;
-  vBSONDBRef: IBSONDBRef;
 begin
   if Supports(val, IBSONArray, vBSONArray) then
   begin
@@ -222,13 +221,10 @@ begin
   begin
     putRegEx(name, vBSONRegEx);
   end
-  else if Supports(val, IBSONDBRef, vBSONDBRef) then
-  begin
-    putDBRef(name, vBSONDBRef);
-  end  
   else if Supports(val, IBSONObject, vBSONObject) then
   begin
-    putObject(name, vBSONObject);
+    put(BSON_DOC, name);
+    Encode(vBSONObject);
   end
   else if Supports(val, IBSONSymbol, vBSONSymbol) then
   begin
@@ -344,24 +340,6 @@ begin
   put(BSON_TIMESTAMP, name);
   FBuffer.WriteInt(val.Inc);
   FBuffer.WriteInt(val.Time);
-end;
-
-procedure TDefaultMongoEncoder.putDBRef(name: String; const val: IBSONDBRef);
-var
-  vRef: IBSONObject;
-
-begin
-  vRef := TBSONObject.NewFrom('$ref', val.Collection)
-                     .Put('$id', val.ObjectId.OID);
-
-  putObject(name, vRef);
-end;
-
-procedure TDefaultMongoEncoder.putObject(name: String; const val: IBSONObject);
-begin
-  put(BSON_DOC, name);
-
-  Encode(val);
 end;
 
 { TMongoEncoderFactory }

@@ -4,7 +4,7 @@ Mongo Delphi Driver API
 
 	
 Mongo Driver Requirements	- High priority
-	PARTIAL - BSON serialization/deserialization
+	PARTIAL - BSON serialization/deserialization¹
 	
 To Fully mongodb support	
 	TODO - Add size protected to MongoDecoder 16MB. This information could be retrieved with maxBsonObjectSize property of buildinfo or isMaster command:
@@ -37,5 +37,6 @@ Demo Application
 	
 	TODO - Automated build and unit test for target environments
 	
-(1) Types not yet implemented
-	BSON_REF  
+(1) Types not yet implemented subtypes
+  BSON_SUBTYPE_FUNC    = $01;
+  BSON_SUBTYPE_MD5     = $05;  
