@@ -12,11 +12,7 @@ program unittest;
   {$ENDIF}
 *)
 uses
-  {$IFNDEF FPC}
   FastMM4,
-  {$ELSE}
-  Interfaces,
-  {$ENDIF}
   GuiTestRunner,
   Forms,
   TestBSONItem in 'TestBSONItem.pas',
@@ -41,7 +37,8 @@ uses
   ServerError in '..\src\ServerError.pas',
   TestServerError in 'TestServerError.pas',
   TestMongoDB in 'TestMongoDB.pas',
-  BaseTestCaseMongo in 'BaseTestCaseMongo.pas';
+  BaseTestCaseMongo in 'BaseTestCaseMongo.pas',
+  BSONDBRef in '..\src\BSONDBRef.pas';
 
 {$R *.res}
 
@@ -50,7 +47,7 @@ begin
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;
   {$ELSE}
-    Application.CreateForm(TGuiTestRunner, TestRunner);
+    Application.CreateForm(TTestRunner, TestRunner);
   {$ENDIF}
   Application.Run;
 end.

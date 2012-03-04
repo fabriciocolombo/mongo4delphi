@@ -30,17 +30,20 @@ type
     procedure InsertTimeStamp;
     procedure InsertMinKey;
     procedure InsertMaxKey;
+    procedure InsertDBRef;
+    procedure InsertDBRef2;
     procedure FindOne;
     procedure FindOneWithRegEx;
     procedure TestCount;
     procedure TestCreateCollection;
     procedure TestGetIndexInfo;
     procedure TestDropIndexes;
+    procedure TestDBRefFetch;
   end;
 
 implementation
 
-uses Variants, SysUtils, Math, BSONTypes, MongoUtils, BSON;
+uses Variants, SysUtils, Math, BSONTypes, MongoUtils, BSON, BSONDBRef;
 
 { TTestMongoCollection }
 
@@ -334,6 +337,72 @@ end;
 procedure TTestMongoCollection.InsertBSONBinaryUserDefined;
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('img', TBSONBinary.NewFromFile('resource\image.gif', BSON_SUBTYPE_USER))).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.InsertDBRef;
+var
+  vBSON,
+  vDoc: IBSONObject;
+  vId: IBSONObjectId;
+begin
+  vId := TBSONObjectId.NewFrom;
+  
+  vBSON := TBSONObject.Create;
+  vBSON.Put('id', 1);
+//  vBSON.Put('ref', TBSONDBRef.NewFrom(DefaultCollection , vId));
+
+  DefaultCollection.Insert(vBSON).getLastError.RaiseOnError;
+
+  vDoc := DefaultCollection.FindOne;
+
+  CheckNotNull(vDoc);
+//  CheckEquals(vId.OID, vDoc.Items['ref'].AsBSONDBRef.ObjectId.OID);
+end;
+
+procedure TTestMongoCollection.InsertDBRef2;
+var
+  vBSON,
+  vEmbedded: IBSONObject;
+begin
+  vBSON := TBSONObject.Create;
+  vBSON.Put('id', 1);
+
+  //Write object size - 4
+  //Write type size 1                   1 + 4 = 5
+  //Write string 'id' size 3 in UTF8    5 + 3 = 8
+  //Write value '123' size 4            8 + 4 = 12
+
+  vEmbedded := TBSONObject.Create;
+  vEmbedded.Put('$ref', 'colref');
+//  vEmbedded.Put('$id', TBSONObjectId.NewFrom.OID);
+
+  vBSON.Put('ref', vEmbedded);
+
+  DefaultCollection.Insert(vBSON).getLastError.RaiseOnError;
+end;
+
+procedure TTestMongoCollection.TestDBRefFetch;
+var
+  vId: IBSONObjectId;
+  vDBRef: IBSONDBRef;
+  vRef,
+  vDocRef: IBSONObject;
+begin
+  vId := TBSONObjectId.NewFrom;
+
+  DefaultCollection.Insert(TBSONObject.NewFrom('_id', vId));
+
+  vDBRef := TBSONDBRef.NewFrom(DB.DBName, DefaultCollection.CollectionName, vId);
+
+  vDocRef := TBSONDBRef.Fetch(DB, vDBRef);
+
+  CheckNotNull(vDocRef);
+  CheckEquals(vId.OID, vDocRef.GetOid.OID);
+
+  vRef := TBSONObject.NewFrom('$ref', DefaultCollection.CollectionName).Put('$id', vId.OID);
+  vDocRef := TBSONDBRef.Fetch(DB, vRef);
+  CheckNotNull(vDocRef);
+  CheckEquals(vId.OID, vDocRef.GetOid.OID);
 end;
 
 initialization

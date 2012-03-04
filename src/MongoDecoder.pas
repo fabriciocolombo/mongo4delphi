@@ -56,7 +56,7 @@ type
 
 implementation
 
-uses MongoException, Classes, BSON, Variants, SysUtils;
+uses MongoException, Classes, BSON, Variants, SysUtils, BSONDBRef;
 
 { TMongoDecoderFactory }
 
@@ -148,6 +148,11 @@ begin
 
   while DecodeElement(Result, ABuffer) do;
 
+  if Result.Contain('$ref') and Result.Contain('$id') then
+  begin
+    Result := TBSONDBRef.Create('', Result.Items['$ref'].AsString, TBSONObjectId.NewFromOID(Result.Items['$id'].AsString));
+  end;
+    
   vNumRead := (ABuffer.Position - vPosition);
   if vNumRead <> vLength then
     raise EDecodeResponseSizeError.CreateResFmt(@sDecodeResponseSizeError, [vNumRead, vLength]);

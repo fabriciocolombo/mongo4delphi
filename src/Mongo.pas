@@ -28,8 +28,6 @@ interface
 uses Sockets, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider,
      Contnrs, Classes;
 
-
-
 type
   TMongoDB = class;
   TMongoCollection = class;
