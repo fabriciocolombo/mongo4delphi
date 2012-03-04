@@ -33,6 +33,7 @@ requires
 
 contains
   BSON in '..\..\src\BSON.pas',
+  BSONDBRef in '..\..\src\BSONDBRef.pas',
   BSONStream in '..\..\src\BSONStream.pas',
   BSONTypes in '..\..\src\BSONTypes.pas',
   Mongo in '..\..\src\Mongo.pas',

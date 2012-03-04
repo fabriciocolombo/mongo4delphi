@@ -60,6 +60,7 @@
 			<DCCReference Include="IndySystem.dcp"/>
 			<DCCReference Include="IndyProtocols.dcp"/>
 			<DCCReference Include="..\..\src\BSON.pas"/>
+			<DCCReference Include="..\..\src\BSONDBRef.pas"/>
 			<DCCReference Include="..\..\src\BSONStream.pas"/>
 			<DCCReference Include="..\..\src\BSONTypes.pas"/>
 			<DCCReference Include="..\..\src\Mongo.pas"/>

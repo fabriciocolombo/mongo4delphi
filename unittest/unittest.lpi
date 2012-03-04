@@ -42,9 +42,11 @@
       <Unit0>
         <Filename Value="unittest.dpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="unittest"/>
+        <IsVisibleTab Value="True"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="28"/>
-        <CursorPos X="5" Y="54"/>
+        <TopLine Value="6"/>
+        <CursorPos X="15" Y="19"/>
         <UsageCount Value="21"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
@@ -156,8 +158,6 @@
       <Unit12>
         <Filename Value="..\src\BSONTypes.pas"/>
         <UnitName Value="BSONTypes"/>
-        <IsVisibleTab Value="True"/>
-        <WindowIndex Value="0"/>
         <TopLine Value="99"/>
         <CursorPos X="19" Y="121"/>
         <UsageCount Value="10"/>

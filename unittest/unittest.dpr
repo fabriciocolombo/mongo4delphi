@@ -12,7 +12,11 @@ program unittest;
   {$ENDIF}
 *)
 uses
+  {$IFNDEF FPC}
   FastMM4,
+  {$ELSE}
+  Interfaces,
+  {$ENDIF}
   GuiTestRunner,
   Forms,
   TestBSONItem in 'TestBSONItem.pas',
@@ -47,7 +51,7 @@ begin
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;
   {$ELSE}
-    Application.CreateForm(TTestRunner, TestRunner);
+    Application.CreateForm(TGuiTestRunner, TestRunner);
   {$ENDIF}
   Application.Run;
 end.
