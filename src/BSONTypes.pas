@@ -183,7 +183,7 @@ type
     property ObjectId: IBSONObjectId read GetObjectId;
 
     //For internal use only
-    procedure SetRefObj(const ARefObj: IBSONObject);
+    function GetInstance: TObject;
   end;
 
   TBSONObjectId = class(TInterfacedObject, IBSONObjectId)

@@ -43,7 +43,8 @@ type
 
 implementation
 
-uses Variants, SysUtils, Math, BSONTypes, MongoUtils, BSON, BSONDBRef;
+uses Variants, SysUtils, Math, BSONTypes, MongoUtils, BSON, BSONDBRef,
+  TestFramework;
 
 { TTestMongoCollection }
 
@@ -386,7 +387,7 @@ var
   vId: IBSONObjectId;
   vDBRef: IBSONDBRef;
   vRef,
-  vDocRef: IBSONObject;
+  vDocRef, vCacheDocRef: IBSONObject;
 begin
   vId := TBSONObjectId.NewFrom;
 
@@ -398,6 +399,10 @@ begin
 
   CheckNotNull(vDocRef);
   CheckEquals(vId.OID, vDocRef.GetOid.OID);
+
+  vCacheDocRef := TBSONDBRef.Fetch(DB, vDBRef);
+
+  Check(vDocRef = vCacheDocRef, 'Not cached the result');
 
   vRef := TBSONObject.NewFrom('$ref', DefaultCollection.CollectionName).Put('$id', vId.OID);
   vDocRef := TBSONDBRef.Fetch(DB, vRef);

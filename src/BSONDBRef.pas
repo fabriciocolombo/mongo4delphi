@@ -46,11 +46,10 @@ type
 
     class function NewFrom(const ADB, ACollection: String; const AObjectId: IBSONObjectId): IBSONDBRef;
 
-    function Fetch(DB: TMongoDB): IBSONObject;overload;
-    class function Fetch(DB: TMongoDB; ARef: IBSONDBRef): IBSONObject;overload;
-    class function Fetch(DB: TMongoDB; AQuery: IBSONObject): IBSONObject;overload;
+    class function Fetch(ADB: TMongoDB; ARef: IBSONDBRef): IBSONObject;overload;
+    class function Fetch(ADB: TMongoDB; AQuery: IBSONObject): IBSONObject;overload;
 
-    procedure SetRefObj(const ARefObj: IBSONObject);
+    function GetInstance: TObject;
   end;
 
 implementation
@@ -67,25 +66,23 @@ begin
   FObjectId := AObjectId;
 end;
 
-function TBSONDBRef.Fetch(DB: TMongoDB): IBSONObject;
+class function TBSONDBRef.Fetch(ADB: TMongoDB; ARef: IBSONDBRef): IBSONObject;
 begin
-  if (FRefDoc = nil) then
+  with TBSONDBRef(ARef.GetInstance) do
   begin
-//    FRefDoc := FCollection.FindOne(TBSONObject.NewFrom('_id', FObjectId));
+    if (FRefDoc = nil) then
+    begin
+      if (ADB.DBName <> ARef.DB) then
+        raise Exception.CreateFmt('Must use same db.', []);
+
+      FRefDoc := ADB.GetCollection(ARef.Collection).FindOne(TBSONObject.NewFrom('_id', ARef.ObjectId));
+    end;
+
+    Result := FRefDoc;
   end;
-
-  Result := FRefDoc;
 end;
 
-class function TBSONDBRef.Fetch(DB: TMongoDB; ARef: IBSONDBRef): IBSONObject;
-begin
-  if (DB.DBName <> ARef.DB) then
-    raise Exception.CreateFmt('Must use same db.', []);
-
-  Result := DB.GetCollection(ARef.Collection).FindOne(TBSONObject.NewFrom('_id', ARef.ObjectId));
-end;
-
-class function TBSONDBRef.Fetch(DB: TMongoDB;AQuery: IBSONObject): IBSONObject;
+class function TBSONDBRef.Fetch(ADB: TMongoDB;AQuery: IBSONObject): IBSONObject;
 var
   vIndexRef, vIndexId: Integer;
 begin
@@ -93,7 +90,7 @@ begin
 
   if AQuery.Find('$ref', vIndexRef) and AQuery.Find('$id', vIndexId) then
   begin
-    Result := DB.GetCollection(AQuery.Item[vIndexRef].AsString).FindOne(TBSONObject.NewFrom('_id', AQuery.Item[vIndexId].AsString));
+    Result := ADB.GetCollection(AQuery.Item[vIndexRef].AsString).FindOne(TBSONObject.NewFrom('_id', AQuery.Item[vIndexId].AsString));
   end;
 end;
 
@@ -107,6 +104,11 @@ begin
   Result := FDB;
 end;
 
+function TBSONDBRef.GetInstance: TObject;
+begin
+  Result := Self; 
+end;
+
 function TBSONDBRef.GetObjectId: IBSONObjectId;
 begin
   Result := FObjectId;
@@ -117,9 +119,5 @@ begin
   Result := TBSONDBRef.Create(ADB, ACollection, AObjectId);
 end;
 
-procedure TBSONDBRef.SetRefObj(const ARefObj: IBSONObject);
-begin
-
-end;
 
 end.
