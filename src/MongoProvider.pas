@@ -28,7 +28,7 @@ interface
 
 uses MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
      {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets,
-     Classes, SysUtils;
+     Classes, SysUtils, CommandResult, WriteResult;
 
 const
   DEFAULT_HOST = 'localhost';
@@ -42,17 +42,6 @@ const
 type
   IMongoProvider = interface;
 
-  ICommandResult = interface(IBSONObject)
-    ['{8F4C1FA8-5CD5-433A-A641-16DA896B42DB}']
-
-    function Ok: Boolean;
-    function HasError: Boolean;
-    function GetCode: Integer;
-    function GetErrorMessage: String;
-    function GetException: Exception;
-    procedure RaiseOnError;
-  end;
-
   TCommandResult = class(TBSONObject, ICommandResult)
   public
     function HasError: Boolean;
@@ -61,13 +50,6 @@ type
     function GetErrorMessage: String;
     function GetException: Exception;
     procedure RaiseOnError;
-  end;
-
-  IWriteResult = interface
-    ['{0D69DCD2-60CA-4EA6-9318-6B1EAC69ABE2}']
-
-    function getCachedLastError(): ICommandResult;
-    function getLastError(): ICommandResult;
   end;
 
   TWriteResult = class(TInterfacedObject, IWriteResult)

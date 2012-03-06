@@ -6,7 +6,8 @@ unit TestMongoProvider;
 
 interface
 
-uses BaseTestCase, MongoProvider, MongoDecoder, MongoEncoder, BSONTypes;
+uses BaseTestCase, MongoProvider, MongoDecoder, MongoEncoder, BSONTypes,
+     CommandResult, WriteResult;
 
 type
   TTestMongoProvider = class(TBaseTestCase)

@@ -25,7 +25,7 @@ unit BSONDBRef;
 
 interface
 
-uses BsonTypes, Mongo;
+uses BsonTypes, MongoDB;
 
 type
   TBSONDBRef = class(TBSONObject, IBSONDBRef)

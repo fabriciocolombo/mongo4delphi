@@ -6,7 +6,7 @@ unit TestMongoDBCursor;
 
 interface
 
-uses BaseTestCaseMongo, Mongo, BSONTypes;
+uses BaseTestCaseMongo, Mongo, MongoDBCursor, BSONTypes;
 
 type
   //Require mongodb service running
@@ -21,7 +21,7 @@ type
 
 implementation
 
-uses Classes;
+uses Classes, MongoDBCursorIntf;
 
 { TTestMongoDBCursor }
 

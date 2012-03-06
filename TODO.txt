@@ -2,10 +2,6 @@ Mongo Delphi Driver API
 	Use typed exception descendents of EMongoException when raise.
 	Use resourcestring for exception messages rather than hard coded strings.
 
-	
-Mongo Driver Requirements	- High priority
-	PARTIAL - BSON serialization/deserialization¹
-	
 To Fully mongodb support	
 	TODO - Add size protected to MongoDecoder 16MB. This information could be retrieved with maxBsonObjectSize property of buildinfo or isMaster command:
 				int size = readInt();
@@ -27,10 +23,12 @@ To Fully mongodb support
 	TODO - Automatically connect to proper server, and failover, when connecting to a Replica Set
 	TODO - automatic reconnection on connection failure
 	TODO - Support to GridFS
+	TODO - Support to Map/Reduce
 
 Demo Application
   TODO - Create a demo application with basic features
 	 
+Improvement	 
 	TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
 	TODO - Include a Log for debug with almost Console
 	TODO - Requests manager. Each request must be a self stream

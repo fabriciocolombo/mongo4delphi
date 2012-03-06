@@ -6,7 +6,7 @@ unit BaseTestCaseMongo;
 
 interface
 
-uses BaseTestCase, Mongo;
+uses BaseTestCase, Mongo, MongoDB, MongoCollection;
 
 const
   sDB = 'unit';

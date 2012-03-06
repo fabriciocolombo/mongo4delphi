@@ -6,7 +6,7 @@ unit TestMongoCollection;
 
 interface
 
-uses BaseTestCaseMongo, Mongo;
+uses BaseTestCaseMongo, Mongo, MongoCollection;
 
 type
   //Require mongodb service running

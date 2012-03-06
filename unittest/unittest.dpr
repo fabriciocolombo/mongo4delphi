@@ -12,11 +12,7 @@ program unittest;
   {$ENDIF}
 *)
 uses
-  {$IFNDEF FPC}
   FastMM4,
-  {$ELSE}
-  Interfaces,
-  {$ENDIF}
   GuiTestRunner,
   Forms,
   TestBSONItem in 'TestBSONItem.pas',
@@ -42,7 +38,18 @@ uses
   TestServerError in 'TestServerError.pas',
   TestMongoDB in 'TestMongoDB.pas',
   BaseTestCaseMongo in 'BaseTestCaseMongo.pas',
-  BSONDBRef in '..\src\BSONDBRef.pas';
+  BSONDBRef in '..\src\BSONDBRef.pas',
+  MongoDB in '..\src\MongoDB.pas',
+  MongoCollection in '..\src\MongoCollection.pas',
+  MongoConnector in '..\src\MongoConnector.pas',
+  MongoDBApiLayer in '..\src\MongoDBApiLayer.pas',
+  OutMessage in '..\src\OutMessage.pas',
+  WriteConcern in '..\src\WriteConcern.pas',
+  WriteResult in '..\src\WriteResult.pas',
+  CommandResult in '..\src\CommandResult.pas',
+  MongoDBCursor in '..\src\MongoDBCursor.pas',
+  MongoCollectionApiLayer in '..\src\MongoCollectionApiLayer.pas',
+  MongoDBCursorIntf in '..\src\MongoDBCursorIntf.pas';
 
 {$R *.res}
 
@@ -51,7 +58,7 @@ begin
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;
   {$ELSE}
-    Application.CreateForm(TGuiTestRunner, TestRunner);
+    Application.CreateForm(TTestRunner, TestRunner);
   {$ENDIF}
   Application.Run;
 end.

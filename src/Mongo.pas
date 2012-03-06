@@ -26,19 +26,17 @@ unit Mongo;
 interface
 
 uses Sockets, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider,
-     Contnrs, Classes;
+     Contnrs, Classes, MongoDB, MongoConnector, WriteResult, CommandResult,
+     MongoDBCursor, MongoCollection;
 
 type
-  TMongoDB = class;
-  TMongoCollection = class;
-  IMongoDBCursor = interface;
-
   TMongo = class
   private
     FProvider: IMongoProvider;
     FEncoder: IMongoEncoder;
     FDecoder: IMongoDecoder;
     FDBList: TObjectList;
+    FConnector: IMongoConnector;
     procedure SetEncoder(const Value: IMongoEncoder);
     procedure SetDecoder(const Value: IMongoDecoder);
   protected
@@ -57,7 +55,7 @@ type
     procedure dropDatabase(DBName: String);
   end;
 
-  TMongoDB = class
+{  TMongoDB = class
   private
     FMongo: TMongo;
     FDBName: String;
@@ -87,7 +85,9 @@ type
 
     function CreateCollection(AName: String; AOptions: IBSONObject): TMongoCollection;
   end;
+}
 
+{
   TMongoCollection = class
   private
     FMongoDatabase: TMongoDB;
@@ -134,25 +134,9 @@ type
     function GetIndexInfo: IBSONArray;
     //TODO Map/Reduce
   end;
+ }
 
- IMongoDBCursor = interface
-    ['{BA92DC10-CEF6-440A-B7B1-1C1E4F79652B}']
-
-    function Count: Integer;
-    function Size: Integer;
-    function Sort(AOrder: IBSONObject): IMongoDBCursor;
-    function Hint(AIndexKeys: IBSONObject): IMongoDBCursor;overload;
-    function Hint(AIndexName: String): IMongoDBCursor;overload;
-    function Snapshot: IMongoDBCursor;
-    function Explain: IBSONObject;
-    function Limit(n: Integer): IMongoDBCursor;
-    function Skip(n: Integer): IMongoDBCursor;
-    function BatchSize(n: Integer): IMongoDBCursor;
-
-    function HasNext: Boolean;
-    function Next: IBSONObject;
-  end;
-
+(*
   TMongoDBCursor = class(TInterfacedObject, IMongoDBCursor)
   private
     FCollection: TMongoCollection;
@@ -206,9 +190,10 @@ type
     function Next: IBSONObject;
   end;
 
+  *)
 implementation
 
-uses SysUtils, MongoException, BSON, Math, StrUtils;
+uses SysUtils, MongoException, BSON, Math, StrUtils, MongoDBApiLayer;
 
 { TMongo }
 
@@ -249,7 +234,7 @@ end;
 
 function TMongo.getDB(const ADBname: String): TMongoDB;
 begin
-  Result := TMongoDB.Create(Self, ADBname);
+  Result := TMongoDBApiLayer.Create(Self, ADBname, FConnector, FProvider);
 
   FDBList.Add(Result);
 end;
@@ -276,7 +261,7 @@ begin
   FProvider.RunCommand(DBName, TBSONObject.NewFrom('dropDatabase', 1));
 end;
 
-{ TMongoDB }
+{ TMongoDB
 
 function TMongoDB.Authenticate(AUserName, APassword: String): Boolean;
 begin
@@ -394,7 +379,9 @@ begin
   Result := GetCollection(AName);
 end;
 
-{ TMongoCollection }
+}
+
+{ TMongoCollection
 
 function TMongoCollection.Count(Limit: Integer): Integer;
 begin
@@ -494,7 +481,7 @@ end;
 
 function TMongoCollection.GetProvider: IMongoProvider;
 begin
-  Result := FMongoDatabase.Provider;
+//  Result := FMongoDatabase.Provider;
 end;
 
 function TMongoCollection.GenerateIndexName(KeyFields: IBSONObject): String;
@@ -579,8 +566,11 @@ begin
   DropIndex('*');
 end;
 
+}
+
 { TMongoDBCursor }
 
+(*
 procedure TMongoDBCursor.AssertCursorIsNotOpen;
 begin
   if (FRequestId > 0) then
@@ -709,7 +699,7 @@ begin
   if (FSnapShot) then
     vQuery.Put('$snapshot', True);
 
-  vResponse := FCollection.Provider.OpenQuery(FStream, FCollection.FMongoDatabase.DBName, FCollection.FCollectionName, vQuery, FFields, FSkip, ChooseBatchSize(FBatchSize, FLimit, 0));
+//  vResponse := FCollection.Provider.OpenQuery(FStream, FCollection.FMongoDatabase.DBName, FCollection.FCollectionName, vQuery, FFields, FSkip, ChooseBatchSize(FBatchSize, FLimit, 0));
   FRequestId := vResponse.Items['requestId'].AsInteger;
   FNumberReturned := vResponse.Items['numberReturned'].AsInteger;
   FCursorId := vResponse.Items['cursorId'].AsInt64;
@@ -728,7 +718,7 @@ begin
     Result := True
   else
   begin
-    vResponse := FCollection.Provider.HasNext(FStream, FCollection.FMongoDatabase.DBName, FCollection.CollectionName, FCursorId, ChooseBatchSize(FBatchSize, FLimit, FTotalRecordsReturned));
+//    vResponse := FCollection.Provider.HasNext(FStream, FCollection.FMongoDatabase.DBName, FCollection.CollectionName, FCursorId, ChooseBatchSize(FBatchSize, FLimit, FTotalRecordsReturned));
     FRequestId := vResponse.Items['requestId'].AsInteger;
     FNumberReturned := vResponse.Items['numberReturned'].AsInteger;
     FCursorId := vResponse.Items['cursorId'].AsInt64;
@@ -743,7 +733,7 @@ function TMongoDBCursor.Next: IBSONObject;
 begin
   OpenCursor;
 
-  Result := FCollection.FMongoDatabase.FMongo.Decoder.Decode(FStream);
+//  Result := FCollection.FMongoDatabase.FMongo.Decoder.Decode(FStream);
 
   Inc(FFetchedRecords);
   Inc(FTotalRecordsReturned);
@@ -794,7 +784,7 @@ procedure TMongoDBCursor.KillOpenedCursor;
 begin
   if FSavedCursorId > 0 then
   begin
-    FCollection.Provider.KillCursor(FSavedCursorId);
+//    FCollection.Provider.KillCursor(FSavedCursorId);
   end;
 end;
 
@@ -812,8 +802,10 @@ begin
   AssertCursorIsNotOpen;
 
   FIndexKeys := AIndexKeys;
-  
+
   Result := Self;
 end;
+
+*)
 
 end.
