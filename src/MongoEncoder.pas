@@ -272,16 +272,28 @@ var
   i: Integer;
   vStart: Integer;
   vItem: TBSONItem;
+  vWroteId: Boolean;
 begin
   if (FBuffer = nil) then
     raise EMongoBufferIsNotConfigured.CreateResFmt(@sMongoBufferIsNotConfigured, [ClassName]);
 
+  vWroteId := False;
   vStart := FBuffer.Position;
   FBuffer.WriteInt(0); // making space for length
+
+  if (ABSONObject.Contain('_id')) and ABSONObject.Items['_id'].IsObjectId then
+  begin
+    putObjectId('_id', ABSONObject.GetOid);
+    vWroteId := True;
+  end;
+
   for i := 0 to ABSONObject.Count-1 do
   begin
     vItem := ABSONObject.Item[i];
-    
+
+    if vWroteId and vItem.IsObjectId then
+      Continue;
+
     PutObjectField(vItem);
   end;
   FBuffer.WriteByte(BSON_EOF);

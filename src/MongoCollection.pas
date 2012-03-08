@@ -36,7 +36,7 @@ type
     function Update(Query, BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;overload;virtual;abstract;
     function UpdateMulti(Query, BSONObject: IBSONObject): IWriteResult;virtual;abstract;
 
-    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;virtual;abstract;
+    function Remove(AObject: IBSONObject): IWriteResult;virtual;abstract;
 
     function FindOne(): IBSONObject;overload;virtual;abstract;
     function FindOne(Query: IBSONObject): IBSONObject;overload;virtual;abstract;

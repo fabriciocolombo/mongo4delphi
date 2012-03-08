@@ -23,17 +23,28 @@ To Fully mongodb support
 	TODO - Automatically connect to proper server, and failover, when connecting to a Replica Set
 	TODO - automatic reconnection on connection failure
 	TODO - Support to GridFS
-	TODO - Support to Map/Reduce
 
-Demo Application
-  TODO - Create a demo application with basic features
-	 
+New Features
+	TODO - Create a QueryBuilder to facilitate the construction of complex queries
+	TODO - Create a BSON constructor json like, inspired on stijnsanders/TMongoWire project.
+	TODO - Interface to Map/Reduce
+	TODO - Interface to Rename collection: RunCommand('admin', BSON(['renameCollection', from_ns, 'to', to_ns]));
+	TODO - Interface to Distinct command: db.runCommand({ distinct : <collection_name>, key : <key>[, query : <query>] })
+	TODO - Interface to Group command: db.coll.group(
+																								 {key: { a:true, b:true },
+																									cond: { active:1 },
+																									reduce: function(obj,prev) { prev.csum += obj.c; },
+																									initial: { csum: 0 }
+																									});
+	
 Improvement	 
 	TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64
 	TODO - Include a Log for debug with almost Console
 	TODO - Requests manager. Each request must be a self stream
-	
 	TODO - Automated build and unit test for target environments
+
+Demo Application
+  TODO - Create a demo application with basic features
 	
 (1) Types not yet implemented subtypes
   BSON_SUBTYPE_FUNC    = $01;

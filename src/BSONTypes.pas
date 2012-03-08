@@ -63,6 +63,8 @@ type
     property Stream: TMemoryStream read GetStream;
     property Size: Integer read GetSize;
     property SubType: Integer read GetSubType;
+
+    function CopyFrom(Source: TStream; Count: Int64): Int64;
   end;
 
   IBSONRegEx = interface
@@ -138,32 +140,30 @@ type
   IBSONBasicObject = interface
     ['{FF4178D1-D45B-480D-9704-85ACD5BA02E9}']
     function GetItem(AIndex: Integer): TBSONItem;
+    function GetItems(AKey: String): TBSONItem;
 
     property Item[AIndex: Integer]: TBSONItem read GetItem;default;
+    property Items[AKey: String]: TBSONItem read GetItems;
 
     function Count: Integer;
+    function Contain(const AKey: String): Boolean;
+    function HasOid: Boolean;
+    function GetOid: IBSONObjectId;
   end;
 
   IBSONObject = interface(IBSONBasicObject)
     ['{BC5F07D7-0A81-40AF-9F09-E8DA38BC446C}']
 
-    function GetItems(AKey: String): TBSONItem;
     function GetDuplicatesAction: TDuplicatesAction;
 
     procedure SetDuplicatesAction(const Value: TDuplicatesAction);
 
     property DuplicatesAction: TDuplicatesAction read GetDuplicatesAction write SetDuplicatesAction;
-    property Items[AKey: String]: TBSONItem read GetItems;
 
     function Put(const AKey: String; Value: Variant): IBSONObject;
     function Find(const AKey: String): TBSONItem;overload;
     function Find(const AKey: String;var AIndex: Integer): Boolean;overload;
     function PutAll(const ASource: IBSONObject): IBSONObject;
-
-    function HasOid: Boolean;
-    function GetOid: IBSONObjectId;
-
-    function Contain(const AKey: String): Boolean;
   end;
 
   IBSONArray = interface(IBSONBasicObject)
@@ -222,6 +222,8 @@ type
     property Stream: TMemoryStream read GetStream;
     property SubType: Integer read GetSubType;
     property Size: Integer read GetSize;
+
+    function CopyFrom(Source: TStream; Count: Int64): Int64;
   end;
 
   //Do not match the pattern in client-side
@@ -983,6 +985,15 @@ begin
 end;
 
 { TBSONBinary }
+
+function TBSONBinary.CopyFrom(Source: TStream; Count: Int64): Int64;
+begin
+  Result := Count;
+  if (Count > 0) then
+  begin
+    FStream.CopyFrom(Source, Count);
+  end;
+end;
 
 constructor TBSONBinary.Create(ASubType: Integer);
 begin

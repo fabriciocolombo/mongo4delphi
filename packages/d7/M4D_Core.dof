@@ -134,31 +134,9 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
-[HistoryLists\hlConditionals]
-Count=1
-Item0=FASTMM
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=8
-Item0=..\..\src
-Item1=D:\Desenvolvimento\OpenSource\delphi\TMongoWire;D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src
-Item2=D:\Desenvolvimento\OpenSource\delphi\TMongoWire
-Item3=sdk;..\public;FastMM
-Item4=sdk;..\public;FastMM4
-Item5=sdk;..\public
-Item6=C:\Program Files\Indy9
-Item7=..\..\public
-[HistoryLists\hlUnitOutputDirectory]
-Count=3
-Item0=lib
-Item1=dcu
-Item2=..\dcu
-[HistoryLists\hlOutputDirectorry]
-Count=5
-Item0=setup\xxmGeckoDev\platform\WINNT\components
-Item1=..\bin
-Item2=C:\Program Files\Mozilla Firefox\components
-Item3=C:\Inetpub\xxm
-Item4=..\
+Count=1
+Item0=..\src

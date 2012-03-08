@@ -28,3 +28,17 @@ del /F /S /Q packages\*.identcache
 del /F /S /Q external\TPerlRegEx\*.dcu
 del /F /S /Q external\TPerlRegEx\*.GID
 del /F /S /Q external\TPerlRegEx\*.~pas
+
+del /F /S /Q demo\*.dcu 
+del /F /S /Q demo\*.~pas
+del /F /S /Q demo\*.o
+del /F /S /Q demo\*.ppu
+del /F /S /Q demo\*.~dpr
+del /F /S /Q demo\*.~dsk
+del /F /S /Q demo\*.~dfm
+del /F /S /Q demo\*.ddp
+del /F /S /Q demo\*.compiled
+del /F /S /Q demo\*.exe
+del /F /S /Q demo\*.or
+del /F /S /Q demo\*.identcache
+del /F /S /Q demo\unittest.res

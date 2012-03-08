@@ -176,7 +176,7 @@ begin
     BSON_SUBTYPE_USER:
       begin
         vBinary := TBSONBinary.Create(vSubType);
-        vBinary.Stream.CopyFrom(ABuffer, vSize);
+        vBinary.CopyFrom(ABuffer, vSize);
 
         Result := vBinary;
       end;
@@ -188,7 +188,7 @@ begin
           raise EDecodeResponseSizeError.CreateResFmt(@sInvalidBSONBinarySubtypeSize, [vSubType, vOldBinarySize, vSize]);
 
         vBinary := TBSONBinary.Create(vSubType);
-        vBinary.Stream.CopyFrom(ABuffer, vOldBinarySize);
+        vBinary.CopyFrom(ABuffer, vOldBinarySize);
 
         Result := vBinary;
       end;

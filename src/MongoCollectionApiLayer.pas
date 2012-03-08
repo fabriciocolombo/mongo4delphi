@@ -42,7 +42,7 @@ type
     function Insert(const BSONObject: IBSONObject): IWriteResult;overload;override;
     function Insert(const BSONObjects: Array of IBSONObject): IWriteResult;overload;override;
 
-    function Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;override;
+    function Remove(AObject: IBSONObject): IWriteResult;override;
 
     function Update(Query, BSONObject: IBSONObject): IWriteResult;overload;override;
     function Update(Query, BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;overload;override;
@@ -171,9 +171,9 @@ begin
   Result := FProvider.Insert(FMongoDatabase.DBName, FCollectionName, BSONObjects);
 end;
 
-function TMongoCollectionApiLayer.Remove(DB, Collection: String; AObject: IBSONObject): IWriteResult;
+function TMongoCollectionApiLayer.Remove(AObject: IBSONObject): IWriteResult;
 begin
-  Result := FProvider.Remove(DB, Collection, AObject);
+  Result := FProvider.Remove(FMongoDatabase.DBName, FCollectionName, AObject);
 end;
 
 function TMongoCollectionApiLayer.Update(Query, BSONObject: IBSONObject): IWriteResult;
