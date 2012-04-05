@@ -96,5 +96,6 @@ object Frm_MainForm: TFrm_MainForm
     Height = 25
     Caption = 'Find'
     TabOrder = 5
+    OnClick = btnFindClick
   end
 end

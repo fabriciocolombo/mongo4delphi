@@ -5,6 +5,7 @@ __history
 *.~pas
 *.~dpr
 *.~dpk
+*.~ddp
 unittest/backup
 src/backup
 packages/fpc/backup

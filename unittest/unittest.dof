@@ -138,5 +138,6 @@ Comments=
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=1
-Item0=..\src
+Count=2
+Item0=$(DELPHI)\Lib\Debug;D:\DESENV~2\Delphi\JVCL34~1\jcl\lib\d7\debug;..\src
+Item1=..\src

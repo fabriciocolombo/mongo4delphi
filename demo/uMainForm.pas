@@ -21,6 +21,7 @@ type
     procedure ListView1Click(Sender: TObject);
     procedure btnClearClick(Sender: TObject);
     procedure btnRemoveClick(Sender: TObject);
+    procedure btnFindClick(Sender: TObject);
   private
     FMongo: TMongo;
     FDB: TMongoDB;
@@ -30,6 +31,7 @@ type
     function Current: IBSONObject;
 
     procedure LoadFromDB;
+    procedure LoadItems(const ACursor: IMongoDBCursor);
     procedure UpdateListView(AItem: TListItem;const ABSONObject: IBSONObject);
     procedure UpdateImage(ABSONObject: IBSONObject);
   public
@@ -42,7 +44,7 @@ var
 
 implementation
 
-uses uItem;
+uses uItem, uFind;
 
 {$R *.dfm}
 
@@ -147,10 +149,7 @@ begin
   ListView1.Items.Clear;
   ListView1.Items.BeginUpdate;
   try
-    while vCursor.HasNext do
-    begin
-      UpdateListView(ListView1.Items.Add, vCursor.Next);
-    end;
+    LoadItems(vCursor);
   finally
     ListView1.Items.EndUpdate;
   end;
@@ -182,6 +181,31 @@ begin
   begin
     FCollection.Remove(Current);
     ListView1.Items.Delete(ListView1.Selected.Index);
+  end;
+end;
+
+procedure TFrm_MainForm.btnFindClick(Sender: TObject);
+var
+  vQuery: IBSONObject;
+begin
+  Frm_Find := TFrm_Find.Create(nil);
+  try
+    if (Frm_Find.ShowModal = mrOk) then
+    begin
+      vQuery := Frm_Find.BuildQuery;
+      
+      LoadItems(FCollection.Find(vQuery));
+    end;
+  finally
+    FreeAndNil(Frm_Find);
+  end;
+end;
+
+procedure TFrm_MainForm.LoadItems(const ACursor: IMongoDBCursor);
+begin
+  while ACursor.HasNext do
+  begin
+    UpdateListView(ListView1.Items.Add, ACursor.Next);
   end;
 end;
 
