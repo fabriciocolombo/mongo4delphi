@@ -141,18 +141,8 @@ begin
 end;
 
 procedure TFrm_MainForm.LoadFromDB;
-var
-  vCursor: IMongoDBCursor;
 begin
-  vCursor := FCollection.Find;
-
-  ListView1.Items.Clear;
-  ListView1.Items.BeginUpdate;
-  try
-    LoadItems(vCursor);
-  finally
-    ListView1.Items.EndUpdate;
-  end;
+  LoadItems(FCollection.Find);
 end;
 
 procedure TFrm_MainForm.ListView1Click(Sender: TObject);
@@ -203,9 +193,15 @@ end;
 
 procedure TFrm_MainForm.LoadItems(const ACursor: IMongoDBCursor);
 begin
-  while ACursor.HasNext do
-  begin
-    UpdateListView(ListView1.Items.Add, ACursor.Next);
+  ListView1.Items.Clear;
+  ListView1.Items.BeginUpdate;
+  try
+    while ACursor.HasNext do
+    begin
+      UpdateListView(ListView1.Items.Add, ACursor.Next);
+    end;
+  finally
+    ListView1.Items.EndUpdate;
   end;
 end;
 

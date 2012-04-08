@@ -49,7 +49,9 @@ uses
   CommandResult in '..\src\CommandResult.pas',
   MongoDBCursor in '..\src\MongoDBCursor.pas',
   MongoCollectionApiLayer in '..\src\MongoCollectionApiLayer.pas',
-  MongoDBCursorIntf in '..\src\MongoDBCursorIntf.pas';
+  MongoDBCursorIntf in '..\src\MongoDBCursorIntf.pas',
+  TestQueryBuilder in 'TestQueryBuilder.pas',
+  QueryBuilder in '..\src\QueryBuilder.pas';
 
 {$R *.res}
 

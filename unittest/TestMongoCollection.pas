@@ -350,14 +350,14 @@ begin
   
   vBSON := TBSONObject.Create;
   vBSON.Put('id', 1);
-//  vBSON.Put('ref', TBSONDBRef.NewFrom(DefaultCollection , vId));
+  vBSON.Put('ref', TBSONDBRef.NewFrom(DB.DBName, DefaultCollection.CollectionName, vId));
 
   DefaultCollection.Insert(vBSON).getLastError.RaiseOnError;
 
   vDoc := DefaultCollection.FindOne;
 
   CheckNotNull(vDoc);
-//  CheckEquals(vId.OID, vDoc.Items['ref'].AsBSONDBRef.ObjectId.OID);
+  CheckEquals(vId.OID, vDoc.Items['ref'].AsBSONDBRef.ObjectId.OID);
 end;
 
 procedure TTestMongoCollection.InsertDBRef2;
@@ -375,7 +375,7 @@ begin
 
   vEmbedded := TBSONObject.Create;
   vEmbedded.Put('$ref', 'colref');
-//  vEmbedded.Put('$id', TBSONObjectId.NewFrom.OID);
+  vEmbedded.Put('$id', TBSONObjectId.NewFrom.OID);
 
   vBSON.Put('ref', vEmbedded);
 
