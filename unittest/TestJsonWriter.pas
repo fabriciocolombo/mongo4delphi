@@ -21,8 +21,11 @@ type
     procedure WriteJsonFloat;
     procedure WriteJsonDate;
     procedure WriteJsonBoolean;
+    procedure WriteJsonArray;
     procedure WriteJsonNestedObject;
     procedure WriteJsonNestedArray;
+    procedure WriteJsonComplex;
+    procedure WriteJsonBeautiful;
   end;
 
 implementation
@@ -36,10 +39,44 @@ begin
   CheckEqualsString('{}', TBSONObject.EMPTY.AsJson);
 end;
 
+procedure TTestJsonWriter.WriteJsonArray;
+begin
+  CheckEqualsString('[1,2,3]', TBSONArray.NewFromValues([1,2,3]).AsJson);
+end;
+
+procedure TTestJsonWriter.WriteJsonBeautiful;
+begin
+  CheckEqualsString('['+ sLineBreak +
+                    '    {' + sLineBreak +
+                    '        "key": {' + sLineBreak +
+                    '            "key2": "value"' + sLineBreak +
+                    '        }' + sLineBreak +
+                    '    },' + sLineBreak +
+                    '    {' + sLineBreak +
+                    '        "key2": [' + sLineBreak +
+                    '            1,' + sLineBreak +
+                    '            2,' + sLineBreak +
+                    '            3' + sLineBreak +
+                    '        ]' + sLineBreak +
+                    '    }' + sLineBreak +
+                    ']',
+                     TBSONArray.NewFromValues([TBSONObject.NewFrom('key', TBSONObject.NewFrom('key2', 'value')),
+                                               TBSONObject.NewFrom('key2', TBSONArray.NewFromValues([1,2,3]))])
+                               .AsJsonBeautiful);
+end;
+
 procedure TTestJsonWriter.WriteJsonBoolean;
 begin
   CheckEqualsString('{"key" : false}', TBSONObject.NewFrom('key', False).AsJson);
   CheckEqualsString('{"key" : true}', TBSONObject.NewFrom('key', True).AsJson);
+end;
+
+procedure TTestJsonWriter.WriteJsonComplex;
+begin
+  CheckEqualsString('[{"key" : {"key2" : "value"}},{"key2" : [1,2,3]}]',
+                     TBSONArray.NewFromValues([TBSONObject.NewFrom('key', TBSONObject.NewFrom('key2', 'value')),
+                                               TBSONObject.NewFrom('key2', TBSONArray.NewFromValues([1,2,3]))])
+                               .AsJson);
 end;
 
 procedure TTestJsonWriter.WriteJsonDate;

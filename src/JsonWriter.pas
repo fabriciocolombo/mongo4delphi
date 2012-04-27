@@ -27,20 +27,101 @@ type
   TJsonWriter = class
   private
     function WriteInterface(const val: IUnknown): String;
+
     function BsonObjectToJson(const ABSON: IBSONObject): String;
     function BsonArrayToJson(const ABSONArray: IBSONArray): String;
 
     function ItemToJson(AItem: TBSONItem): String;
     function ItemValueToJson(AItem: TBSONItem): String;
+
+    function Indent(level: Integer): String;
   public
     function ToJson(const ABSON: IBSONObject): String;
+    function ToJsonBeautiful(const ABSON: IBSONObject): String;
+
+    function Beautifier(JsonText: String): String;
   end;
 
 implementation
 
-uses SysUtils;
+uses SysUtils, StrUtils;
 
 { TJsonWriter }
+
+function TJsonWriter.Beautifier(JsonText: String): String;
+var
+  i: Integer;
+  currentChar: Char;
+  inString: Boolean;
+  newJson: String;
+  indentLevel: Integer;
+begin
+  inString := False;
+  indentLevel := 0;
+  for i := 1 to Length(JsonText) do
+  begin
+    currentChar := JsonText[i];
+
+    case currentChar of
+      '{', '[':
+        begin
+          if not inString then
+          begin
+            newJson := newJson + currentChar + sLineBreak + Indent(indentLevel + 1);
+            Inc(indentLevel);
+          end
+          else
+            newJson := newJson + currentChar;
+        end;
+      '}', ']':
+        begin
+         if not inString then
+         begin
+           Dec(indentLevel);
+           newJson := newJson + sLineBreak + Indent(indentLevel) + currentChar;
+         end
+         else
+           newJson := newJson + currentChar;
+        end;
+      ',':
+        begin
+          if not inString then
+          begin
+            newJson := newJson + ',' + sLineBreak + Indent(indentLevel);
+          end
+          else
+            newJson := newJson + currentChar;
+        end;
+      ':':
+        begin
+          if not inString then
+            newJson := newJson + ': '
+          else
+            newJson := newJson + currentChar;
+        end;
+      ' ', #13, #10:
+        begin
+          if inString then
+          begin
+            newJson := newJson + currentChar;
+          end;
+        end;
+      '"':
+        begin
+           if (i > 1) and (JsonText[i - 1] <> '\') then
+           begin
+             inString := not inString;
+           end;
+
+           newJson := newJson + currentChar;
+        end;
+    else
+      newJson := newJson + currentChar;
+    end;
+  end;
+
+  Result := newJson;
+end;
 
 function TJsonWriter.BsonArrayToJson(const ABSONArray: IBSONArray): String;
 var
@@ -76,6 +157,11 @@ begin
   Result := Result + '}';
 end;
 
+function TJsonWriter.Indent(level: Integer): String;
+begin
+  Result := DupeString('    ', level);
+end;
+
 function TJsonWriter.ItemToJson(AItem: TBSONItem): String;
 begin
   Result := Format('"%s" : %s', [AItem.Name, ItemValueToJson(AItem)]);
@@ -98,7 +184,12 @@ end;
 
 function TJsonWriter.ToJson(const ABSON: IBSONObject): String;
 begin
-  Result := BsonObjectToJson(ABSON);
+  Result := WriteInterface(ABSON);
+end;
+
+function TJsonWriter.ToJsonBeautiful(const ABSON: IBSONObject): String;
+begin
+  Result := Beautifier(ToJson(ABSON));
 end;
 
 function TJsonWriter.WriteInterface(const val: IUnknown): String;
