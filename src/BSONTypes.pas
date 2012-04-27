@@ -149,6 +149,8 @@ type
     function Contain(const AKey: String): Boolean;
     function HasOid: Boolean;
     function GetOid: IBSONObjectId;
+
+     function AsJson: String;
   end;
 
   IBSONObject = interface(IBSONBasicObject)
@@ -387,7 +389,7 @@ type
     destructor Destroy; override;
 
     class function NewFrom(const AKey: String; Value: Variant): IBSONObject;
-    class function Empty: IBSONObject;
+    class function EMPTY: IBSONObject;
 
     property DuplicatesAction: TDuplicatesAction read GetDuplicatesAction write SetDuplicatesAction default daUpdateValue;
 
@@ -405,6 +407,8 @@ type
     function GetOid: IBSONObjectId;
 
     function Contain(const AKey: String): Boolean;
+
+    function AsJson: String;
   end;
 
   TBSONArray = class(TBSONObject, IBSONArray)
@@ -428,7 +432,7 @@ type
 implementation
 
 uses windows, Registry, SysUtils, Variants, MongoUtils,
-  MongoException, TypInfo, StrUtils, DateUtils;
+  MongoException, TypInfo, StrUtils, DateUtils, JsonWriter;
 
 var
   _mongoObjectID_MachineID: Integer;
@@ -600,7 +604,7 @@ begin
   end;
 end;
 
-class function TBSONObject.Empty: IBSONObject;
+class function TBSONObject.EMPTY: IBSONObject;
 begin
   Result := TBSONObject.Create;
 end;
@@ -721,6 +725,18 @@ var
   vIndex: Integer;
 begin
   Result := Find(AKey, vIndex);
+end;
+
+function TBSONObject.AsJson: String;
+var
+  vWriter: TJsonWriter;
+begin
+  vWriter := TJsonWriter.Create;
+  try
+    Result := vWriter.ToJson(Self);
+  finally
+    vWriter.Free;
+  end;
 end;
 
 { TBSONItem }

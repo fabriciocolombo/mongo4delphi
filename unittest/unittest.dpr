@@ -51,7 +51,9 @@ uses
   MongoCollectionApiLayer in '..\src\MongoCollectionApiLayer.pas',
   MongoDBCursorIntf in '..\src\MongoDBCursorIntf.pas',
   TestQueryBuilder in 'TestQueryBuilder.pas',
-  QueryBuilder in '..\src\QueryBuilder.pas';
+  QueryBuilder in '..\src\QueryBuilder.pas',
+  TestJsonWriter in 'TestJsonWriter.pas',
+  JsonWriter in '..\src\JsonWriter.pas';
 
 {$R *.res}
 
