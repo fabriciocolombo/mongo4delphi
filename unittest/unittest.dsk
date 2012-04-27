@@ -11,15 +11,15 @@ File_8=SourceModule,'D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\
 File_9=SourceModule,'D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoConnector.pas',0,1,1,1,1,0,0
 
 [Modules]
-Module0=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\JsonWriter.pas
+Module0=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestJsonWriter.pas
 Module1=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONTypes.pas
-Module2=D:\Desenvolvimento\OpenSource\fabricio\TMongoWire_Modified\bsonDoc.pas
-Module3=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestJsonWriter.pas
+Module2=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\JsonWriter.pas
+Module3=D:\Desenvolvimento\OpenSource\fabricio\TMongoWire_Modified\bsonDoc.pas
 Module4=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\unittest.dpr
 Count=5
 EditWindowCount=1
 
-[D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\JsonWriter.pas]
+[D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestJsonWriter.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -29,12 +29,12 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[D:\Desenvolvimento\OpenSource\fabricio\TMongoWire_Modified\bsonDoc.pas]
+[D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\JsonWriter.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestJsonWriter.pas]
+[D:\Desenvolvimento\OpenSource\fabricio\TMongoWire_Modified\bsonDoc.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -194,7 +194,7 @@ FormOnTop=0
 
 [EditWindow0]
 ViewCount=5
-CurrentView=2
+CurrentView=1
 View0=0
 View1=1
 View2=2
@@ -232,23 +232,23 @@ LeftCol=1
 
 [View1]
 Module=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestJsonWriter.pas
-CursorX=1
-CursorY=62
+CursorX=47
+CursorY=65
 TopLine=47
 LeftCol=1
 
 [View2]
 Module=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\JsonWriter.pas
-CursorX=1
-CursorY=59
-TopLine=96
+CursorX=14
+CursorY=40
+TopLine=28
 LeftCol=1
 
 [View3]
 Module=D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONTypes.pas
-CursorX=22
-CursorY=748
-TopLine=726
+CursorX=28
+CursorY=154
+TopLine=140
 LeftCol=1
 
 [View4]

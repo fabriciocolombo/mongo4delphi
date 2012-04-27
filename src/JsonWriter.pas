@@ -37,7 +37,7 @@ type
     function Indent(level: Integer): String;
   public
     function ToJson(const ABSON: IBSONObject): String;
-    function ToJsonBeautiful(const ABSON: IBSONObject): String;
+    function ToJsonReadable(const ABSON: IBSONObject): String;
 
     function Beautifier(JsonText: String): String;
   end;
@@ -187,7 +187,7 @@ begin
   Result := WriteInterface(ABSON);
 end;
 
-function TJsonWriter.ToJsonBeautiful(const ABSON: IBSONObject): String;
+function TJsonWriter.ToJsonReadable(const ABSON: IBSONObject): String;
 begin
   Result := Beautifier(ToJson(ABSON));
 end;

@@ -151,7 +151,7 @@ type
     function GetOid: IBSONObjectId;
 
     function AsJson: String;
-    function AsJsonBeautiful: String;
+    function AsJsonReadable: String;
   end;
 
   IBSONObject = interface(IBSONBasicObject)
@@ -410,7 +410,7 @@ type
     function Contain(const AKey: String): Boolean;
 
     function AsJson: String;
-    function AsJsonBeautiful: String;
+    function AsJsonReadable: String;
   end;
 
   TBSONArray = class(TBSONObject, IBSONArray)
@@ -741,13 +741,13 @@ begin
   end;
 end;
 
-function TBSONObject.AsJsonBeautiful: String;
+function TBSONObject.AsJsonReadable: String;
 var
   vWriter: TJsonWriter;
 begin
   vWriter := TJsonWriter.Create;
   try
-    Result := vWriter.ToJsonBeautiful(Self);
+    Result := vWriter.ToJsonReadable(Self);
   finally
     vWriter.Free;
   end;

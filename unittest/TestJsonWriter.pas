@@ -62,7 +62,7 @@ begin
                     ']',
                      TBSONArray.NewFromValues([TBSONObject.NewFrom('key', TBSONObject.NewFrom('key2', 'value')),
                                                TBSONObject.NewFrom('key2', TBSONArray.NewFromValues([1,2,3]))])
-                               .AsJsonBeautiful);
+                               .AsJsonReadable);
 end;
 
 procedure TTestJsonWriter.WriteJsonBoolean;
