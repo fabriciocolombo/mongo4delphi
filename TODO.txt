@@ -22,9 +22,13 @@ To Fully mongodb support
 	TODO - Automatically connect to proper server, and failover, when connecting to a Replica Set
 	TODO - automatic reconnection on connection failure
 	TODO - Support to GridFS
+	TODO - Add a ping command to check if a server is alive. This command will return immediately even if the server is in a lock.
+				def ping
+					self["admin"].command({:ping => 1})
+				end
 
 New Features
-	TODO - Create a QueryBuilder to facilitate the construction of complex queries
+	IN PROGRESS - Create a QueryBuilder to facilitate the construction of complex queries
 	TODO - Create a BSON constructor json like, inspired on stijnsanders/TMongoWire project.
 	TODO - Interface to Map/Reduce
 	TODO - Interface to Rename collection: RunCommand('admin', BSON(['renameCollection', from_ns, 'to', to_ns]));
@@ -41,10 +45,7 @@ Improvement
 	TODO - Include a Log for debug with almost Console
 	TODO - Requests manager. Each request must be a self stream
 	TODO - Automated build and unit test for target environments
-
-Demo Application
-  TODO - Create a demo application with basic features
+	TODO - Verify option TCP_NODELAY in socket connection to improve performance. See https://github.com/stijnsanders/TMongoWire/commit/d203da3f0439377555e87565d1aec734947eb39b
 	
-(1) Types not yet implemented subtypes
-  BSON_SUBTYPE_FUNC    = $01;
-  BSON_SUBTYPE_MD5     = $05;  
+Demo Application
+  
