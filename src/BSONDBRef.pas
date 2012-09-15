@@ -54,7 +54,7 @@ type
 
 implementation
 
-uses SysUtils;
+uses SysUtils, MongoUtils;
 
 { TBSONDBRef }
 
@@ -75,7 +75,7 @@ begin
       if (ADB.DBName <> ARef.DB) then
         raise Exception.CreateFmt('Must use same db.', []);
 
-      FRefDoc := ADB.GetCollection(ARef.Collection).FindOne(TBSONObject.NewFrom('_id', ARef.ObjectId));
+      FRefDoc := ADB.GetCollection(ARef.Collection).FindOne(TBSONObject.NewFrom(KEY_ID, ARef.ObjectId));
     end;
 
     Result := FRefDoc;
@@ -90,7 +90,7 @@ begin
 
   if AQuery.Find('$ref', vIndexRef) and AQuery.Find('$id', vIndexId) then
   begin
-    Result := ADB.GetCollection(AQuery.Item[vIndexRef].AsString).FindOne(TBSONObject.NewFrom('_id', AQuery.Item[vIndexId].AsString));
+    Result := ADB.GetCollection(AQuery.Item[vIndexRef].AsString).FindOne(TBSONObject.NewFrom(KEY_ID, AQuery.Item[vIndexId].AsString));
   end;
 end;
 

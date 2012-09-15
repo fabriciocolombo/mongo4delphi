@@ -22,7 +22,7 @@ unit MongoDBApiLayer;
 interface
 
 uses Mongo, MongoDB, Contnrs, MongoConnector, MongoProvider, BSONTypes,
-     MongoCollection, CommandResult;
+     MongoCollection, CommandResult, MongoUtils;
 
 type
   TMongoDBApiLayer = class(TMongoDB)

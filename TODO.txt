@@ -14,8 +14,7 @@ To Fully mongodb support
 	TODO - Cache TMongo.GetDB
 	TODO - Cache TMongoDB.GetCollection
 	TODO - Add eval() to TMongoDB
-	TODO - Add AddUser and RemoveUser in TMongoDB
- TODO - validate a collection in a database
+  TODO - validate a collection in a database
   TODO - Tailable cursor support - http://www.mongodb.org/display/DOCS/Tailable+Cursors
 	TODO - database profiling: set/get profiling level, get profiling info(getProfilingLevel, setProfilingLevel, getProfilingInfo) 
 	TODO - advanced connection management (slave okay)

@@ -22,7 +22,7 @@ unit MongoCollectionApiLayer;
 interface
 
 uses MongoDBCursorIntf, BSONTypes, WriteResult, CommandResult, MongoDB, MongoCollection,
-     MongoConnector, MongoProvider;
+     MongoConnector, MongoProvider, MongoUtils;
 
 type
   TMongoCollectionApiLayer = class(TMongoCollection)

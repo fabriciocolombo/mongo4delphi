@@ -57,7 +57,11 @@ uses
 
 {$R *.res}
 
+const
+  LEAK_INDY = 21;
 begin
+  RegisterExpectedMemoryLeak(LEAK_INDY);
+
   Application.Initialize;
   {$IFNDEF FPC}
     GuiTestRunner.RunRegisteredTests;

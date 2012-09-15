@@ -21,7 +21,7 @@ unit MongoDB;
 
 interface
 
-uses MongoCollection, BSONTypes, CommandResult;
+uses MongoCollection, BSONTypes, CommandResult, WriteResult, MongoUtils;
 
 type
   TMongoDB = class
@@ -44,8 +44,45 @@ type
     function GetUserCollections: IBSONObject;virtual;abstract;
 
     function CreateCollection(AName: String; AOptions: IBSONObject): TMongoCollection;virtual;abstract;
+
+    function AddUser(AUserName, APassword: String; AReadOnlyAccess: Boolean = false): IWriteResult;
+    function RemoveUser(AUserName: String): IWriteResult;
   end;
 
 implementation
+
+{ TMongoDB }
+
+function TMongoDB.AddUser(AUserName, APassword: String;AReadOnlyAccess: Boolean): IWriteResult;
+var
+  vUsersCollection: TMongoCollection;
+  vUser: IBSONObject;
+begin
+  vUsersCollection := GetCollection(SYSTEM_USERS);
+
+  vUser := vUsersCollection.FindOne(TBSONObject.NewFrom(KEY_USER, AUserName));
+
+  if (vUser = nil) then
+  begin
+    vUser := TBSONObject.NewFrom(KEY_USER, AUserName);
+  end;
+
+  vUser.Put(KEY_PASSWORD, TMongoUtils.MakeHash(AUserName, APassword));
+  vUser.Put(KEY_READ_ONLY, AReadOnlyAccess);
+
+  Result := vUsersCollection.Save(vUser);
+end;
+
+function TMongoDB.RemoveUser(AUserName: String): IWriteResult;
+var
+  vUsersCollection: TMongoCollection;
+  vUser: IBSONObject;
+begin
+  vUsersCollection := GetCollection(SYSTEM_USERS);
+
+  vUser := TBSONObject.NewFrom(KEY_USER, AUserName);
+  
+  Result := vUsersCollection.Remove(vUser);
+end;
 
 end.

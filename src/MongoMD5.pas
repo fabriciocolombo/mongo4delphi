@@ -45,7 +45,11 @@ begin
     {$IFDEF UNICODE} //Is the correct directive to use?
     Result := vIdMD5.HashStringAsHex(value, TEncoding.UTF8);
     {$ELSE}
-    Result := vIdMD5.AsHex(vIdMD5.HashValue(UTF8Encode(PAnsiChar(value))));
+      {$IFDEF INDY_9}
+      Result := vIdMD5.AsHex(vIdMD5.HashValue(UTF8Encode(PAnsiChar(value))));
+      {$ELSE}
+      Result := vIdMD5.HashStringAsHex(UTF8Encode(PAnsiChar(value)));
+      {$ENDIF}
     {$ENDIF}
 
     Result := LowerCase(Result);

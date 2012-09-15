@@ -9,3 +9,4 @@ __history
 unittest/backup
 src/backup
 packages/fpc/backup
+unittest/unittest_MemoryManager_EventLog.txt

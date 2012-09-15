@@ -50,6 +50,7 @@ type
     function ToStringMongo: String;
 
     function GetOID: String;
+    function IsNew: Boolean;
 
     property OID: String read GetOID;
   end;
@@ -192,6 +193,7 @@ type
   TBSONObjectId = class(TInterfacedObject, IBSONObjectId)
   private
     FOID: String;
+    FNew: Boolean;
 
     procedure GenId;
     function GetOID: String;
@@ -204,6 +206,7 @@ type
 
     function AsByteArray: TBSONObjectIdByteArray;
     function ToStringMongo: String;
+    function IsNew: Boolean;
 
     property OID: String read GetOID;
   end;
@@ -512,8 +515,10 @@ end;
 constructor TBSONObjectId.Create;
 begin
   inherited;
-  
+
   GenId;
+
+  FNew := True;
 end;
 
 constructor TBSONObjectId.Create(const OID: String);
@@ -521,6 +526,8 @@ begin
   inherited Create;
 
   FOID := OID;
+
+  FNew := False;
 end;
 
 procedure TBSONObjectId.GenId;
@@ -557,6 +564,11 @@ end;
 function TBSONObjectId.GetOID: String;
 begin
   Result := FOID;
+end;
+
+function TBSONObjectId.IsNew: Boolean;
+begin
+  Result := FNew;
 end;
 
 class function TBSONObjectId.NewFrom: IBSONObjectId;
@@ -697,7 +709,7 @@ function TBSONObject.HasOid: Boolean;
 var
   vItem: TBSONItem;
 begin
-  vItem := Find('_id');
+  vItem := Find(KEY_ID);
 
   Result := Assigned(vItem) and Assigned(vItem.AsObjectId);
 end;
@@ -709,7 +721,7 @@ var
 begin
   Result := nil;
 
-  if Find('_id', vIndex) then
+  if Find(KEY_ID, vIndex) then
   begin
     vItem := Item[vIndex];
 
@@ -1006,12 +1018,12 @@ begin
     vOidArray.Put(AObjects[i].GetOid);
   end;
 
-  Result  := TBSONObject.NewFrom('_id', TBSONObject.NewFrom('$in', vOidArray));
+  Result  := TBSONObject.NewFrom(KEY_ID, TBSONObject.NewFrom('$in', vOidArray));
 end;
 
 class function TBSONObjectQueryHelper.NewFilterOid(AObjects: IBSONObject): IBSONObject;
 begin
-  Result  := TBSONObject.NewFrom('_id', AObjects.GetOid);
+  Result  := TBSONObject.NewFrom(KEY_ID, AObjects.GetOid);
 end;
 
 { TBSONBinary }

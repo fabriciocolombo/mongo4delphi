@@ -6,11 +6,11 @@ unit TestMongoProvider;
 
 interface
 
-uses BaseTestCase, MongoProvider, MongoDecoder, MongoEncoder, BSONTypes,
-     CommandResult, WriteResult;
+uses BaseTestCaseMongo, MongoProvider, MongoDecoder, MongoEncoder, BSONTypes,
+     CommandResult, WriteResult, MongoUtils;
 
 type
-  TTestMongoProvider = class(TBaseTestCase)
+  TTestMongoProvider = class(TBaseTestCaseMongo)
   private
     FProvider: IMongoProvider;
 
@@ -34,18 +34,12 @@ type
     procedure TestUpdateUpsertMulti;
     procedure TestBatchRemove;
     procedure TestBatchInsert;
-    procedure TestAuthentication;
     procedure TestCreateIndex;
   end;
 
 implementation
 
-const
-  sDB = 'test';
-  sColl = 'test';
-  sUser = 'username';
-  sPasswd = 'passwd';
-  
+ 
 { TTestMongoProvider }
 
 procedure TTestMongoProvider.CheckCommandResult(Result: ICommandResult);
@@ -78,13 +72,6 @@ procedure TTestMongoProvider.TearDown;
 begin
   FProvider := nil;
   inherited;
-end;
-
-procedure TTestMongoProvider.TestAuthentication;
-begin
-  FProvider.Authenticate(sDB, sUser, sPasswd);
-
-  FProvider.Logout(sDB);
 end;
 
 procedure TTestMongoProvider.TestBatchInsert;

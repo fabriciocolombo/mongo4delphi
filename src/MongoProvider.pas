@@ -28,16 +28,7 @@ interface
 
 uses MongoEncoder, MongoDecoder, BSONTypes, BSONStream,
      {$IFDEF SYNAPSE}blcksock,{$ENDIF} Sockets,
-     Classes, SysUtils, CommandResult, WriteResult;
-
-const
-  DEFAULT_HOST = 'localhost';
-  DEFAULT_PORT = 27017;
-
-  (* Mongo Collections *)
-  COMMAND_COLLECTION = '$cmd';
-  SYSTEM_INDEXES_COLLECTION = 'system.indexes';
-  SYSTEM_NAMESPACES_COLLECTION = 'system.namespaces';
+     Classes, SysUtils, CommandResult, WriteResult, MongoUtils;
 
 type
   IMongoProvider = interface;
@@ -61,6 +52,7 @@ type
   public
     function getCachedLastError: ICommandResult;
     function getLastError: ICommandResult;
+    function getRowsAffected: Integer;
 
     constructor Create(const AProvider: IMongoProvider; ADB: String; ARequestId: Integer);
   end;
@@ -145,8 +137,6 @@ type
     procedure BeginMsg(AStream: TBSONStream; OperationCode: Integer);overload;
     procedure BeginMsg(AStream: TBSONStream; DB, Collection: String; OperationCode: Integer);overload;
     procedure SendMsg(AStream: TBSONStream);
-
-    function MakeHash(AUserName: String; APassword: String): String;
   public
     constructor Create;
     destructor Destroy; override;
@@ -185,6 +175,7 @@ type
     function CreateIndex(DB: String; Collection: String; KeyFields: IBSONObject; AIndexName: String): IWriteResult;
 
    //TODO - Assert socket is Connected
+
   end;
 
 implementation
@@ -566,7 +557,7 @@ end;
 
 function TDefaultMongoProvider.Update(DB, Collection: String; Query, BSONObject: IBSONObject): IWriteResult;
 begin
-  Update(DB, Collection, Query, BSONObject, False, False);
+  Result := Update(DB, Collection, Query, BSONObject, False, False);
 end;
 
 function TDefaultMongoProvider.Update(DB, Collection: String; Query,BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;
@@ -623,7 +614,7 @@ begin
 
   vNonce := vCommandResult.Items['nonce'];
 
-  vHash := MakeHash(AUserName, APassword);
+  vHash := TMongoUtils.MakeHash(AUserName, APassword);
 
   vKey := MD5(vNonce.AsString + AUserName + vHash);
 
@@ -638,11 +629,6 @@ begin
   Result := vCommandResult.Ok;
 
   vCommandResult.RaiseOnError;
-end;
-
-function TDefaultMongoProvider.MakeHash(AUserName,APassword: String): String;
-begin
-  Result := MD5(AUserName + ':mongo:' + APassword);
 end;
 
 procedure TDefaultMongoProvider.Logout(DB: String);
@@ -736,6 +722,11 @@ begin
 
     FLastErrorResult := Result;
   end;
+end;
+
+function TWriteResult.getRowsAffected: Integer;
+begin
+  Result := getLastError.Items['n'].AsInteger;
 end;
 
 { TCommandResult }

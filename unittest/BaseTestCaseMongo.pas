@@ -11,6 +11,8 @@ uses BaseTestCase, Mongo, MongoDB, MongoCollection;
 const
   sDB = 'unit';
   sColl = 'test';
+  sUser = 'username';
+  sPasswd = 'passwd';
   
 type
   //Require mongodb service running

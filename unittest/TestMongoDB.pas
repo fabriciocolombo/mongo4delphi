@@ -6,20 +6,42 @@ unit TestMongoDB;
 
 interface
 
-uses BaseTestCaseMongo, Mongo;
+uses BaseTestCaseMongo, Mongo, MongoCollection, WriteResult;
 
 type
   //Require mongodb service running
   TTestMongoDB = class(TBaseTestCaseMongo)
+  private
   published
     procedure TestGetCollection;
+    procedure TestCreateUser_Authentication_RemoveUser;
   end;
 
 implementation
 
-uses BSONTypes;
+uses BSONTypes, TestFramework;
 
 { TTestMongoDB }
+
+procedure TTestMongoDB.TestCreateUser_Authentication_RemoveUser;
+var
+  vWriteResult: IWriteResult;
+begin
+  vWriteResult := DB.AddUser(sUser, sPasswd, False);
+
+  CheckNotNull(vWriteResult);
+  CheckNotNull(vWriteResult.getLastError);
+  CheckTrue(vWriteResult.getLastError.Ok);
+
+  CheckTrue(DB.Authenticate(sUser, sPasswd));
+
+  DB.Logout;
+
+  vWriteResult := DB.RemoveUser(sUser);
+  CheckNotNull(vWriteResult);
+  CheckNotNull(vWriteResult.getLastError);
+  CheckTrue(vWriteResult.getLastError.Ok);
+end;
 
 procedure TTestMongoDB.TestGetCollection;
 var
@@ -28,8 +50,7 @@ begin
   vCollections := DB.GetCollections;
 
   CheckNotNull(vCollections);
-  CheckEquals(1, vCollections.Count);
-  CheckEquals('system.indexes', vCollections.Items['name'].AsString);
+  CheckTrue(vCollections.Count > 0);
 end;
 
 initialization

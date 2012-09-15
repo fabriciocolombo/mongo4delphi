@@ -27,7 +27,7 @@ interface
 
 uses Sockets, MongoEncoder, MongoDecoder, BSONStream, BSONTypes, MongoProvider,
      Contnrs, Classes, MongoDB, MongoConnector, WriteResult, CommandResult,
-     MongoDBCursor, MongoCollection;
+     MongoDBCursor, MongoCollection, MongoUtils;
 
 type
   TMongo = class

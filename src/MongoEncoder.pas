@@ -163,7 +163,7 @@ begin
                     put(BSON_MINKEY, name)
                   else if (AItem.IsMaxKey) then
                     put(BSON_MAXKEY, name)
-                  else if (name = '_id') then
+                  else if (name = KEY_ID) then
                     putObjectId(name, TBSONObjectId.NewFromOID(value))
                   else
                     putString(name, value, BSON_STRING);
@@ -281,9 +281,9 @@ begin
   vStart := FBuffer.Position;
   FBuffer.WriteInt(0); // making space for length
 
-  if (ABSONObject.Contain('_id')) and ABSONObject.Items['_id'].IsObjectId then
+  if (ABSONObject.Contain(KEY_ID)) and ABSONObject.Items[KEY_ID].IsObjectId then
   begin
-    putObjectId('_id', ABSONObject.GetOid);
+    putObjectId(KEY_ID, ABSONObject.GetOid);
     vWroteId := True;
   end;
 

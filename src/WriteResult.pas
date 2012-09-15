@@ -29,6 +29,7 @@ type
 
     function getCachedLastError(): ICommandResult;
     function getLastError(): ICommandResult;
+    function getRowsAffected(): Integer;
   end;
 
 implementation

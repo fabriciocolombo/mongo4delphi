@@ -27,6 +27,22 @@ interface
 
 uses Classes;
 
+const
+  DEFAULT_HOST = 'localhost';
+  DEFAULT_PORT = 27017;
+
+  (* Mongo Collections *)
+  COMMAND_COLLECTION = '$cmd';
+  SYSTEM_INDEXES_COLLECTION = 'system.indexes';
+  SYSTEM_NAMESPACES_COLLECTION = 'system.namespaces';
+  SYSTEM_USERS = 'system.users';
+
+  KEY_ID = '_id';
+  KEY_USER = 'user';
+  KEY_PASSWORD = 'pwd';
+  KEY_READ_ONLY = 'readOnly';
+  KEY_ERROR = 'err';
+
 type
   TListUtils = class
   private
@@ -42,9 +58,14 @@ type
     class function TryStringToGuid(value: String;var GUID: TGUID): Boolean;
   end;
 
+  TMongoUtils = class
+  public
+    class function MakeHash(AUserName: String; APassword: String): String;
+  end;
+
 implementation
 
-uses SysUtils, StrUtils, ComObj;
+uses SysUtils, StrUtils, ComObj, MongoMD5;
 
 { TListUtils }
 
@@ -93,6 +114,13 @@ begin
         raise;
     end;
   end
+end;
+
+{ TMongoUtils }
+
+class function TMongoUtils.MakeHash(AUserName, APassword: String): String;
+begin
+  Result := MD5(AUserName + ':mongo:' + APassword);
 end;
 
 end.

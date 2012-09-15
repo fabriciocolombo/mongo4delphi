@@ -21,7 +21,7 @@ unit MongoCollection;
 
 interface
 
-uses MongoDBCursorIntf, BSONTypes, WriteResult, CommandResult;
+uses MongoDBCursorIntf, BSONTypes, WriteResult, CommandResult, MongoUtils;
 
 type
   TMongoCollection = class
@@ -62,8 +62,28 @@ type
     function FindOne(Query, Fields: IBSONObject): IBSONObject;overload;virtual;abstract;
 
     function GetIndexInfo: IBSONArray;virtual;abstract;
+
+    function Save(const BSONObject: IBSONObject): IWriteResult;
   end;
 
 implementation
+
+{ TMongoCollection }
+
+function TMongoCollection.Save(const BSONObject: IBSONObject): IWriteResult;
+var
+  vQuery: IBSONObject;
+begin
+  if (not BSONObject.HasOid) or (BSONObject.HasOid and BSONObject.GetOid.IsNew) then
+  begin
+    Result := Insert(BSONObject);
+  end
+  else
+  begin
+    vQuery := TBSONObject.NewFrom(KEY_ID, BSONObject.GetOid.OID);
+
+    Result := Update(vQuery, BSONObject);
+  end;
+end;
 
 end.
