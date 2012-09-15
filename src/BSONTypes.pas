@@ -168,12 +168,13 @@ type
     function Find(const AKey: String): TBSONItem;overload;
     function Find(const AKey: String;var AIndex: Integer): Boolean;overload;
     function PutAll(const ASource: IBSONObject): IBSONObject;
+    function Remove(const AKey: String): IBSONObject;
   end;
 
   IBSONArray = interface(IBSONBasicObject)
     ['{ADA231EC-9BD6-4FEB-BCB7-56D88580319E}']
-
-    function Put(Value: Variant): IBSONArray;
+    function Put(Value: Variant): IBSONArray;overload;
+    function Put(const AKey: Integer; Value: Variant): IBSONArray;overload;
   end;
 
   IBSONDBRef = interface(IBSONObject)
@@ -366,7 +367,7 @@ type
     property AsBSONCode: IBSONCode read GetAsBSONCode;
     property AsBSONCode_W_Scope: IBSONCode_W_Scope read GetAsBSONCode_W_Scope;
     property AsBSONTimeStamp: IBSONTimeStamp read GetAsBSONTimeStamp;
-    property AsBSONDBRef: IBSONDBRef read GetAsBSONDBRef; 
+    property AsBSONDBRef: IBSONDBRef read GetAsBSONDBRef;
 
     function GetValueTypeDesc: String;
 
@@ -383,11 +384,13 @@ type
     FMap: TStringList;
     FDuplicatesAction: TDuplicatesAction;
   protected
-    procedure PushItem(AItem: TBSONItem);
+    procedure PushItem(AIndex: Integer; AItem: TBSONItem);overload;
+    procedure PushItem(AItem: TBSONItem);overload;
     function GetItems(AKey: String): TBSONItem;
     function GetItem(AIndex: Integer): TBSONItem;
     procedure SetDuplicatesAction(const Value: TDuplicatesAction);
     function GetDuplicatesAction: TDuplicatesAction;
+    function InternalPut(AIndex: Integer; const AKey: String; Value: Variant): IBSONObject;
   public
     constructor Create;
     destructor Destroy; override;
@@ -412,13 +415,16 @@ type
 
     function Contain(const AKey: String): Boolean;
 
+    function Remove(const AKey: String): IBSONObject;
+
     function AsJson: String;
     function AsJsonReadable: String;
   end;
 
   TBSONArray = class(TBSONObject, IBSONArray)
   public
-    function Put(Value: Variant): IBSONArray;
+    function Put(Value: Variant): IBSONArray;overload;
+    function Put(const AKey: Integer; Value: Variant): IBSONArray;overload;
 
     class function NewFrom(Value: Variant): IBSONArray;
     class function NewFromValues(Values:Array of Variant): IBSONArray;
@@ -648,7 +654,7 @@ begin
   begin
     Result := TBSONItem.NewFrom(AKey, Null);
 
-    PushItem(Result);
+    PushItem(FMap.Count, Result);
   end;
 end;
 
@@ -658,30 +664,19 @@ begin
   Result.Put(AKey, Value);
 end;
 
-procedure TBSONObject.PushItem(AItem: TBSONItem);
+procedure TBSONObject.PushItem(AIndex: Integer; AItem: TBSONItem);
 begin
-  FMap.AddObject(AItem.Name, AItem);
+  while (AIndex > FMap.Count) do
+  begin
+    PushItem(TBSONItem.NewFrom(IntToStr(FMap.Count), Null));
+  end;
+
+  FMap.InsertObject(AIndex, AItem.Name, AItem);
 end;
 
 function TBSONObject.Put(const AKey: String; Value: Variant): IBSONObject;
-var
-  vItem: TBSONItem;
 begin
-  vItem := Find(AKey);
-
-  if Assigned(vItem) then
-  begin
-    if (FDuplicatesAction = daError) then
-      raise EBSONDuplicateKeyInList.CreateResFmt(@sBSONDuplicateKeyInList, [AKey]);
-
-    vItem.Value := Value;
-  end
-  else
-  begin
-    PushItem(TBSONItem.NewFrom(AKey, Value));
-  end;
-
-  Result := Self;
+  Result := InternalPut(FMap.Count, AKey, Value);
 end;
 
 function TBSONObject.PutAll(const ASource: IBSONObject): IBSONObject;
@@ -763,6 +758,45 @@ begin
   finally
     vWriter.Free;
   end;
+end;
+
+function TBSONObject.Remove(const AKey: String): IBSONObject;
+var
+  vIndex: Integer;
+begin
+  if Find(AKey, vIndex) then
+  begin
+    Item[vIndex].Free;
+    FMap.Delete(vIndex);
+  end;
+
+  Result := Self;
+end;
+
+function TBSONObject.InternalPut(AIndex: Integer; const AKey: String;Value: Variant): IBSONObject;
+var
+  vItem: TBSONItem;
+begin
+  vItem := Find(AKey);
+
+  if Assigned(vItem) then
+  begin
+    if (FDuplicatesAction = daError) then
+      raise EBSONDuplicateKeyInList.CreateResFmt(@sBSONDuplicateKeyInList, [AKey]);
+
+    vItem.Value := Value;
+  end
+  else
+  begin
+    PushItem(AIndex, TBSONItem.NewFrom(AKey, Value));
+  end;
+
+  Result := Self;
+end;
+
+procedure TBSONObject.PushItem(AItem: TBSONItem);
+begin
+  FMap.AddObject(AItem.Name, AItem);
 end;
 
 { TBSONItem }
@@ -998,6 +1032,13 @@ begin
   vKey := IntToStr(Count);
 
   inherited Put(vKey, Value);
+
+  Result := Self;
+end;
+
+function TBSONArray.Put(const AKey: Integer; Value: Variant): IBSONArray;
+begin
+  inherited InternalPut(AKey, IntToStr(AKey), Value);
 
   Result := Self;
 end;

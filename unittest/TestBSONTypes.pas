@@ -26,9 +26,15 @@ type
     procedure TestAcceptableBinarySubtypes;
   end;
 
+  TTestBSONArray = class(TBaseTestCase)
+  published
+    procedure TestOverrideItemValue;
+    procedure TestPutWithKey;
+  end;
+
 implementation
 
-uses MongoException, SysUtils, BSON;
+uses MongoException, SysUtils, BSON, TestFramework, Variants;
 
 { TTestBSONObject }
 
@@ -186,8 +192,47 @@ begin
   end;
 end;
 
+{ TTestBSONArray }
+
+procedure TTestBSONArray.TestOverrideItemValue;
+var
+  vArray: IBSONArray;
+begin
+  vArray := TBSONArray.Create;
+
+  vArray.Put('a'); //Assume index zero
+  vArray.Put(0, 'b'); //Override value for index zero
+
+  CheckEquals(1, vArray.Count);
+  CheckEquals('b', vArray.Item[0].AsString);
+end;
+
+procedure TTestBSONArray.TestPutWithKey;
+var
+  vArray: IBSONArray;
+begin
+  vArray := TBSONArray.Create;
+
+  vArray.Put('a'); //Assume index zero
+  vArray.Put(1, 'b'); //Insert into position one
+  vArray.Put(5, 'c'); //Insert into position five, the empty interval are fill with null values
+
+  CheckEquals(6, vArray.Count);
+  CheckEquals('0', vArray.Item[0].Name);
+  CheckEquals('a', vArray.Item[0].AsString);
+  CheckEquals('1', vArray.Item[1].Name);
+  CheckEquals('b', vArray.Item[1].AsString);
+  CheckTrue(Null = vArray.Item[2].Value);
+  CheckTrue(Null = vArray.Item[3].Value);
+  CheckTrue(Null = vArray.Item[4].Value);
+  CheckEquals('5', vArray.Item[5].Name);
+  CheckEquals('c', vArray.Item[5].AsString);
+end;
+
 initialization
   TTestBSONObject.RegisterTest;
   TTestBSONBinary.RegisterTest;
+  TTestBSONArray.RegisterTest;
 
 end.
+

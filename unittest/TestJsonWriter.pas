@@ -26,6 +26,7 @@ type
     procedure WriteJsonNestedArray;
     procedure WriteJsonComplex;
     procedure WriteJsonBeautiful;
+    procedure WriteJsonTwoFields;
   end;
 
 implementation
@@ -41,7 +42,7 @@ end;
 
 procedure TTestJsonWriter.WriteJsonArray;
 begin
-  CheckEqualsString('[1,2,3]', TBSONArray.NewFromValues([1,2,3]).AsJson);
+  CheckEqualsString('[1, 2, 3]', TBSONArray.NewFromValues([1,2,3]).AsJson);
 end;
 
 procedure TTestJsonWriter.WriteJsonBeautiful;
@@ -73,7 +74,7 @@ end;
 
 procedure TTestJsonWriter.WriteJsonComplex;
 begin
-  CheckEqualsString('[{"key" : {"key2" : "value"}},{"key2" : [1,2,3]}]',
+  CheckEqualsString('[{"key" : {"key2" : "value"}}, {"key2" : [1, 2, 3]}]',
                      TBSONArray.NewFromValues([TBSONObject.NewFrom('key', TBSONObject.NewFrom('key2', 'value')),
                                                TBSONObject.NewFrom('key2', TBSONArray.NewFromValues([1,2,3]))])
                                .AsJson);
@@ -107,7 +108,7 @@ end;
 
 procedure TTestJsonWriter.WriteJsonNestedArray;
 begin
-  CheckEqualsString('{"key" : [1,2,3]}', TBSONObject.NewFrom('key', TBSONArray.NewFromValues([1,2,3])).AsJson);
+  CheckEqualsString('{"key" : [1, 2, 3]}', TBSONObject.NewFrom('key', TBSONArray.NewFromValues([1,2,3])).AsJson);
 end;
 
 procedure TTestJsonWriter.WriteJsonNestedObject;
@@ -123,6 +124,11 @@ end;
 procedure TTestJsonWriter.WriteJsonString;
 begin
   CheckEqualsString('{"key" : "value"}', TBSONObject.NewFrom('key', 'value').AsJson);
+end;
+
+procedure TTestJsonWriter.WriteJsonTwoFields;
+begin
+  CheckEqualsString('{"key" : "value", "key2" : "value2"}', TBSONObject.NewFrom('key', 'value').Put('key2', 'value2').AsJson);
 end;
 
 initialization

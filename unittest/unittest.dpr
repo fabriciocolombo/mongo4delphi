@@ -53,7 +53,8 @@ uses
   TestQueryBuilder in 'TestQueryBuilder.pas',
   QueryBuilder in '..\src\QueryBuilder.pas',
   TestJsonWriter in 'TestJsonWriter.pas',
-  JsonWriter in '..\src\JsonWriter.pas';
+  JsonWriter in '..\src\JsonWriter.pas',
+  TestMongoUpdate in 'TestMongoUpdate.pas';
 
 {$R *.res}
 

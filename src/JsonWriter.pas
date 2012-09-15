@@ -134,7 +134,7 @@ begin
 
     if (i < ABSONArray.Count-1) then
     begin
-      Result := Result + ',';
+      Result := Result + ', ';
     end;
   end;
   Result := Result + ']';
@@ -152,6 +152,11 @@ begin
     vItem := ABSON[i];
 
     Result := Result + ItemToJson(vItem);
+
+    if (i < ABSON.Count-1) then
+    begin
+      Result := Result + ', ';
+    end;
   end;
 
   Result := Result + '}';

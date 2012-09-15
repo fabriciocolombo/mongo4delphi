@@ -213,7 +213,7 @@ end;
 function TMongoCollectionApiLayer.FindOne: IBSONObject;
 begin
   Result := FProvider.FindOne(FMongoDatabase.DBName, FCollectionName);
-end;
+end;                        
 
 function TMongoCollectionApiLayer.FindOne(Query: IBSONObject): IBSONObject;
 begin
