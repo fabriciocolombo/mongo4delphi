@@ -281,7 +281,7 @@ begin
   vStart := FBuffer.Position;
   FBuffer.WriteInt(0); // making space for length
 
-  if (ABSONObject.Contain(KEY_ID)) and ABSONObject.Items[KEY_ID].IsObjectId then
+  if ABSONObject.HasOid then
   begin
     putObjectId(KEY_ID, ABSONObject.GetOid);
     vWroteId := True;

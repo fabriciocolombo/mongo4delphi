@@ -147,7 +147,6 @@ type
     property Items[AKey: String]: TBSONItem read GetItems;
 
     function Count: Integer;
-    function Contain(const AKey: String): Boolean;
     function HasOid: Boolean;
     function GetOid: IBSONObjectId;
 
@@ -169,12 +168,17 @@ type
     function Find(const AKey: String;var AIndex: Integer): Boolean;overload;
     function PutAll(const ASource: IBSONObject): IBSONObject;
     function Remove(const AKey: String): IBSONObject;
+
+    function Contain(const AKey: String): Boolean;
   end;
 
   IBSONArray = interface(IBSONBasicObject)
     ['{ADA231EC-9BD6-4FEB-BCB7-56D88580319E}']
     function Put(Value: Variant): IBSONArray;overload;
-    function Put(const AKey: Integer; Value: Variant): IBSONArray;overload;
+    function Put(const AIndex: Integer; Value: Variant): IBSONArray;overload;
+    function Insert(const AIndex: Integer; Value: Variant): IBSONArray;
+    function Contain(const AKey: Integer): Boolean;
+    function Remove(const AKey: Integer): IBSONArray;
   end;
 
   IBSONDBRef = interface(IBSONObject)
@@ -332,6 +336,9 @@ type
 
     procedure SetValue(const Value: Variant);
 
+    //for internal use only, in BSONArray re-order
+    procedure SetName(const Value: String);
+
     function GetAsObjectId: IBSONObjectId;
     function GetAsInteger: Integer;
     function GetAsInt64: Int64;
@@ -422,9 +429,15 @@ type
   end;
 
   TBSONArray = class(TBSONObject, IBSONArray)
+  private
+    procedure RenameItemFromIndex(AIndex: Integer);
   public
     function Put(Value: Variant): IBSONArray;overload;
-    function Put(const AKey: Integer; Value: Variant): IBSONArray;overload;
+    function Put(const AIndex: Integer; Value: Variant): IBSONArray;overload;
+    function Insert(const AIndex: Integer; Value: Variant): IBSONArray;
+
+    function Contain(const AKey: Integer): Boolean;
+    function Remove(const AKey: Integer): IBSONArray;
 
     class function NewFrom(Value: Variant): IBSONArray;
     class function NewFromValues(Values:Array of Variant): IBSONArray;
@@ -654,7 +667,7 @@ begin
   begin
     Result := TBSONItem.NewFrom(AKey, Null);
 
-    PushItem(FMap.Count, Result);
+    PushItem(Count, Result);
   end;
 end;
 
@@ -666,9 +679,9 @@ end;
 
 procedure TBSONObject.PushItem(AIndex: Integer; AItem: TBSONItem);
 begin
-  while (AIndex > FMap.Count) do
+  while (AIndex > Count) do
   begin
-    PushItem(TBSONItem.NewFrom(IntToStr(FMap.Count), Null));
+    PushItem(TBSONItem.NewFrom(IntToStr(Count), Null));
   end;
 
   FMap.InsertObject(AIndex, AItem.Name, AItem);
@@ -676,7 +689,7 @@ end;
 
 function TBSONObject.Put(const AKey: String; Value: Variant): IBSONObject;
 begin
-  Result := InternalPut(FMap.Count, AKey, Value);
+  Result := InternalPut(Count, AKey, Value);
 end;
 
 function TBSONObject.PutAll(const ASource: IBSONObject): IBSONObject;
@@ -693,7 +706,7 @@ procedure TBSONObject.SetDuplicatesAction(const Value: TDuplicatesAction);
 begin
   if (FDuplicatesAction <> Value) then
   begin
-    if (FMap.Count > 0) then
+    if (Count > 0) then
       raise EBSONCannotChangeDuplicateAction.CreateRes(@sBSONCannotChangeDuplicateAction);
 
     FDuplicatesAction := Value;
@@ -993,7 +1006,26 @@ begin
   end;
 end;
 
+procedure TBSONItem.SetName(const Value: String);
+begin
+  FName := Value;
+end;
+
 { TBSONArray }
+
+function TBSONArray.Contain(const AKey: Integer): Boolean;
+begin
+  Result := (AKey >= 0) and (AKey < Count);
+end;
+
+function TBSONArray.Insert(const AIndex: Integer;Value: Variant): IBSONArray;
+begin
+  inherited PushItem(AIndex, TBSONItem.NewFrom(IntToStr(AIndex), Value));
+
+  RenameItemFromIndex(AIndex);
+
+  Result := Self;
+end;
 
 class function TBSONArray.NewFrom(Value: Variant): IBSONArray;
 begin
@@ -1026,21 +1058,44 @@ begin
 end;
 
 function TBSONArray.Put(Value: Variant): IBSONArray;
-var
-  vKey: String;
 begin
-  vKey := IntToStr(Count);
+  Result := Insert(Count, Value);
+end;
 
-  inherited Put(vKey, Value);
+function TBSONArray.Put(const AIndex: Integer; Value: Variant): IBSONArray;
+begin
+  if Contain(AIndex) then
+  begin
+    Item[AIndex].Value := Value;
+  end
+  else
+  begin
+    Insert(AIndex, Value);
+  end;
 
   Result := Self;
 end;
 
-function TBSONArray.Put(const AKey: Integer; Value: Variant): IBSONArray;
+function TBSONArray.Remove(const AKey: Integer): IBSONArray;
 begin
-  inherited InternalPut(AKey, IntToStr(AKey), Value);
+  inherited Remove(IntToStr(AKey));
+
+  RenameItemFromIndex(AKey-1);
 
   Result := Self;
+end;
+
+procedure TBSONArray.RenameItemFromIndex(AIndex: Integer);
+var
+  i: Integer;
+begin
+  if (AIndex < Count-1) then
+  begin
+    for i := AIndex to Count-1 do
+    begin
+      Item[i].SetName(IntToStr(i));
+    end;
+  end;
 end;
 
 { TBSONObjectQueryHelper }

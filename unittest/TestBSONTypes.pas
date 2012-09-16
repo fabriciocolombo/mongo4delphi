@@ -29,7 +29,11 @@ type
   TTestBSONArray = class(TBaseTestCase)
   published
     procedure TestOverrideItemValue;
+    procedure TestInsertIntoPosition;
+    procedure TestInsertIntoExistentPosition;
     procedure TestPutWithKey;
+    procedure TestPutWithKeyWithIndexOutOfBounds;
+    procedure TestRemoveArrayItem;
   end;
 
 implementation
@@ -194,6 +198,50 @@ end;
 
 { TTestBSONArray }
 
+procedure TTestBSONArray.TestInsertIntoExistentPosition;
+var
+  vArray: IBSONArray;
+begin
+  vArray := TBSONArray.Create;
+
+  vArray.Put('a'); //Assume index zero
+  vArray.Put('b'); //Assume index one
+  vArray.Insert(1, 'c'); //Insert into position one, push the index one to two
+
+  CheckEquals(3, vArray.Count);
+  CheckEquals('0', vArray.Item[0].Name);
+  CheckEquals('a', vArray.Item[0].AsString);
+  CheckEquals('1', vArray.Item[1].Name);
+  CheckEquals('c', vArray.Item[1].AsString);
+  CheckEquals('2', vArray.Item[2].Name);
+  CheckEquals('b', vArray.Item[2].AsString);
+end;
+
+procedure TTestBSONArray.TestInsertIntoPosition;
+var
+  vArray: IBSONArray;
+begin
+  vArray := TBSONArray.Create;
+
+  vArray.Put('a'); //Assume index zero
+  vArray.Insert(1, 'b'); //Insert into position one
+  vArray.Insert(5, 'c'); //Insert into position five, the empty interval are fill with null values
+
+  CheckEquals(6, vArray.Count);
+  CheckEquals('0', vArray.Item[0].Name);
+  CheckEquals('a', vArray.Item[0].AsString);
+  CheckEquals('1', vArray.Item[1].Name);
+  CheckEquals('b', vArray.Item[1].AsString);
+  CheckEquals('2', vArray.Item[2].Name);
+  CheckTrue(Null = vArray.Item[2].Value);
+  CheckEquals('3', vArray.Item[3].Name);
+  CheckTrue(Null = vArray.Item[3].Value);
+  CheckEquals('4', vArray.Item[4].Name);
+  CheckTrue(Null = vArray.Item[4].Value);
+  CheckEquals('5', vArray.Item[5].Name);
+  CheckEquals('c', vArray.Item[5].AsString);
+end;
+
 procedure TTestBSONArray.TestOverrideItemValue;
 var
   vArray: IBSONArray;
@@ -214,19 +262,57 @@ begin
   vArray := TBSONArray.Create;
 
   vArray.Put('a'); //Assume index zero
-  vArray.Put(1, 'b'); //Insert into position one
-  vArray.Put(5, 'c'); //Insert into position five, the empty interval are fill with null values
+  vArray.Insert(1, 'b'); //Insert into position one
+  vArray.Put(1, 'c'); //Replace value of position one
 
-  CheckEquals(6, vArray.Count);
+  CheckEquals(2, vArray.Count);
+  CheckEquals('0', vArray.Item[0].Name);
+  CheckEquals('a', vArray.Item[0].AsString);
+  CheckEquals('1', vArray.Item[1].Name);
+  CheckEquals('c', vArray.Item[1].AsString);
+end;
+
+procedure TTestBSONArray.TestPutWithKeyWithIndexOutOfBounds;
+var
+  vArray: IBSONArray;
+begin
+  vArray := TBSONArray.Create;
+
+  vArray.Put('a'); //Assume index zero
+  vArray.Put(1, 'b'); //Try replace value of position one
+
+  CheckEquals(2, vArray.Count);
   CheckEquals('0', vArray.Item[0].Name);
   CheckEquals('a', vArray.Item[0].AsString);
   CheckEquals('1', vArray.Item[1].Name);
   CheckEquals('b', vArray.Item[1].AsString);
-  CheckTrue(Null = vArray.Item[2].Value);
-  CheckTrue(Null = vArray.Item[3].Value);
-  CheckTrue(Null = vArray.Item[4].Value);
-  CheckEquals('5', vArray.Item[5].Name);
-  CheckEquals('c', vArray.Item[5].AsString);
+end;
+
+procedure TTestBSONArray.TestRemoveArrayItem;
+var
+  vArray: IBSONArray;
+begin
+  vArray := TBSONArray.Create;
+
+  vArray.Put('a'); //Assume index zero
+  vArray.Put('b'); //Assume index one
+  vArray.Put('c'); //Assume index two
+
+  CheckEquals(3, vArray.Count);
+  CheckEquals('0', vArray.Item[0].Name);
+  CheckEquals('a', vArray.Item[0].AsString);
+  CheckEquals('1', vArray.Item[1].Name);
+  CheckEquals('b', vArray.Item[1].AsString);
+  CheckEquals('2', vArray.Item[2].Name);
+  CheckEquals('c', vArray.Item[2].AsString);
+
+  vArray.Remove(1);
+
+  CheckEquals(2, vArray.Count);
+  CheckEquals('0', vArray.Item[0].Name);
+  CheckEquals('a', vArray.Item[0].AsString);
+  CheckEquals('1', vArray.Item[1].Name);
+  CheckEquals('c', vArray.Item[1].AsString);
 end;
 
 initialization
