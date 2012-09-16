@@ -442,6 +442,7 @@ type
     class function NewFrom(Value: Variant): IBSONArray;
     class function NewFromValues(Values:Array of Variant): IBSONArray;
     class function NewFromObject(Value: IBSONObject): IBSONArray;
+    class function NewFromTStrings(Value: TStrings): IBSONArray;
   end;
 
   TBSONObjectQueryHelper = class
@@ -1042,6 +1043,18 @@ begin
   for i := 0 to Value.Count-1 do
   begin
     Result.Put(Value[i].Value);
+  end;
+end;
+
+class function TBSONArray.NewFromTStrings(Value: TStrings): IBSONArray;
+var
+  i: Integer;
+begin
+  Result := TBSONArray.Create;
+
+  for i := 0 to Value.Count-1 do
+  begin
+    Result.Put(Value[i]);
   end;
 end;
 

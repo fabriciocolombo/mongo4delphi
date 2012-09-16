@@ -6,7 +6,7 @@ unit TestBSONTypes;
 
 interface
 
-uses BaseTestCase, BSONTypes;
+uses BaseTestCase, BSONTypes, Classes;
 
 type
   TTestBSONObject = class(TBaseTestCase)
@@ -34,6 +34,7 @@ type
     procedure TestPutWithKey;
     procedure TestPutWithKeyWithIndexOutOfBounds;
     procedure TestRemoveArrayItem;
+    procedure TestNewFromTStrings;
   end;
 
 implementation
@@ -240,6 +241,28 @@ begin
   CheckTrue(Null = vArray.Item[4].Value);
   CheckEquals('5', vArray.Item[5].Name);
   CheckEquals('c', vArray.Item[5].AsString);
+end;
+
+procedure TTestBSONArray.TestNewFromTStrings;
+var
+  vStrings: TStrings;
+  vArray: IBSONArray;
+begin
+  vStrings := TStringList.Create;
+  try
+    vStrings.Add('a');
+    vStrings.Add('b');
+    vStrings.Add('c');
+
+    vArray := TBSONArray.NewFromTStrings(vStrings);
+
+    CheckEquals(3, vArray.Count);
+    CheckEquals('a', vArray.Item[0].AsString);
+    CheckEquals('b', vArray.Item[1].AsString);
+    CheckEquals('c', vArray.Item[2].AsString);
+  finally
+    vStrings.Free;
+  end;
 end;
 
 procedure TTestBSONArray.TestOverrideItemValue;
