@@ -23,6 +23,9 @@ unit MongoMD5;
   {$MODE Delphi}
 {$ENDIF}
 
+{ Uncomment to use indy 9}
+{.$DEFINE INDY_9}
+
 interface
 
 uses {$IFDEF FPC}MD5,{$ELSE}IdHashMessageDigest, idHash,{$ENDIF} SysUtils;
