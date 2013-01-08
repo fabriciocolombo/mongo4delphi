@@ -50,7 +50,7 @@ type
 
 implementation
 
-uses SysUtils, BSON;
+uses SysUtils, BSON, MongoUtils;
 
 { TBSONStream }
 
@@ -89,7 +89,7 @@ var
   vUTF8: UTF8String;
   vSize: Integer;
 begin
-  vUTF8 := UTF8Encode(value);
+  vUTF8 := TStringUtils.UTF8Encode(value);
   vSize := Length(vUTF8);
   Result := Write(PAnsiChar(vUTF8)^, vSize + 1);
 end;
@@ -147,7 +147,15 @@ begin
 
   ReadByte; //closing null
 
-  Result := {$IFDEF Unicode}UTF8ToString(vTempResult);{$ELSE}UTF8Decode(vTempResult);{$ENDIF}
+  {$IFDEF Unicode}
+    Result := UTF8ToString(vTempResult);
+  {$ELSE}
+    {$IFDEF UNIX}
+    Result := vTempResult;
+    {$ELSE}
+    Result := UTF8Decode(vTempResult);
+    {$ENDIF}
+  {$ENDIF}
 end;
 
 function TBSONStream.ReadObjectId: String;

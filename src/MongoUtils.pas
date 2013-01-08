@@ -63,9 +63,14 @@ type
     class function MakeHash(AUserName: String; APassword: String): String;
   end;
 
+  TStringUtils = class
+  public
+    class function UTF8Encode(const AValue: WideString): UTF8String;
+  end;
+
 implementation
 
-uses SysUtils, StrUtils, ComObj, MongoMD5;
+uses SysUtils, StrUtils, MongoMD5;
 
 { TListUtils }
 
@@ -85,11 +90,12 @@ end;
 
 { TGUIDUtils }
 
-
-
 class function TGUIDUtils.NewGUID: TGUID;
 begin
-  OleCheck(CreateGUID(Result));
+  if CreateGUID(Result) = E_NOTIMPL then
+  begin
+    raise Exception.CreateFmt('%s: Unable to create GUID.', [ClassName]);
+  end;
 end;
 
 class function TGUIDUtils.NewGuidAsString: String;
@@ -121,6 +127,18 @@ end;
 class function TMongoUtils.MakeHash(AUserName, APassword: String): String;
 begin
   Result := MD5(AUserName + ':mongo:' + APassword);
+end;
+
+{ TStringUtils }
+
+class function TStringUtils.UTF8Encode(const AValue: WideString): UTF8String;
+begin
+  //because Linux is utf8 
+  {$IFDEF MSWINDOWS}
+  Result := System.UTF8Encode(AValue);
+  {$ELSE}
+  Result := AValue;  
+  {$ENDIF}
 end;
 
 end.

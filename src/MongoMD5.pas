@@ -24,7 +24,7 @@ unit MongoMD5;
 {$ENDIF}
 
 { Uncomment to use indy 9}
-{.$DEFINE INDY_9}
+{$DEFINE INDY_9}
 
 interface
 
@@ -34,10 +34,12 @@ function MD5(value: String): String;
 
 implementation
 
+uses MongoUtils;
+
 function MD5(value: String): String;
 {$IFDEF FPC}
 begin
-  Result := LowerCase(MD5Print(MD5String(UTF8Encode(value))));
+  Result := LowerCase(MD5Print(MD5String(TStringUtils.UTF8Encode(value))));
 end;
 {$ELSE}
 var

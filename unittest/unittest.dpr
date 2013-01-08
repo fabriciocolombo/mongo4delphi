@@ -54,7 +54,8 @@ uses
   QueryBuilder in '..\src\QueryBuilder.pas',
   TestJsonWriter in 'TestJsonWriter.pas',
   JsonWriter in '..\src\JsonWriter.pas',
-  TestMongoUpdate in 'TestMongoUpdate.pas';
+  TestMongoUpdate in 'TestMongoUpdate.pas',
+  BSONObjectIdGenerator in '..\src\BSONObjectIdGenerator.pas';
 
 {$R *.res}
 
