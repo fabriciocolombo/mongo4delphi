@@ -9,7 +9,7 @@ uses
 type
   TFrm_Find = class(TForm)
     Label1: TLabel;
-    edCode: TEdit;
+    edCodeStart: TEdit;
     Label2: TLabel;
     edName: TEdit;
     Label3: TLabel;
@@ -18,6 +18,8 @@ type
     btnFind: TButton;
     btnClose: TButton;
     edDate: TEdit;
+    Label5: TLabel;
+    edCodeEnd: TEdit;
     procedure btnFindClick(Sender: TObject);
   private
   public
@@ -36,14 +38,29 @@ implementation
 function TFrm_Find.BuildQuery: IBSONObject;
 var
   vQueryBuilder: TQueryBuilder;
+  vCodeStart,
+  vCodeEnd: Integer;
 begin
   vQueryBuilder := TQueryBuilder.empty;
 
   if (Trim(edId.Text) <> EmptyStr) then
     vQueryBuilder.andField('_id').equals(TBSONObjectId.NewFromOID(edId.Text));
 
-  if (StrToIntDef(edCode.Text, 0) > 0) then
-    vQueryBuilder.andField('code').equals(StrToInt(edCode.Text));
+  vCodeStart := StrToIntDef(edCodeStart.Text, 0);
+  vCodeEnd := StrToIntDef(edCodeEnd.Text, 0);
+
+  if (vCodeStart > 0) and (vCodeEnd > 0) then
+  begin
+    vQueryBuilder.andField('code').between(vCodeStart, vCodeEnd);
+  end
+  else
+  begin
+    if (vCodeStart > 0) then
+      vQueryBuilder.andField('code').greaterThanEquals(vCodeStart);
+
+    if (vCodeEnd > 0) then
+      vQueryBuilder.andField('code').lessThanEquals(vCodeEnd);
+  end;
 
   if (Trim(edName.Text) <> EmptyStr) then
     vQueryBuilder.andField('name').equals(edName.Text);

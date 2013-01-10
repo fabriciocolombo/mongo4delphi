@@ -57,6 +57,13 @@ type
                 btMinKey,
                 btMaxKey);
 
+const
+  QO_GREATER_THAN = '$gt';
+  QO_GREATER_THAN_EQUAL = '$gte';
+  QO_LESS_THAN = '$lt';
+  QO_LESS_THAN_EQUAL = '$lte';
+
+type
   TQueryBuilder = class
   private
     FQuery: IBSONObject;
@@ -74,20 +81,21 @@ type
 
     function equals(value: Variant): TQueryBuilder;
     function andField(key: String): TQueryBuilder;
+    function greaterThan(value: Variant): TQueryBuilder;
+    function greaterThanEquals(value: Variant): TQueryBuilder;
+    function lessThan(value: Variant): TQueryBuilder;
+    function lessThanEquals(value: Variant): TQueryBuilder;
+    function between(startValue, endValue: Variant): TQueryBuilder;
 
     (*
     see http://www.mongodb.org/display/DOCS/Advanced+Queries
-    
+
     function all(): TQueryBuilder;
     function exists(): TQueryBuilder;
-    function greaterThan(): TQueryBuilder;
-    function greaterThanEquals(): TQueryBuilder;
     function inOp(): TQueryBuilder;
     function isOp(): TQueryBuilder;
-    function lessThan(): TQueryBuilder;
-    function lessThanEquals(): TQueryBuilder;
+
     function modOp(): TQueryBuilder;
-    function lessThan(): TQueryBuilder;
     function notEquals(): TQueryBuilder;
     function notIn(): TQueryBuilder;
     function orOp(): TQueryBuilder;
@@ -116,6 +124,15 @@ begin
   Result := putKey(key);
 end;
 
+function TQueryBuilder.between(startValue,endValue: Variant): TQueryBuilder;
+begin
+  FQuery.Put(FCurrentKey, TBSONObject.EMPTY()
+                                     .Put(QO_GREATER_THAN_EQUAL, startValue)
+                                     .Put(QO_LESS_THAN_EQUAL, endValue));
+
+  Result := Self;
+end;
+
 function TQueryBuilder.build: IBSONObject;
 begin
   Result := FQuery;
@@ -140,7 +157,35 @@ end;
 
 function TQueryBuilder.equals(value: Variant): TQueryBuilder;
 begin
-  FQuery.Put(FCurrentKey, value); 
+  FQuery.Put(FCurrentKey, value);
+
+  Result := Self;
+end;
+
+function TQueryBuilder.greaterThan(value: Variant): TQueryBuilder;
+begin
+  FQuery.Put(FCurrentKey, TBSONObject.NewFrom(QO_GREATER_THAN, value));
+
+  Result := Self;
+end;
+
+function TQueryBuilder.greaterThanEquals(value: Variant): TQueryBuilder;
+begin
+  FQuery.Put(FCurrentKey, TBSONObject.NewFrom(QO_GREATER_THAN_EQUAL, value));
+
+  Result := Self;
+end;
+
+function TQueryBuilder.lessThan(value: Variant): TQueryBuilder;
+begin
+  FQuery.Put(FCurrentKey, TBSONObject.NewFrom(QO_LESS_THAN, value));
+
+  Result := Self;
+end;
+
+function TQueryBuilder.lessThanEquals(value: Variant): TQueryBuilder;
+begin
+  FQuery.Put(FCurrentKey, TBSONObject.NewFrom(QO_LESS_THAN_EQUAL, value));
 
   Result := Self;
 end;

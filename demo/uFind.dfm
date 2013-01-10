@@ -45,7 +45,15 @@ object Frm_Find: TFrm_Find
     Alignment = taRightJustify
     Caption = 'Id'
   end
-  object edCode: TEdit
+  object Label5: TLabel
+    Left = 186
+    Top = 47
+    Width = 9
+    Height = 13
+    Alignment = taRightJustify
+    Caption = 'to'
+  end
+  object edCodeStart: TEdit
     Left = 56
     Top = 40
     Width = 121
@@ -57,7 +65,7 @@ object Frm_Find: TFrm_Find
     Top = 72
     Width = 337
     Height = 21
-    TabOrder = 2
+    TabOrder = 3
   end
   object edId: TEdit
     Left = 56
@@ -72,7 +80,7 @@ object Frm_Find: TFrm_Find
     Width = 75
     Height = 25
     Caption = 'Find'
-    TabOrder = 3
+    TabOrder = 5
     OnClick = btnFindClick
   end
   object btnClose: TButton
@@ -82,13 +90,20 @@ object Frm_Find: TFrm_Find
     Height = 25
     Caption = 'Close'
     ModalResult = 2
-    TabOrder = 4
+    TabOrder = 6
   end
   object edDate: TEdit
     Left = 56
     Top = 104
     Width = 121
     Height = 21
-    TabOrder = 5
+    TabOrder = 4
+  end
+  object edCodeEnd: TEdit
+    Left = 200
+    Top = 40
+    Width = 121
+    Height = 21
+    TabOrder = 2
   end
 end
