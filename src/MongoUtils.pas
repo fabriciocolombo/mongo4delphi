@@ -43,6 +43,9 @@ const
   KEY_READ_ONLY = 'readOnly';
   KEY_ERROR = 'err';
 
+  GRIFS_BUCKET_NAME = 'fs';
+  GRISFS_CHUNK_SIZE = 262144; //256KB
+
 type
   TListUtils = class
   private

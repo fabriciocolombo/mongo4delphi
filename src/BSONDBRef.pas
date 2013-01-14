@@ -54,7 +54,8 @@ type
 
 implementation
 
-uses SysUtils, MongoUtils;
+uses SysUtils, MongoUtils,
+  MongoException;
 
 { TBSONDBRef }
 
@@ -73,7 +74,7 @@ begin
     if (FRefDoc = nil) then
     begin
       if (ADB.DBName <> ARef.DB) then
-        raise Exception.CreateFmt('Must use same db.', []);
+        raise EMongoDBNotEquals.Create('Must use same db.');
 
       FRefDoc := ADB.GetCollection(ARef.Collection).FindOne(TBSONObject.NewFrom(KEY_ID, ARef.ObjectId));
     end;

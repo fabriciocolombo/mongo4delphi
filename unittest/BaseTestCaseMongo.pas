@@ -46,6 +46,9 @@ begin
   FDefaultCollection := FDB.GetCollection(sColl);
 
   FDefaultCollection.Drop;
+
+  FDB.DropCollection('fs.files');
+  FDB.DropCollection('fs.chunks');  
 end;
 
 procedure TBaseTestCaseMongo.TearDown;

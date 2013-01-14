@@ -53,6 +53,8 @@ type
   EMongoInvalidResponse = class(EMongoProviderException);
   EMongoReponseAborted = class(EMongoProviderException);
 
+  EMongoDBNotEquals = class(EMongoException);
+
   EBSONTypesException = class(EMongoException);
   EBSONDuplicateKeyInList = class(EBSONTypesException);
   EBSONCannotChangeDuplicateAction = class(EBSONTypesException);

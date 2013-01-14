@@ -65,6 +65,8 @@ type
     property SubType: Integer read GetSubType;
 
     function CopyFrom(Source: TStream; Count: Int64): Int64;
+
+    function Write(const Buffer; Count: Longint): Longint;
   end;
 
   IBSONRegEx = interface
@@ -226,6 +228,7 @@ type
     constructor Create(ASubType: Integer = BSON_SUBTYPE_GENERIC);
 
     class function NewFromFile(AFileName: String; ASubType: Integer = BSON_SUBTYPE_GENERIC): IBSONBinary;
+    class function NewFromStream(AStream: TStream; ASubType: Integer = BSON_SUBTYPE_GENERIC): IBSONBinary;
 
     destructor Destroy; override;
 
@@ -234,6 +237,8 @@ type
     property Size: Integer read GetSize;
 
     function CopyFrom(Source: TStream; Count: Int64): Int64;
+
+    function Write(const Buffer; Count: Longint): Longint;
   end;
 
   //Do not match the pattern in client-side
@@ -1113,6 +1118,17 @@ class function TBSONBinary.NewFromFile(AFileName: String; ASubType: Integer): IB
 begin
   Result := TBSONBinary.Create(ASubType);
   Result.Stream.LoadFromFile(AFileName);
+end;
+
+class function TBSONBinary.NewFromStream(AStream: TStream;ASubType: Integer): IBSONBinary;
+begin
+  Result := TBSONBinary.Create(ASubType);
+  Result.CopyFrom(AStream, AStream.Size);
+end;
+
+function TBSONBinary.Write(const Buffer; Count: Integer): Longint;
+begin
+  Result := FStream.Write(Buffer, Count);
 end;
 
 { TBSONRegEx }

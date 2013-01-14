@@ -55,7 +55,9 @@ uses
   TestJsonWriter in 'TestJsonWriter.pas',
   JsonWriter in '..\src\JsonWriter.pas',
   TestMongoUpdate in 'TestMongoUpdate.pas',
-  BSONObjectIdGenerator in '..\src\BSONObjectIdGenerator.pas';
+  BSONObjectIdGenerator in '..\src\BSONObjectIdGenerator.pas',
+  GridFS in '..\src\GridFS.pas',
+  TestGridFS in 'TestGridFS.pas';
 
 {$R *.res}
 

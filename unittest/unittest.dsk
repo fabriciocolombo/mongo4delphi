@@ -8,23 +8,33 @@ File_5=SourceModule,'D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\
 File_6=SourceModule,'D:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollection.pas',0,1,62,1,77,0,0
 
 [Modules]
-Module0=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestQueryBuilder.pas
-Module1=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\QueryBuilder.pas
-Module2=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONTypes.pas
-Module3=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONStream.pas
-Module4=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoUtils.pas
-Module5=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONObjectIdGenerator.pas
-Module6=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoMD5.pas
-Module7=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\unittest.dpr
-Count=8
+Module0=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoProvider.pas
+Module1=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollectionApiLayer.pas
+Module2=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollection.pas
+Module3=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONTypes.pas
+Module4=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONDBRef.pas
+Module5=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoException.pas
+Module6=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoUtils.pas
+Module7=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONObjectIdGenerator.pas
+Module8=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestQueryBuilder.pas
+Module9=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoMD5.pas
+Module10=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\QueryBuilder.pas
+Module11=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONStream.pas
+Module12=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\unittest.dpr
+Count=13
 EditWindowCount=1
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestQueryBuilder.pas]
+[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoProvider.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\QueryBuilder.pas]
+[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollectionApiLayer.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollection.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -34,7 +44,12 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONStream.pas]
+[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONDBRef.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoException.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -49,7 +64,22 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
+[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestQueryBuilder.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
 [C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoMD5.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\QueryBuilder.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONStream.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -115,14 +145,6 @@ FormOnTop=0
 FormState=0
 FormOnTop=0
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoException.pas]
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoProvider.pas]
-FormState=0
-FormOnTop=0
-
 [C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\ServerError.pas]
 FormState=0
 FormOnTop=0
@@ -139,15 +161,7 @@ FormOnTop=0
 FormState=0
 FormOnTop=0
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONDBRef.pas]
-FormState=0
-FormOnTop=0
-
 [C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoDB.pas]
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollection.pas]
 FormState=0
 FormOnTop=0
 
@@ -179,10 +193,6 @@ FormOnTop=0
 FormState=0
 FormOnTop=0
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollectionApiLayer.pas]
-FormState=0
-FormOnTop=0
-
 [C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoDBCursorIntf.pas]
 FormState=0
 FormOnTop=0
@@ -200,8 +210,8 @@ FormState=0
 FormOnTop=0
 
 [EditWindow0]
-ViewCount=8
-CurrentView=2
+ViewCount=13
+CurrentView=12
 View0=0
 View1=1
 View2=2
@@ -210,6 +220,11 @@ View4=4
 View5=5
 View6=6
 View7=7
+View8=8
+View9=9
+View10=10
+View11=11
+View12=12
 CodeExplorer=CodeExplorer@EditWindow0
 MessageView=MessageView@EditWindow0
 Create=1
@@ -231,7 +246,7 @@ LeftPanelData=000004000000000000000000000000000000000000000000000100000000000000
 RightPanelSize=0
 BottomPanelSize=0
 BottomPanelClients=MessageView@EditWindow0
-BottomPanelData=00000400010000000B0000004D657373616765566965770000000000000000000000000000000000FFFFFFFF
+BottomPanelData=00000400010000000B0000004D6573736167655669657700000000000000000000000000000000000100000000000000000B0000004D65737361676556696577FFFFFFFF
 
 [View0]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\unittest.dpr
@@ -249,16 +264,16 @@ LeftCol=1
 
 [View2]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestQueryBuilder.pas
-CursorX=46
-CursorY=28
-TopLine=13
+CursorX=5
+CursorY=37
+TopLine=26
 LeftCol=1
 
 [View3]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\QueryBuilder.pas
-CursorX=1
-CursorY=170
-TopLine=151
+CursorX=78
+CursorY=132
+TopLine=127
 LeftCol=1
 
 [View4]
@@ -277,16 +292,51 @@ LeftCol=1
 
 [View6]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoUtils.pas
-CursorX=40
-CursorY=81
-TopLine=70
+CursorX=34
+CursorY=73
+TopLine=68
 LeftCol=1
 
 [View7]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONDBRef.pas
+CursorX=59
+CursorY=77
+TopLine=62
+LeftCol=1
+
+[View8]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoException.pas
+CursorX=46
+CursorY=56
+TopLine=43
+LeftCol=1
+
+[View9]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONTypes.pas
+CursorX=51
+CursorY=728
+TopLine=713
+LeftCol=1
+
+[View10]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollection.pas
+CursorX=21
+CursorY=45
+TopLine=37
+LeftCol=1
+
+[View11]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoCollectionApiLayer.pas
 CursorX=1
-CursorY=608
-TopLine=590
+CursorY=115
+TopLine=113
+LeftCol=1
+
+[View12]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoProvider.pas
+CursorX=67
+CursorY=696
+TopLine=688
 LeftCol=1
 
 [Watches]
@@ -381,10 +431,10 @@ Dockable=1
 
 [fmGrepResults]
 Create=1
-Visible=0
+Visible=1
 State=0
 Left=405
-Top=72
+Top=92
 Width=556
 Height=583
 MaxLeft=-1
@@ -447,13 +497,13 @@ Dockable=1
 Create=1
 Visible=0
 State=0
-Left=-9
-Top=-516
-Width=443
+Left=12
+Top=0
+Width=1354
 Height=85
 MaxLeft=-1
 MaxTop=-1
-ClientWidth=443
+ClientWidth=1354
 ClientHeight=85
 TBDockHeight=85
 LRDockWidth=443
