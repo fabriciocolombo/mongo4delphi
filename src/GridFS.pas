@@ -94,7 +94,6 @@ var
   vFile: IBSONObject;
   vFileId: IBSONObjectId;
   vChunkNumber: Integer;
-  vStreamBuffer: TMemoryStream;
   vData: IBSONBinary;
 begin
   vFile := TBSONObject.NewFrom('length', AStream.Size)
@@ -115,28 +114,18 @@ begin
 
   AStream.Position := 0;
 
-  vStreamBuffer := TMemoryStream.Create;
-  try
-    vStreamBuffer.Clear;
+  vChunkNumber := 0;
 
-    vChunkNumber := 0;
+  while (AStream.Position < AStream.Size) do
+  begin
+    vData := TBSONBinary.Create();
+    vData.CopyFrom(AStream, Min(AStream.Size - AStream.Position, FChunkSize));
 
-    while (AStream.Position < AStream.Size) do
-    begin
-      vStreamBuffer.CopyFrom(AStream, Min(AStream.Size, FChunkSize));
+    FGridFS.FChunksCollection.Insert(TBSONObject.NewFrom('files_id', vFileId)
+                                                .Put('n', vChunkNumber)
+                                                .Put('data', vData));
 
-      vStreamBuffer.Position := 0;
-      vData := TBSONBinary.Create();
-      vData.CopyFrom(vStreamBuffer, vStreamBuffer.Size);
-
-      FGridFS.FChunksCollection.Insert(TBSONObject.NewFrom('files_id', vFileId)
-                                                  .Put('n', vChunkNumber)
-                                                  .Put('data', vData));
-
-      Inc(vChunkNumber);
-    end;
-  finally
-    vStreamBuffer.Free;
+    Inc(vChunkNumber);
   end;
 end;
 

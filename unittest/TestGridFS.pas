@@ -30,6 +30,7 @@ begin
       vStream.WriteString('teste linha dois');
 
       vGridFSWriter.SetContentType('text/plain')
+                   .SetChunkSize(10) 
                    .Store(vStream);
     finally
       vGridFSWriter.Free;
