@@ -84,6 +84,7 @@ resourcestring
   sInvalidBSONBinarySubtype = 'Invalid subtype "%d", only are accepted values "BSON_SUBTYPE_GENERIC" and "BSON_SUBTYPE_OLD_BINARY(deprecated)".';
   sInvalidBSONBinarySubtypeSize = 'bad data size subtype "%d" len: %d totalLen: %d';
   sBSONUnrecognizedRegExOption = 'Unrecognized regex flag "%s".';
+  sNotAGridFSObject = 'Not a GridFS object.';
 
 implementation
 

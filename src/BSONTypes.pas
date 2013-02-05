@@ -395,8 +395,7 @@ type
     FMap: TStringList;
     FDuplicatesAction: TDuplicatesAction;
   protected
-    procedure PushItem(AIndex: Integer; AItem: TBSONItem);overload;
-    procedure PushItem(AItem: TBSONItem);overload;
+    procedure PushItem(AIndex: Integer; AItem: TBSONItem);virtual;
     function GetItems(AKey: String): TBSONItem;
     function GetItem(AIndex: Integer): TBSONItem;
     procedure SetDuplicatesAction(const Value: TDuplicatesAction);
@@ -616,7 +615,7 @@ procedure TBSONObject.PushItem(AIndex: Integer; AItem: TBSONItem);
 begin
   while (AIndex > Count) do
   begin
-    PushItem(TBSONItem.NewFrom(IntToStr(Count), Null));
+    PushItem(Count, TBSONItem.NewFrom(IntToStr(Count), Null));
   end;
 
   FMap.InsertObject(AIndex, AItem.Name, AItem);
@@ -740,11 +739,6 @@ begin
   end;
 
   Result := Self;
-end;
-
-procedure TBSONObject.PushItem(AItem: TBSONItem);
-begin
-  FMap.AddObject(AItem.Name, AItem);
 end;
 
 { TBSONItem }
