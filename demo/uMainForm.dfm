@@ -23,7 +23,6 @@ object Frm_MainForm: TFrm_MainForm
     Height = 249
     Anchors = [akTop, akRight]
     ParentShowHint = False
-    Proportional = True
     ShowHint = True
   end
   object ListView1: TListView

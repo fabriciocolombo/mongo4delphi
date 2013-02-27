@@ -152,6 +152,7 @@ end;
 
 procedure TFrm_MainForm.UpdateImage(ABSONObject: IBSONObject);
 begin
+  Image1.Canvas.FillRect(Image1.ClientRect);
   if (ABSONObject <> nil) and (ABSONObject.Items['image'].AsBSONBinary.Stream.Size > 0) then
   begin
     ABSONObject.Items['image'].AsBSONBinary.Stream.Position := 0;

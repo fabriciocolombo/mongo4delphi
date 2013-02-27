@@ -45,7 +45,7 @@ begin
   end;
 end;
 
-Classe Definition:
+Class Definition:
 -----------------	
 The mongo.pas provide the classes:
  - TMongo: Represent the connection to a mongo server, with methods like GetDB(const ADBname: String): TMongoDB

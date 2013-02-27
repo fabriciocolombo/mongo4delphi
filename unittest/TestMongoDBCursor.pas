@@ -17,13 +17,39 @@ type
     procedure TestCursorWithFieldsSelector;
     procedure TestExplain;
     procedure TestHint;
+    procedure All;
   end;
 
 implementation
 
-uses Classes, MongoDBCursorIntf;
+uses Classes, MongoDBCursorIntf,
+  TestFramework;
 
 { TTestMongoDBCursor }
+
+procedure TTestMongoDBCursor.All;
+var
+  vCursor: IMongoDBCursor;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('codigo', 1).Put('descricao', 'cadeira1'));
+  DefaultCollection.Insert(TBSONObject.NewFrom('codigo', 2).Put('descricao', 'cadeira2'));
+  DefaultCollection.Insert(TBSONObject.NewFrom('codigo', 3).Put('descricao', 'cadeira3'));
+  DefaultCollection.Insert(TBSONObject.NewFrom('codigo', 4).Put('descricao', 'cadeira4'));
+
+  vCursor := DefaultCollection.Find(TBSONObject.EMPTY, TBSONObject.NewFrom('descricao', 1))
+                              .Skip(1)
+                              .Limit(2)
+                              .BatchSize(1)
+                              .Sort(TBSONObject.NewFrom('codigo', 1));
+
+  CheckTrue(vCursor.HasNext);
+  CheckEquals('cadeira2', vCursor.Next.Items['descricao'].AsString);
+
+  CheckTrue(vCursor.HasNext);
+  CheckEquals('cadeira3', vCursor.Next.Items['descricao'].AsString);
+
+  CheckFalse(vCursor.HasNext);
+end;
 
 procedure TTestMongoDBCursor.TestCountAndSize;
 var
