@@ -21,6 +21,7 @@ type
     procedure InsertBSONArrayWithEmbeddedArrays;
     procedure InsertBSONObjectUUID;
     procedure InsertBSONBinary;
+    procedure InsertBSONBinaryLarge;
     procedure InsertBSONOldBinary;
     procedure InsertBSONBinaryUserDefined;
     procedure InsertBSONRegEx;
@@ -408,6 +409,23 @@ begin
   vDocRef := TBSONDBRef.Fetch(DB, vRef);
   CheckNotNull(vDocRef);
   CheckEquals(vId.OID, vDocRef.GetOid.OID);
+end;
+
+procedure TTestMongoCollection.InsertBSONBinaryLarge;
+var
+  vIN, vOUT: IBSONObject;
+begin
+  vIN := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('img', TBSONBinary.NewFromFile('resource\in.jpg'));
+
+  DefaultCollection.Insert(vIN).getLastError.RaiseOnError;
+
+  vOUT := DefaultCollection.FindOne(TBSONObject.NewFrom('_id', vIN.GetOid));
+
+  CheckFalse(vIN = vOUT);
+
+  CheckEqualsMem(vIN.Items['img'].AsBSONBinary.Stream.Memory,
+                 vOUT.Items['img'].AsBSONBinary.Stream.Memory,
+                 vIN.Items['img'].AsBSONBinary.Stream.Size);
 end;
 
 initialization

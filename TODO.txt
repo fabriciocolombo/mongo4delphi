@@ -3,6 +3,9 @@ Mongo Delphi Driver API
 	Use resourcestring for exception messages rather than hard coded strings.
 
 To Fully mongodb support	
+
+	TODO - Review unicode compatibility
+
 	TODO - Add size protected to MongoDecoder 16MB. This information could be retrieved with maxBsonObjectSize property of buildinfo or isMaster command:
 				int size = readInt();
 				if ( size <= 0 || size > ( 16 * 1024 * 1024 ) )

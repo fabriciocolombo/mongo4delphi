@@ -22,6 +22,7 @@ type
     function numChunks: Integer;
 
     function GetInputStream: TStream;
+    function GetChunkData(const AChunkNum: Integer): IBSONBinary;
 
     procedure SetGridFS(AGridFS: TGridFS);
   end;  
@@ -106,7 +107,7 @@ type
 
     function Avaliable: Integer;
 
-    function InternalRead(Count: Integer): Integer;
+    function InternalRead(Count, FromPosition: Integer): Integer;
   public
     constructor Create(AGridFsFile: TGridFSFile);
 
@@ -334,10 +335,12 @@ begin
   FCurrentChunk := -1;
 end;
 
-function TGridFsFileStreamReader.InternalRead(Count: Integer): Integer;
+function TGridFsFileStreamReader.InternalRead(Count, FromPosition: Integer): Integer;
 var
   vBytesToRead: Integer;
 begin
+  Self.Position := FromPosition;
+  
   if (FCurrentChunkData = nil) or (Avaliable <= 0) then
   begin
     if (FCurrentChunk + 1) >= FNumChunks then
@@ -358,13 +361,13 @@ begin
 
   if (Result < Count) then
   begin
-    Result := Result + InternalRead(Count - Result);
+    Result := Result + InternalRead(Count - Result, Position);
   end;
 end;
 
 function TGridFsFileStreamReader.Read(var Buffer; Count: Integer): Integer;
 begin
-  InternalRead(Count);
+  InternalRead(Count, 0);
 
   Self.Position := 0;
 
