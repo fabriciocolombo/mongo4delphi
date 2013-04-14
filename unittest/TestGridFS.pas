@@ -52,7 +52,6 @@ var
   vGridFsFile: IGridFSFile;
   vExpectedSize: Integer;
   vLength: Int64;
-  vSavedImage: IBSONBinary;
 begin
   vGridFS := TGridFS.Create(DB);
   vINStream := TFileStream.Create('resource\in.jpg', fmOpenRead);

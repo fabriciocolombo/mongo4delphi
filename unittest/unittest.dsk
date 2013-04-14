@@ -1,30 +1,40 @@
 [Closed Files]
-File_0=SourceModule,'C:\Desenvolvimento\Elotech\EloComumLib\3rdParty\DUnit\src\TestFramework.pas',0,1,1843,20,1857,0,0
-File_1=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoException.pas',0,1,71,20,87,0,0
-File_2=SourceModule,'c:\apps\borland\delphi7\source\rtl\Sys\sysutils.pas',0,1,3475,1,3496,0,0
-File_3=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoDecoder.pas',0,1,98,1,103,0,0
-File_4=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONStream.pas',0,1,136,15,156,0,0
-File_5=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestQueryBuilder.pas',0,1,26,5,37,0,0
-File_6=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\QueryBuilder.pas',0,1,127,78,132,0,0
-File_7=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoMD5.pas',0,1,24,55,42,0,0
-File_8=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONObjectIdGenerator.pas',0,1,16,21,28,0,0
-File_9=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONDBRef.pas',0,1,62,59,77,0,0
+File_0=SourceModule,'c:\apps\borland\delphi7\source\rtl\common\Contnrs.pas',0,1,1,1,9,0,0
+File_1=SourceModule,'C:\Desenvolvimento\Elotech\EloComumLib\3rdParty\DUnit\src\TestFramework.pas',0,1,1843,20,1857,0,0
+File_2=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoException.pas',0,1,71,20,87,0,0
+File_3=SourceModule,'c:\apps\borland\delphi7\source\rtl\Sys\sysutils.pas',0,1,3475,1,3496,0,0
+File_4=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\MongoDecoder.pas',0,1,98,1,103,0,0
+File_5=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\BSONStream.pas',0,1,136,15,156,0,0
+File_6=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\unittest\TestQueryBuilder.pas',0,1,26,5,37,0,0
+File_7=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo-delphi-driver\src\QueryBuilder.pas',0,1,127,78,132,0,0
 
 [Modules]
 Module0=c:\apps\borland\delphi7\source\rtl\common\classes.pas
-Module1=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestGridFS.pas
-Module2=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\GridFS.pas
-Module3=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONTypes.pas
-Module4=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollectionApiLayer.pas
-Module5=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoCollection.pas
-Module6=C:\Desenvolvimento\OpenSource\fabricio\TMongoWire\mongoStream.pas
-Module7=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestEncoder.pas
-Module8=c:\apps\borland\delphi7\source\rtl\Sys\system.pas
-Module9=c:\apps\borland\delphi7\source\rtl\Sys\variants.pas
-Count=10
+Module1=C:\Users\fabricio\AppData\Local\Temp\Rar$DI91.912\Rtc.Rtti.Serializer.pas
+Module2=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestGridFS.pas
+Module3=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\GridFS.pas
+Module4=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoProvider.pas
+Module5=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoEncoder.pas
+Module6=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONStream.pas
+Module7=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONTypes.pas
+Module8=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas
+Module9=C:\Desenvolvimento\OpenSource\fabricio\TMongoWire\mongoStream.pas
+Module10=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestEncoder.pas
+Module11=c:\apps\borland\delphi7\source\rtl\Sys\system.pas
+Module12=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoCollection.pas
+Module13=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestBSONTypes.pas
+Module14=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestBSONItem.pas
+Module15=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollectionApiLayer.pas
+Module16=c:\apps\borland\delphi7\source\rtl\Sys\variants.pas
+Count=17
 EditWindowCount=1
 
 [c:\apps\borland\delphi7\source\rtl\common\classes.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Users\fabricio\AppData\Local\Temp\Rar$DI91.912\Rtc.Rtti.Serializer.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -39,17 +49,27 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoProvider.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoEncoder.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONStream.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
 [C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONTypes.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollectionApiLayer.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoCollection.pas]
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -69,24 +89,36 @@ ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoCollection.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestBSONTypes.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestBSONItem.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollectionApiLayer.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
 [c:\apps\borland\delphi7\source\rtl\Sys\variants.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
 
-[C:\Users\fabricio\Downloads\ProjectGroup1.bpg]
+[C:\Apps\Borland\Delphi7\Projects\ProjectGroup1.bpg]
 FormState=0
 FormOnTop=0
 
 [C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\unittest.dpr]
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestBSONItem.pas]
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestBSONTypes.pas]
 FormState=0
 FormOnTop=0
 
@@ -114,10 +146,6 @@ FormOnTop=0
 FormState=0
 FormOnTop=0
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONStream.pas]
-FormState=0
-FormOnTop=0
-
 [C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\Mongo.pas]
 FormState=0
 FormOnTop=0
@@ -126,19 +154,7 @@ FormOnTop=0
 FormState=0
 FormOnTop=0
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoEncoder.pas]
-FormState=0
-FormOnTop=0
-
 [C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoException.pas]
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoProvider.pas]
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas]
 FormState=0
 FormOnTop=0
 
@@ -231,8 +247,8 @@ FormState=0
 FormOnTop=0
 
 [EditWindow0]
-ViewCount=10
-CurrentView=1
+ViewCount=17
+CurrentView=4
 View0=0
 View1=1
 View2=2
@@ -243,6 +259,13 @@ View6=6
 View7=7
 View8=8
 View9=9
+View10=10
+View11=11
+View12=12
+View13=13
+View14=14
+View15=15
+View16=16
 CodeExplorer=CodeExplorer@EditWindow0
 MessageView=MessageView@EditWindow0
 Create=1
@@ -262,9 +285,9 @@ LeftPanelSize=156
 LeftPanelClients=CodeExplorer@EditWindow0
 LeftPanelData=00000400000000008C0000000000000000F00100000000000001000000008C0000000C000000436F64654578706C6F726572FFFFFFFF
 RightPanelSize=0
-BottomPanelSize=85
+BottomPanelSize=53
 BottomPanelClients=MessageView@EditWindow0
-BottomPanelData=00000400000000005605000000000000025500000000000000010000000000000000000000000100000000560500000B0000004D65737361676556696577FFFFFFFF
+BottomPanelData=00000400000000005605000000000000023500000000000000010000000000000000000000000100000000560500000B0000004D65737361676556696577FFFFFFFF
 
 [View0]
 Module=C:\Desenvolvimento\OpenSource\fabricio\TMongoWire\mongoStream.pas
@@ -274,62 +297,111 @@ TopLine=139
 LeftCol=1
 
 [View1]
-Module=c:\apps\borland\delphi7\source\rtl\common\classes.pas
-CursorX=1
-CursorY=4943
-TopLine=4947
-LeftCol=1
-
-[View2]
 Module=c:\apps\borland\delphi7\source\rtl\Sys\system.pas
 CursorX=1
 CursorY=17070
 TopLine=17061
 LeftCol=1
 
-[View3]
+[View2]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestEncoder.pas
 CursorX=41
 CursorY=479
 TopLine=484
 LeftCol=1
 
+[View3]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestGridFS.pas
+CursorX=15
+CursorY=13
+TopLine=13
+LeftCol=1
+
 [View4]
-Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoCollection.pas
-CursorX=37
-CursorY=340
-TopLine=342
+Module=c:\apps\borland\delphi7\source\rtl\common\classes.pas
+CursorX=1
+CursorY=771
+TopLine=759
 LeftCol=1
 
 [View5]
-Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestGridFS.pas
-CursorX=1
-CursorY=84
-TopLine=71
+Module=C:\Users\fabricio\AppData\Local\Temp\Rar$DI91.912\Rtc.Rtti.Serializer.pas
+CursorX=19
+CursorY=187
+TopLine=173
 LeftCol=1
 
 [View6]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\GridFS.pas
-CursorX=1
-CursorY=366
-TopLine=359
+CursorX=33
+CursorY=368
+TopLine=363
 LeftCol=1
 
 [View7]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas
+CursorX=20
+CursorY=47
+TopLine=25
+LeftCol=1
+
+[View8]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestBSONItem.pas
+CursorX=1
+CursorY=1
+TopLine=1
+LeftCol=1
+
+[View9]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONStream.pas
+CursorX=1
+CursorY=204
+TopLine=195
+LeftCol=1
+
+[View10]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoEncoder.pas
+CursorX=1
+CursorY=301
+TopLine=292
+LeftCol=1
+
+[View11]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoProvider.pas
+CursorX=1
+CursorY=548
+TopLine=541
+LeftCol=1
+
+[View12]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestBSONTypes.pas
+CursorX=1
+CursorY=1
+TopLine=25
+LeftCol=1
+
+[View13]
+Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoCollection.pas
+CursorX=1
+CursorY=418
+TopLine=420
+LeftCol=1
+
+[View14]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollectionApiLayer.pas
 CursorX=1
 CursorY=221
 TopLine=212
 LeftCol=1
 
-[View8]
+[View15]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONTypes.pas
 CursorX=1
-CursorY=753
-TopLine=740
+CursorY=1075
+TopLine=1068
 LeftCol=1
 
-[View9]
+[View16]
 Module=c:\apps\borland\delphi7\source\rtl\Sys\variants.pas
 CursorX=1
 CursorY=2531
@@ -337,12 +409,16 @@ TopLine=2514
 LeftCol=1
 
 [Watches]
-Count=2
+Count=6
 Watch0='count',256,0,18,1,1,'Watches'
-Watch1='AIndex',256,0,18,1,0,'Watches'
+Watch1='FCurrentChunkData.Stream.Position',256,0,18,1,0,'Watches'
+Watch2='Avaliable',256,0,18,1,1,'Watches'
+Watch3='vBytesToRead',256,0,18,1,0,'Watches'
+Watch4='Self.Position',256,0,18,1,0,'Watches'
+Watch5='Self.Size',256,0,18,1,0,'Watches'
 
 [WatchWindow]
-WatchColumnWidth=100
+WatchColumnWidth=194
 WatchShowColumnHeaders=1
 Create=1
 Visible=0
@@ -360,8 +436,7 @@ LRDockWidth=426
 Dockable=1
 
 [Breakpoints]
-Count=1
-Breakpoint0='C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestGridFS.pas',82,'',0,1,'',1,0,0,'',1,'','',''
+Count=0
 
 [AddressBreakpoints]
 Count=0
@@ -381,7 +456,7 @@ ClientHeight=84
 
 [ProjectManager]
 Create=1
-Visible=1
+Visible=0
 State=0
 Left=369
 Top=372
@@ -627,11 +702,11 @@ State=0
 Left=0
 Top=12
 Width=156
-Height=484
+Height=516
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=156
-ClientHeight=484
+ClientHeight=516
 TBDockHeight=572
 LRDockWidth=156
 Dockable=1
@@ -643,12 +718,12 @@ State=0
 Left=12
 Top=0
 Width=1354
-Height=85
+Height=53
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=1354
-ClientHeight=85
-TBDockHeight=85
+ClientHeight=53
+TBDockHeight=53
 LRDockWidth=443
 Dockable=1
 

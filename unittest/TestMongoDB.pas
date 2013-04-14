@@ -6,7 +6,7 @@ unit TestMongoDB;
 
 interface
 
-uses BaseTestCaseMongo, Mongo, MongoCollection, WriteResult;
+uses BaseTestCaseMongo, Mongo, MongoCollection, WriteResult, Classes;
 
 type
   //Require mongodb service running
@@ -15,6 +15,7 @@ type
   published
     procedure TestGetCollection;
     procedure TestCreateUser_Authentication_RemoveUser;
+    procedure TestSerialization;
   end;
 
 implementation
@@ -51,6 +52,27 @@ begin
 
   CheckNotNull(vCollections);
   CheckTrue(vCollections.Count > 0);
+end;
+
+procedure TTestMongoDB.TestSerialization;
+var
+  vIN, vOUT: IBSONObject;
+  vStream: TMemoryStream;
+begin
+  vIN := TBSONObject.NewFrom('_id', TBSONObjectId.NewFrom).Put('name', 'Fabricio');
+
+  vStream := TMemoryStream.Create;
+  try
+    Mongo.SaveObjectToStream(vIN, vStream);
+
+    vOUT := Mongo.LoadObjectFromStream(vStream) as IBSONObject;
+
+    CheckNotNull(vOUT);
+
+    CheckEquals(vIN.AsJsonReadable,  vOUT.AsJsonReadable);
+  finally
+    vStream.Free;
+  end;
 end;
 
 initialization

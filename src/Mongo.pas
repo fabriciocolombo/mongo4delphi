@@ -46,13 +46,16 @@ type
     destructor Destroy; override;
 
     property Encoder: IMongoEncoder read FEncoder write SetEncoder;
-    property Decoder: IMongoDecoder read FDecoder write SetDecoder; 
+    property Decoder: IMongoDecoder read FDecoder write SetDecoder;
 
     procedure Connect(AHost: AnsiString = DEFAULT_HOST; APort: Integer = DEFAULT_PORT);
 
     function getDB(const ADBname: String): TMongoDB;
     procedure GetDatabaseNames(AList: TStrings);
     procedure dropDatabase(DBName: String);
+
+    procedure SaveObjectToStream(ABSONObject: IBSONBasicObject; AStream: TStream);
+    function LoadObjectFromStream(AStream: TStream): IBSONBasicObject;
   end;
 
 {  TMongoDB = class
@@ -807,5 +810,35 @@ begin
 end;
 
 *)
+
+function TMongo.LoadObjectFromStream(AStream: TStream): IBSONBasicObject;
+var
+  vTempStream: TBSONStream;
+begin
+  vTempStream := TBSONStream.Create;
+  try
+    vTempStream.LoadFromStream(AStream);
+
+    Result := FDecoder.DecodeFromBeginning(vTempStream);
+  finally
+    vTempStream.Free;
+  end;
+end;
+
+procedure TMongo.SaveObjectToStream(ABSONObject: IBSONBasicObject; AStream: TStream);
+var
+  vTempStream: TBSONStream;
+begin
+  vTempStream := TBSONStream.Create;
+  try
+    FEncoder.SetBuffer(vTempStream);
+    FEncoder.Encode(ABSONObject);
+
+    vTempStream.Position := 0;
+    AStream.CopyFrom(vTempStream, vTempStream.Size);
+  finally
+    vTempStream.Free;
+  end;
+end;
 
 end.
