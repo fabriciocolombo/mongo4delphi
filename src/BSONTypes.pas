@@ -634,6 +634,7 @@ begin
   begin
     Put(ASource[i].Name, ASource[i].Value);
   end;
+  Result := Self;
 end;
 
 procedure TBSONObject.SetDuplicatesAction(const Value: TDuplicatesAction);

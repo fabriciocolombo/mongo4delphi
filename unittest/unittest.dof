@@ -94,7 +94,7 @@ OutputDir=
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=$(DELPHI)\Lib\Debug;..\external\TPerlRegEx
+SearchPath=..\external\TPerlRegEx
 Packages=vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;Rave50CLX;Rave50VCL;dclOfficeXP;SynEdit_R7;JclDeveloperTools;Jcl;JclVcl
 Conditionals=
 DebugSourceDirs=..\src;..\external\TPerlRegEx
@@ -141,7 +141,7 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=4
-Item0=$(DELPHI)\Lib\Debug;..\external\TPerlRegEx
-Item1=..\external\TPerlRegEx
+Item0=..\external\TPerlRegEx
+Item1=$(DELPHI)\Lib\Debug;..\external\TPerlRegEx
 Item2=$(DELPHI)\Lib\Debug;D:\DESENV~2\Delphi\JVCL34~1\jcl\lib\d7\debug;..\src
 Item3=..\src

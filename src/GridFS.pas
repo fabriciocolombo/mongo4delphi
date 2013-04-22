@@ -7,13 +7,11 @@ uses MongoDB, MongoCollection, BSONTypes, MongoUtils, Classes;
 type
   TGridFS = class;
   TGridFSFile = class;
-  TGridFSFileWriter = class;
 
   IGridFSFile = interface(IBSONObject)
   ['{948F40E2-9D30-44D4-8C97-916C049714CE}']
     function GetLength: Integer;
     function GetChunkSize: Integer;
-    function GetId: IBSONObjectId;
     function GetFileName: String;
     function GetContentType: String;
     function GetUploadDate: TDateTime;
@@ -24,8 +22,13 @@ type
     function GetInputStream: TStream;
     function GetChunkData(const AChunkNum: Integer): IBSONBinary;
 
-    procedure SetGridFS(AGridFS: TGridFS);
-  end;  
+    function SetContentType(AContentType: String): IGridFSFile;
+    function SetChunkSize(AChunkSize: Integer): IGridFSFile;
+
+    procedure Store(AStream: TStream);
+
+    function Put(const AKey: String; Value: Variant): IGridFSFile;
+  end;
 
   TGridFS = class
   private
@@ -39,7 +42,7 @@ type
     constructor Create(ADB: TMongoDB);overload;
     constructor Create(ADB: TMongoDB; ABucketName: String);overload;
 
-    function CreateFile(AFileName: String): TGridFSFileWriter;
+    function CreateFile(AFileName: String): IGridFSFile;
 
     function findOne(const AFileName: String): IGridFSFile;overload;
     function findOne(const AQuery: IBSONObject): IGridFSFile;overload;
@@ -61,7 +64,7 @@ type
   public
     function GetLength: Integer;
     function GetChunkSize: Integer;
-    function GetId: IBSONObjectId;
+    function GetOid: IBSONObjectId;
     function GetFileName: String;
     function GetContentType: String;
     function GetUploadDate: TDateTime;
@@ -69,28 +72,20 @@ type
 
     function numChunks: Integer;
 
-    procedure SetGridFS(AGridFS: TGridFS);
-
+    constructor Create(AGridFS: TGridFS);overload;
+    constructor Create(AGridFS: TGridFS; const AFileName: String);overload;
     procedure AfterConstruction; override;
 
     function GetInputStream: TStream;
 
     function GetChunkData(const AChunkNum: Integer): IBSONBinary;
-  end;
 
-  TGridFSFileWriter = class
-  private
-    FGridFS: TGridFS;
-    FFileName: String;
-    FContentType: String;
-    FChunkSize: Integer;
-  public
-    constructor Create(AGridFS: TGridFS; AFileName: String);
-
-    function SetContentType(AContentType: String): TGridFSFileWriter;
-    function SetChunkSize(AChunkSize: Integer): TGridFSFileWriter;
+    function SetChunkSize(AChunkSize: Integer): IGridFSFile;
+    function SetContentType(AContentType: String): IGridFSFile;
 
     procedure Store(AStream: TStream);
+
+    function Put(const AKey: String; Value: Variant): IGridFSFile;overload;
   end;
 
 implementation
@@ -114,6 +109,12 @@ type
     function Read(var Buffer; Count: Integer): Integer; override;
   end;
 
+  TGridFSFileWriter = class
+  private
+  public
+    procedure Store(const AFile: TGridFSFile; AStream: TStream);
+  end;
+
 { TGridFS }
 
 constructor TGridFS.Create(ADB: TMongoDB);
@@ -130,9 +131,9 @@ begin
   FChunksCollection := FDB.GetCollection(FBucketName + '.chunks');
 end;
 
-function TGridFS.CreateFile(AFileName: String): TGridFSFileWriter;
+function TGridFS.CreateFile(AFileName: String): IGridFSFile;
 begin
-  Result := TGridFSFileWriter.Create(Self, AFileName);
+  Result := TGridFSFile.Create(Self, AFileName);
 end;
 
 function TGridFS.findOne(const AFileName: String): IGridFSFile;
@@ -147,10 +148,13 @@ end;
 
 function TGridFS.VerifyResult(const ABSONObject: IBSONObject): IGridFSFile;
 begin
-  Result := TGridFSFile.Create;
-  Result.PutAll(ABSONObject);
-  Result.SetGridFS(Self);
+  Result := nil;
 
+  if Assigned(ABSONObject) then
+  begin
+    Result := TGridFSFile.Create(Self);
+    Result.PutAll(ABSONObject);
+  end;
   (*
   if not Supports(ABSONObject, IGridFsFile, Result) then
   begin
@@ -161,49 +165,40 @@ end;
 
 { TGridFSFileWriter }
 
-constructor TGridFSFileWriter.Create(AGridFS: TGridFS; AFileName: String);
-begin
-  FGridFS := AGridFS;
-  FFileName := AFileName;
-  FChunkSize := GRIDFS_CHUNK_SIZE;
-end;
-
-function TGridFSFileWriter.SetChunkSize(AChunkSize: Integer): TGridFSFileWriter;
-begin
-  FChunkSize := AChunkSize;
-
-  Result := Self;
-end;
-
-function TGridFSFileWriter.SetContentType(AContentType: String): TGridFSFileWriter;
-begin
-  FContentType := AContentType;
-
-  Result := Self;
-end;
-
-procedure TGridFSFileWriter.Store(AStream: TStream);
+procedure TGridFSFileWriter.Store(const AFile: TGridFSFile; AStream: TStream);
 var
   vFile: IBSONObject;
-  vFileId: IBSONObjectId;
   vChunkNumber: Integer;
   vData: IBSONBinary;
 begin
-  vFile := TBSONObject.NewFrom('length', AStream.Size)
-                      .Put('chunkSize', FChunkSize)
-                      .Put('uploadDate', Now)
-                      //.Put('md5', vHashMD5)
-                      .Put('filename', FFileName)
-                      .Put('contentType', FContentType);
+  AFile.FLength := AStream.Size;
 
-  if not vFile.HasOid then
+  if not AFile.Contain('uploadDate') then
   begin
-    vFile.Put('_id', TBSONObjectId.NewFrom);
+    AFile.Put('uploadDate', Now);
   end;
 
-  FGridFS.FFilesCollection.Insert(vFile);
+  if not AFile.HasOid then
+  begin
+    AFile.Put(KEY_ID, TBSONObjectId.NewFrom);
+  end;
 
-  vFileId := vFile.GetOid;
+  if AFile.GetMD5 <> EmptyStr then
+  begin
+//    vFile.Put('md5', MakeHash);
+  end;
+
+  vFile := TBSONObject.EMPTY.PutAll(AFile.FExtraData)
+                      .Put('length', AFile.GetLength)
+                      .Put('uploadDate', Now)
+                      .Put('filename', AFile.GetFileName)
+                      .Put('contentType', AFile.GetContentType)
+                      .Put('chunkSize', AFile.GetChunkSize)
+                      .Put('uploadDate', AFile.GetUploadDate)
+//                      .Put('md5', AFile.GetMD5)
+                      .Put(KEY_ID, AFile.GetOid);
+
+  AFile.FGridFS.FFilesCollection.Insert(vFile);
 
   AStream.Position := 0;
 
@@ -212,9 +207,9 @@ begin
   while (AStream.Position < AStream.Size) do
   begin
     vData := TBSONBinary.Create();
-    vData.CopyFrom(AStream, Min(AStream.Size - AStream.Position, FChunkSize));
+    vData.CopyFrom(AStream, Min(AStream.Size - AStream.Position, AFile.GetChunkSize));
 
-    FGridFS.FChunksCollection.Insert(TBSONObject.NewFrom('files_id', vFileId)
+    AFile.FGridFS.FChunksCollection.Insert(TBSONObject.NewFrom('files_id', vFile.GetOid)
                                                 .Put('n', vChunkNumber)
                                                 .Put('data', vData));
 
@@ -228,6 +223,19 @@ procedure TGridFSFile.AfterConstruction;
 begin
   inherited;
   FExtraData := TBSONObject.EMPTY;
+end;
+
+constructor TGridFSFile.Create(AGridFS: TGridFS; const AFileName: String);
+begin
+  inherited Create;
+  FGridFS := AGridFS;
+  FFileName := AFileName;
+  FChunkSize := GRIDFS_CHUNK_SIZE;
+end;
+
+constructor TGridFSFile.Create(AGridFS: TGridFS);
+begin
+  Self.Create(AGridFS, EmptyStr);
 end;
 
 function TGridFSFile.GetChunkData(const AChunkNum: Integer): IBSONBinary;
@@ -257,11 +265,6 @@ begin
   Result := FFileName;
 end;
 
-function TGridFSFile.GetId: IBSONObjectId;
-begin
-  Result := FId;
-end;
-
 function TGridFSFile.GetInputStream: TStream;
 begin
   Result := TGridFsFileStreamReader.Create(Self);
@@ -275,6 +278,11 @@ end;
 function TGridFSFile.GetMD5: String;
 begin
   Result := FMD5;
+end;
+
+function TGridFSFile.GetOid: IBSONObjectId;
+begin
+  Result := FId;
 end;
 
 function TGridFSFile.GetUploadDate: TDateTime;
@@ -310,9 +318,35 @@ begin
 end;
 
 
-procedure TGridFSFile.SetGridFS(AGridFS: TGridFS);
+function TGridFSFile.Put(const AKey: String; Value: Variant): IGridFSFile;
 begin
-  FGridFS := AGridFS;
+  Result := inherited Put(AKey, Value) as IGridFSFile;
+end;
+
+function TGridFSFile.SetChunkSize(AChunkSize: Integer): IGridFSFile;
+begin
+  FChunkSize := AChunkSize;
+
+  Result := Self;
+end;
+
+function TGridFSFile.SetContentType(AContentType: String): IGridFSFile;
+begin
+  FContentType := AContentType;
+
+  Result := Self;
+end;
+
+procedure TGridFSFile.Store(AStream: TStream);
+var
+  vWriter: TGridFSFileWriter;
+begin
+  vWriter := TGridFSFileWriter.Create;
+  try
+    vWriter.Store(Self, AStream);
+  finally
+    vWriter.Free;
+  end;
 end;
 
 { TGridFsFileStreamReader }

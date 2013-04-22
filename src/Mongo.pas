@@ -819,7 +819,7 @@ begin
   try
     vTempStream.LoadFromStream(AStream);
 
-    Result := FDecoder.DecodeFromBeginning(vTempStream);
+    Result := FDecoder.Decode(vTempStream);
   finally
     vTempStream.Free;
   end;

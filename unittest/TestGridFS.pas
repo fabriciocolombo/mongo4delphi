@@ -11,6 +11,7 @@ type
   published
     procedure StoreString;
     procedure StoreGifFile;
+    procedure StoreWithExtraData;
   end;
 
 implementation
@@ -45,11 +46,10 @@ const
   CHUNK_SIZE = GRIDFS_CHUNK_SIZE;
 var
   vGridFS: TGridFS;
-  vGridFSWriter: TGridFSFileWriter;
+  vGridFsFile: IGridFSFile;
   vReadStream: TStream;
   vINStream,
   vOUTStream: TFileStream;
-  vGridFsFile: IGridFSFile;
   vExpectedSize: Integer;
   vLength: Int64;
 begin
@@ -58,14 +58,10 @@ begin
   vOUTStream := TFileStream.Create('resource\out.jpg', fmOpenReadWrite or fmCreate);
   try
     vExpectedSize := vINStream.Size;
-    vGridFSWriter := vGridFS.CreateFile('image.jpg');
-    try
-      vGridFSWriter.SetContentType('image/jpg')
-                   .SetChunkSize(CHUNK_SIZE)
-                   .Store(vINStream);
-    finally
-      vGridFSWriter.Free;
-    end;
+    vGridFsFile := vGridFS.CreateFile('image.jpg');
+    vGridFsFile.SetContentType('image/jpg')
+                 .SetChunkSize(CHUNK_SIZE)
+                 .Store(vINStream);
 
     vGridFsFile := vGridFS.findOne('image.jpg');
 
@@ -103,7 +99,6 @@ const
   CHUNK_SIZE = 10;
 var
   vGridFS: TGridFS;
-  vGridFSWriter: TGridFSFileWriter;
   vReadStream: TStream;
   vStream: TStringStream;
   vGridFsFile: IGridFSFile;
@@ -111,16 +106,12 @@ begin
   vGridFS := TGridFS.Create(DB);
   vStream := TStringStream.Create('');
   try
-    vGridFSWriter := vGridFS.CreateFile('teste.txt');
-    try
-      vStream.WriteString(STRING_CONTENT);
+    vStream.WriteString(STRING_CONTENT);
 
-      vGridFSWriter.SetContentType(STRING_CONTENT_TYPE)
-                   .SetChunkSize(CHUNK_SIZE)
-                   .Store(vStream);
-    finally
-      vGridFSWriter.Free;
-    end;
+    vGridFsFile := vGridFS.CreateFile('teste.txt');
+    vGridFsFile.SetContentType(STRING_CONTENT_TYPE)
+               .SetChunkSize(CHUNK_SIZE)
+               .Store(vStream);
 
     vGridFsFile := vGridFS.findOne('teste.txt');
 
@@ -147,6 +138,63 @@ begin
 
   finally
     vStream.Free;
+    vGridFS.Free;
+  end;
+end;
+
+procedure TTestGridFS.StoreWithExtraData;
+var
+  vServerId: string;
+  vGridFS: TGridFS;
+  vGridFsFile: IGridFSFile;
+  vReadStream: TStream;
+  vINStream,
+  vOUTStream: TFileStream;
+  vExpectedSize: Integer;
+  vLength: Int64;
+begin
+  vGridFS := TGridFS.Create(DB);
+
+  vServerId := TGUIDUtils.NewGuidAsString;
+
+  vINStream := TFileStream.Create('resource\in.jpg', fmOpenRead);
+  vOUTStream := TFileStream.Create('resource\out.jpg', fmOpenReadWrite or fmCreate);
+  try
+    vExpectedSize := vINStream.Size;
+
+    vGridFS.CreateFile('image.jpg')
+           .SetContentType('image/jpg')
+           .Put('ServerId', vServerId)
+           .Put('ClientId', 'ClientId')
+           .Store(vINStream);
+
+    vGridFsFile := vGridFS.findOne(TBSONObject.NewFrom('ServerId', vServerId));
+
+    CheckNotNull(vGridFsFile);
+    CheckEquals('image.jpg', vGridFsFile.GetFileName);
+    CheckEquals('image/jpg', vGridFsFile.GetContentType);
+    CheckEquals(vExpectedSize, vGridFsFile.GetLength);
+    CheckEquals(GRIDFS_CHUNK_SIZE, vGridFsFile.GetChunkSize);
+    CheckEquals(Date, DateOf(vGridFsFile.GetUploadDate));
+    CheckEquals(Ceil(vExpectedSize/GRIDFS_CHUNK_SIZE), vGridFsFile.numChunks);
+
+    vReadStream := vGridFsFile.GetInputStream;
+    try
+      vReadStream.Position := 0;
+
+      vLength:= vGridFsFile.GetLength;
+
+      vOUTStream.CopyFrom(vReadStream, vLength);
+
+      CheckEquals(vExpectedSize, vOUTStream.Size);
+      CheckEqualsStream(vINStream, vOUTStream);
+    finally
+      vReadStream.Free;
+    end;
+
+  finally
+    vINStream.Free;
+    vOUTStream.Free;
     vGridFS.Free;
   end;
 end;
