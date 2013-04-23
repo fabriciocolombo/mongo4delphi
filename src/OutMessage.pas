@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit OutMessage;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 type

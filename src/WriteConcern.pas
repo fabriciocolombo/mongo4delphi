@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit WriteConcern;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 type

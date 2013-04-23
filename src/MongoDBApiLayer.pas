@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit MongoDBApiLayer;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses Mongo, MongoDB, Contnrs, MongoConnector, MongoProvider, BSONTypes,

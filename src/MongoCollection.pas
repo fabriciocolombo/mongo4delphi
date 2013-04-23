@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit MongoCollection;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses MongoDBCursorIntf, BSONTypes, WriteResult, CommandResult, MongoUtils;

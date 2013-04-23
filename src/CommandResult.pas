@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit CommandResult;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses BSONTypes, SysUtils;

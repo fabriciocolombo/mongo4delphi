@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit WriteResult;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses CommandResult;

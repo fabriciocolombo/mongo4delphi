@@ -57,7 +57,8 @@ uses
   TestMongoUpdate in 'TestMongoUpdate.pas',
   BSONObjectIdGenerator in '..\src\BSONObjectIdGenerator.pas',
   GridFS in '..\src\GridFS.pas',
-  TestGridFS in 'TestGridFS.pas';
+  TestGridFS in 'TestGridFS.pas',
+  TestMongoUtils in 'TestMongoUtils.pas';
 
 {$R *.res}
 

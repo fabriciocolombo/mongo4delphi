@@ -17,7 +17,7 @@
 {  limitations under the License.                                           }
 {                                                                           }
 {***************************************************************************}
-unit MongoDBCursorIntf;
+unit TestMongoUtils;
 
 {$IFDEF FPC}
   {$MODE Delphi}
@@ -25,27 +25,40 @@ unit MongoDBCursorIntf;
 
 interface
 
-uses BSONTypes;
+uses BaseTestCase, MongoUtils;
 
 type
-  IMongoDBCursor = interface
-    ['{BA92DC10-CEF6-440A-B7B1-1C1E4F79652B}']
-
-    function Count: Integer;
-    function Size: Integer;
-    function Sort(AOrder: IBSONObject): IMongoDBCursor;
-    function Hint(AIndexKeys: IBSONObject): IMongoDBCursor;overload;
-    function Hint(AIndexName: String): IMongoDBCursor;overload;
-    function Snapshot: IMongoDBCursor;
-    function Explain: IBSONObject;
-    function Limit(n: Integer): IMongoDBCursor;
-    function Skip(n: Integer): IMongoDBCursor;
-    function BatchSize(n: Integer): IMongoDBCursor;
-
-    function HasNext: Boolean;
-    function Next: IBSONObject;
+  TTestGuidUtils = class(TBaseTestCase)
+  published
+    procedure TestStringToGuid;
+    procedure TestInvalidGuid;
   end;
 
 implementation
+
+uses TestFramework, SysUtils;
+
+{ TTestGuidUtils }
+
+procedure TTestGuidUtils.TestInvalidGuid;
+var
+  guid: TGUID;
+begin
+  CheckFalse(TGUIDUtils.TryStringToGuid('aaa', guid));
+  CheckFalse(TGUIDUtils.TryStringToGuid('{"name" : "teste"}', guid));  
+end;
+
+procedure TTestGuidUtils.TestStringToGuid;
+const
+  Expected = '{9C45A389-715A-4D17-A3C6-135EB4EDE939}';
+var
+  guid: TGUID;
+begin
+  CheckTrue(TGUIDUtils.TryStringToGuid(Expected, guid));
+  CheckEqualsString(Expected, GUIDToString(guid));
+end;
+
+initialization
+  TTestGuidUtils.RegisterTest;
 
 end.

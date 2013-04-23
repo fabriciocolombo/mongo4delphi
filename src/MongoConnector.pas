@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit MongoConnector;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses MongoDB, MongoCollection, OutMessage, WriteConcern, WriteResult;

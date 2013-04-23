@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit MongoDBCursor;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses MongoDBCursorIntf, BSONTypes, MongoCollection, BSONStream, MongoException,

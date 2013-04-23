@@ -19,6 +19,10 @@
 {***************************************************************************}
 unit JsonWriter;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 
 uses BSONTypes;
