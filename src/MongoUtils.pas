@@ -108,8 +108,10 @@ begin
 end;
 
 class function TGUIDUtils.TryStringToGuid(value: String;var GUID: TGUID): Boolean;
+const
+  GUID_LENGTH = 38;
 begin
-  Result := (LeftStr(value, 1) = '{') and (RightStr(value, 1) = '}');
+  Result := (LeftStr(value, 1) = '{') and (RightStr(value, 1) = '}') and (Length(value) = GUID_LENGTH);
 
   if Result then
   begin

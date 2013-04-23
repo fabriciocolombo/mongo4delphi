@@ -6,48 +6,38 @@ File_3=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittes
 File_4=SourceModule,'C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoUtils.pas',0,1,43,1,48,0,0
 
 [Modules]
-Module0=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoUtils.pas
-Module1=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONTypes.pas
-Module2=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONStream.pas
-Module3=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\WriteResult.pas
-Module4=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\WriteConcern.pas
-Module5=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\ServerError.pas
-Module6=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\QueryBuilder.pas
-Module7=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\OutMessage.pas
-Module8=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas
-Module9=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoProvider.pas
-Module10=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoMD5.pas
-Module11=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoException.pas
-Module12=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoEncoder.pas
-Module13=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDecoder.pas
-Module14=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDBCursorIntf.pas
-Module15=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDBCursor.pas
-Module16=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDBApiLayer.pas
-Module17=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDB.pas
-Module18=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoConnector.pas
-Module19=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollectionApiLayer.pas
-Module20=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollection.pas
-Module21=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\Mongo.pas
-Module22=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\JsonWriter.pas
-Module23=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\GridFS.pas
-Module24=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\CommandResult.pas
+Module0=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas
+Module1=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\WriteResult.pas
+Module2=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\WriteConcern.pas
+Module3=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\ServerError.pas
+Module4=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\QueryBuilder.pas
+Module5=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\OutMessage.pas
+Module6=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoProvider.pas
+Module7=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoMD5.pas
+Module8=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoException.pas
+Module9=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoEncoder.pas
+Module10=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDecoder.pas
+Module11=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDBCursorIntf.pas
+Module12=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDBCursor.pas
+Module13=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDBApiLayer.pas
+Module14=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoDB.pas
+Module15=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoConnector.pas
+Module16=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollectionApiLayer.pas
+Module17=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoCollection.pas
+Module18=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\Mongo.pas
+Module19=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\JsonWriter.pas
+Module20=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\GridFS.pas
+Module21=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\CommandResult.pas
+Module22=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoUtils.pas
+Module23=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONTypes.pas
+Module24=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONStream.pas
 Module25=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONObjectIdGenerator.pas
 Module26=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONDBRef.pas
 Module27=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSON.pas
 Count=28
 EditWindowCount=1
 
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoUtils.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONTypes.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONStream.pas]
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -73,11 +63,6 @@ FormState=0
 FormOnTop=0
 
 [C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\OutMessage.pas]
-ModuleType=SourceModule
-FormState=0
-FormOnTop=0
-
-[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -158,6 +143,21 @@ FormState=0
 FormOnTop=0
 
 [C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\CommandResult.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoUtils.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONTypes.pas]
+ModuleType=SourceModule
+FormState=0
+FormOnTop=0
+
+[C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONStream.pas]
 ModuleType=SourceModule
 FormState=0
 FormOnTop=0
@@ -251,7 +251,7 @@ FormOnTop=0
 
 [EditWindow0]
 ViewCount=28
-CurrentView=5
+CurrentView=22
 View0=0
 View1=1
 View2=2
@@ -319,9 +319,9 @@ LeftCol=1
 
 [View2]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\BSONObjectIdGenerator.pas
-CursorX=1
-CursorY=25
-TopLine=1
+CursorX=39
+CursorY=46
+TopLine=40
 LeftCol=1
 
 [View3]
@@ -340,7 +340,7 @@ LeftCol=1
 
 [View5]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\unittest\TestMongoUtils.pas
-CursorX=1
+CursorX=37
 CursorY=48
 TopLine=41
 LeftCol=1
@@ -460,8 +460,8 @@ LeftCol=1
 [View22]
 Module=C:\Desenvolvimento\OpenSource\fabricio\mongo4delphi\src\MongoUtils.pas
 CursorX=1
-CursorY=1
-TopLine=1
+CursorY=114
+TopLine=107
 LeftCol=1
 
 [View23]

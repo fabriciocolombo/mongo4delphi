@@ -25,10 +25,10 @@ unit BSONObjectIdGenerator;
 
 interface
 
-{$IFDEF FPC}
-uses Unix, BaseUnix, LclIntf;
-{$ELSE}
+{$IFDEF MSWINDOWS}
 uses Windows;
+{$ELSE}
+uses Unix, BaseUnix, LclIntf;
 {$ENDIF}
 
 type
@@ -45,7 +45,7 @@ var
   _mongoObjectID_MachineID: Integer;
   _mongoObjectID_Counter: Integer;
 
-{$ifdef fpc}   ////////add by James ----->
+{$ifndef MSWINDOWS}   ////////add by James ----->
 function GetComputerNameByLinux: String;
 var
   aUtsName: UtsName;

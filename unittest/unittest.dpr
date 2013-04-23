@@ -12,9 +12,13 @@ program unittest;
   {$ENDIF}
 *)
 uses
+  {$IFNDEF FPC}
   FastMM4,
-  GuiTestRunner,
+  {$ELSE}
+  Interfaces,
+  {$ENDIF}
   Forms,
+  GuiTestRunner,
   TestBSONItem in 'TestBSONItem.pas',
   TestBSONTypes in 'TestBSONTypes.pas',
   TestEncoder in 'TestEncoder.pas',

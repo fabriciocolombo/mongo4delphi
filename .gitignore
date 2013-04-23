@@ -12,3 +12,12 @@ packages/fpc/backup
 unittest/unittest_MemoryManager_EventLog.txt
 unittest/unittest.res
 unittest/resource/out.jpg
+*.ddp
+*.~dfm
+*.~dsk
+*.dproj.local
+*.identcache
+*.o
+*.ppu
+*.compiled
+*.rst

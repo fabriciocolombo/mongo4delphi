@@ -39,7 +39,7 @@ type
 
 implementation
 
-uses MongoException, SysUtils, BSON, TestFramework, Variants;
+uses MongoException, SysUtils, BSON, Variants;
 
 { TTestBSONObject }
 

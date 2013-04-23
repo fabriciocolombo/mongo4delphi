@@ -13,6 +13,7 @@
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <Icon Value="0"/>
+      <ActiveWindowIndexAtStart Value="0"/>
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
@@ -33,21 +34,25 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="1">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="fpcunittestrunner"/>
       </Item1>
+      <Item2>
+        <PackageName Value="LCL"/>
+      </Item2>
     </RequiredPackages>
-    <Units Count="29">
+    <Units Count="31">
       <Unit0>
         <Filename Value="unittest.dpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="unittest"/>
-        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="6"/>
-        <CursorPos X="15" Y="19"/>
+        <TopLine Value="1"/>
+        <CursorPos X="17" Y="7"/>
         <UsageCount Value="21"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -229,10 +234,13 @@
       <Unit21>
         <Filename Value="..\src\MongoProvider.pas"/>
         <UnitName Value="MongoProvider"/>
+        <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="760"/>
-        <CursorPos X="23" Y="787"/>
+        <TopLine Value="12"/>
+        <CursorPos X="22" Y="30"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit21>
       <Unit22>
         <Filename Value="C:\lazarus\fpc\2.4.4\source\rtl\win32\system.pp"/>
@@ -287,19 +295,63 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="..\src\BSONObjectIdGenerator.pas"/>
+        <UnitName Value="BSONObjectIdGenerator"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="33"/>
+        <CursorPos X="17" Y="48"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="TestBSONTypes.pas"/>
+        <UnitName Value="TestBSONTypes"/>
+        <EditorIndex Value="2"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="24"/>
+        <CursorPos X="38" Y="42"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit30>
     </Units>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
+    <JumpHistory Count="5" HistoryIndex="4">
+      <Position1>
+        <Filename Value="unittest.dpr"/>
+        <Caret Line="21" Column="3" TopLine="6"/>
+      </Position1>
+      <Position2>
+        <Filename Value="..\src\BSONObjectIdGenerator.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position2>
+      <Position3>
+        <Filename Value="..\src\BSONObjectIdGenerator.pas"/>
+        <Caret Line="32" Column="1" TopLine="11"/>
+      </Position3>
+      <Position4>
+        <Filename Value="TestBSONTypes.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position4>
+      <Position5>
+        <Filename Value="..\src\MongoProvider.pas"/>
+        <Caret Line="787" Column="23" TopLine="760"/>
+      </Position5>
+    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="9"/>
+    <Version Value="11"/>
     <PathDelim Value="\"/>
     <SearchPaths>
-      <IncludeFiles Value="../\src"/>
+      <IncludeFiles Value="../\src;$(ProjOutDir)"/>
       <OtherUnitFiles Value="../\src"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>
-        <SyntaxMode Value="delphi"/>
+        <SyntaxMode Value="Delphi"/>
       </SyntaxOptions>
     </Parsing>
     <Other>
