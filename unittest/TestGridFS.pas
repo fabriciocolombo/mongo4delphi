@@ -12,6 +12,7 @@ type
     procedure StoreString;
     procedure StoreGifFile;
     procedure StoreWithExtraData;
+    procedure RemoveById;
   end;
 
 implementation
@@ -38,6 +39,37 @@ begin
   finally
     vExpected.Free;
     vActual.Free;
+  end;
+end;
+
+procedure TTestGridFS.RemoveById;
+var
+  vGridFS: TGridFS;
+  vReadStream: TStream;
+  vStream: TStringStream;
+  vGridFsFile: IGridFSFile;
+begin
+  vGridFS := TGridFS.Create(DB);
+  vStream := TStringStream.Create('');
+  try
+    vStream.WriteString(STRING_CONTENT);
+
+    vGridFsFile := vGridFS.CreateFile('teste.txt');
+    vGridFsFile.SetContentType(STRING_CONTENT_TYPE)
+               .Store(vStream);
+
+    vGridFsFile := vGridFS.findOne('teste.txt');
+
+    CheckNotNull(vGridFsFile);
+    CheckEquals('teste.txt', vGridFsFile.GetFileName);
+
+    vGridFS.Remove(vGridFsFile.GetOid);
+
+    vGridFsFile := vGridFS.findOne('teste.txt');
+    CheckNull(vGridFsFile);
+  finally
+    vStream.Free;
+    vGridFS.Free;
   end;
 end;
 

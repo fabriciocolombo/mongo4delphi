@@ -69,6 +69,8 @@ type
 
     function findOne(const AFileName: String): IGridFSFile;overload;
     function findOne(const AQuery: IBSONObject): IGridFSFile;overload;
+
+    procedure Remove(const AObjectId: IBSONObjectId);
   end;
     
   TGridFSFile = class(TBSONObject, IGridFSFile)
@@ -167,6 +169,12 @@ end;
 function TGridFS.findOne(const AQuery: IBSONObject): IGridFSFile;
 begin
   Result := VerifyResult(FFilesCollection.FindOne(AQuery));
+end;
+
+procedure TGridFS.Remove(const AObjectId: IBSONObjectId);
+begin
+  FFilesCollection.Remove(TBSONObject.NewFrom(KEY_ID, AObjectId));
+  FChunksCollection.Remove(TBSONObject.NewFrom('files_id', AObjectId));  
 end;
 
 function TGridFS.VerifyResult(const ABSONObject: IBSONObject): IGridFSFile;
