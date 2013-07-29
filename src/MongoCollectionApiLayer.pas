@@ -70,6 +70,9 @@ type
     function Update(Query, BSONObject: IBSONObject): IWriteResult;overload;override;
     function Update(Query, BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;overload;override;
     function UpdateMulti(Query, BSONObject: IBSONObject): IWriteResult;override;
+
+    function Distinct(AKey: String; const AQuery: IBSONObject = nil): IBSONArray;override;
+    
   end;
 
 
@@ -269,6 +272,23 @@ end;
 function TMongoCollectionApiLayer.GetDBName: String;
 begin
   Result := FMongoDatabase.DBName;
+end;
+
+function TMongoCollectionApiLayer.Distinct(AKey: String; const AQuery: IBSONObject): IBSONArray;
+var
+  vCommand: IBSONObject;
+  vCommandResult: ICommandResult;
+begin
+  vCommand := TBSONObject.NewFrom('distinct', FCollectionName).Put('key', AKey);
+
+  if AQuery <> nil then
+  begin
+    vCommand.Put('query', AQuery);
+  end;
+
+  vCommandResult := FMongoDatabase.RunCommand(vCommand);
+
+  Result := vCommandResult.Items['Values'].AsBSONArray;
 end;
 
 end.

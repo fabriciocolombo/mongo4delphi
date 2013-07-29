@@ -34,7 +34,6 @@ New Features
 	TODO - Create a BSON constructor json like, inspired on stijnsanders/TMongoWire project.
 	TODO - Interface to Map/Reduce
 	TODO - Interface to Rename collection: RunCommand('admin', BSON(['renameCollection', from_ns, 'to', to_ns]));
-	TODO - Interface to Distinct command: db.runCommand({ distinct : <collection_name>, key : <key>[, query : <query>] })
 	TODO - Interface to Group command: db.coll.group(
 																								 {key: { a:true, b:true },
 																									cond: { active:1 },

@@ -12,6 +12,7 @@ type
     procedure Field_X_Greater_Than_1;
     procedure Field_X_Less_Than_1;
     procedure Field_X_Between_1_and_2;
+    procedure ManualOr;
   end;
 
 implementation
@@ -101,6 +102,22 @@ begin
   CheckEquals(1, vLT.Count);
   CheckEquals ('$lt', vLT.Item[0].Name);
   CheckEquals(2, vLT.Item[0].AsInteger);
+end;
+
+procedure TTestQueryBuilder.ManualOr;
+var
+  Query: IBSONObject;
+  Result: IBSONObject;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('Corners', 5)).getLastError.RaiseOnError;
+
+  Query := TBSONObject.NewFrom('$or', TBSONArray.NewFromValues([TBSONObject.NewFrom('Corners', TBSONObject.NewFrom('$gt', 1)),
+                                                                TBSONObject.NewFrom('Corners',  TBSONObject.NewFrom('$lt', 10))]));
+
+  Result := DefaultCollection.FindOne(Query);
+
+  CheckNotNull(Result);
+  CheckEquals(5, Result.Items['Corners'].AsInteger);
 end;
 
 initialization

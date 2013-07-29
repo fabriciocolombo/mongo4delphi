@@ -45,7 +45,6 @@ end;
 procedure TTestGridFS.RemoveById;
 var
   vGridFS: TGridFS;
-  vReadStream: TStream;
   vStream: TStringStream;
   vGridFsFile: IGridFSFile;
 begin

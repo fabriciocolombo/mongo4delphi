@@ -40,6 +40,7 @@ type
     procedure TestGetIndexInfo;
     procedure TestDropIndexes;
     procedure TestDBRefFetch;
+    procedure TestDistinct;
   end;
 
 implementation
@@ -426,6 +427,21 @@ begin
   CheckEqualsMem(vIN.Items['img'].AsBSONBinary.Stream.Memory,
                  vOUT.Items['img'].AsBSONBinary.Stream.Memory,
                  vIN.Items['img'].AsBSONBinary.Stream.Size);
+end;
+
+procedure TTestMongoCollection.TestDistinct;
+var
+  vItems: IBSONArray;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('code', 1));
+  DefaultCollection.Insert(TBSONObject.NewFrom('code', 1));
+  DefaultCollection.Insert(TBSONObject.NewFrom('code', 2));
+
+  vItems := DefaultCollection.Distinct('code');
+
+  CheckEquals(2, vItems.Count);
+  CheckEquals(1, vItems.Item[0].AsInteger);
+  CheckEquals(2, vItems.Item[1].AsInteger);
 end;
 
 initialization

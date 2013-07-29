@@ -68,6 +68,7 @@ type
     function GetIndexInfo: IBSONArray;virtual;abstract;
 
     function Save(const BSONObject: IBSONObject): IWriteResult;
+    function Distinct(AKey: String; const AQuery: IBSONObject = nil): IBSONArray;virtual;abstract;
   end;
 
 implementation
