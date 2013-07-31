@@ -64,11 +64,12 @@ type
     function FindOne(): IBSONObject;overload;virtual;abstract;
     function FindOne(Query: IBSONObject): IBSONObject;overload;virtual;abstract;
     function FindOne(Query, Fields: IBSONObject): IBSONObject;overload;virtual;abstract;
-
+                       
     function GetIndexInfo: IBSONArray;virtual;abstract;
 
     function Save(const BSONObject: IBSONObject): IWriteResult;
-    function Distinct(AKey: String; const AQuery: IBSONObject = nil): IBSONArray;virtual;abstract;
+    function Distinct(AKey: String; const AQuery: IBSONObject = nil): IBSONObject;virtual;abstract;
+    function Group(const AKey, AQuery, AInitial: IBSONObject; AReduce: String; AFinalize: String = ''): IBSONObject;virtual;abstract;
   end;
 
 implementation

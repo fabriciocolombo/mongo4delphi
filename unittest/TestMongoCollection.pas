@@ -41,6 +41,7 @@ type
     procedure TestDropIndexes;
     procedure TestDBRefFetch;
     procedure TestDistinct;
+    procedure TestGroup;
   end;
 
 implementation
@@ -431,7 +432,7 @@ end;
 
 procedure TTestMongoCollection.TestDistinct;
 var
-  vItems: IBSONArray;
+  vItems: IBSONObject;
 begin
   DefaultCollection.Insert(TBSONObject.NewFrom('code', 1));
   DefaultCollection.Insert(TBSONObject.NewFrom('code', 1));
@@ -442,6 +443,27 @@ begin
   CheckEquals(2, vItems.Count);
   CheckEquals(1, vItems.Item[0].AsInteger);
   CheckEquals(2, vItems.Item[1].AsInteger);
+end;
+
+procedure TTestMongoCollection.TestGroup;
+var
+  vResult: IBSONObject;
+begin
+  DefaultCollection.Insert(TBSONObject.NewFrom('code', 1).Put('value', 10.0));
+  DefaultCollection.Insert(TBSONObject.NewFrom('code', 1).Put('value', 50.1));
+  DefaultCollection.Insert(TBSONObject.NewFrom('code', 2).Put('value', 30.0));
+
+  vResult := DefaultCollection.Group(TBSONObject.NewFrom('code', 1),
+                                     TBSONObject.NewFrom('code', TBSONObject.NewFrom('$gt', 0)),
+                                     TBSONObject.NewFrom('total', 0),
+                                     'function (curr, result) {result.total += curr.value}');
+
+
+  CheckEquals(2, vResult.Count);
+  CheckEquals(1, vResult.Item[0].AsBSONObject.Items['code'].AsInteger);
+  CheckEquals(60.10, vResult.Item[0].AsBSONObject.Items['total'].AsFloat, 0.001);
+  CheckEquals(2, vResult.Item[1].AsBSONObject.Items['code'].AsInteger);
+  CheckEquals(30.00, vResult.Item[1].AsBSONObject.Items['total'].AsFloat, 0.001);
 end;
 
 initialization

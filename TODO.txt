@@ -34,12 +34,6 @@ New Features
 	TODO - Create a BSON constructor json like, inspired on stijnsanders/TMongoWire project.
 	TODO - Interface to Map/Reduce
 	TODO - Interface to Rename collection: RunCommand('admin', BSON(['renameCollection', from_ns, 'to', to_ns]));
-	TODO - Interface to Group command: db.coll.group(
-																								 {key: { a:true, b:true },
-																									cond: { active:1 },
-																									reduce: function(obj,prev) { prev.csum += obj.c; },
-																									initial: { csum: 0 }
-																									});
 	
 Improvement	 
 	TODO - Replace direct access to TBSONStream.Read with specific methods, like ReadInt, ReadInt64

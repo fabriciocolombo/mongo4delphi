@@ -71,8 +71,8 @@ type
     function Update(Query, BSONObject: IBSONObject; Upsert, Multi: Boolean): IWriteResult;overload;override;
     function UpdateMulti(Query, BSONObject: IBSONObject): IWriteResult;override;
 
-    function Distinct(AKey: String; const AQuery: IBSONObject = nil): IBSONArray;override;
-    
+    function Distinct(AKey: String; const AQuery: IBSONObject = nil): IBSONObject;override;
+    function Group(const AKey, AQuery, AInitial: IBSONObject; AReduce: String; AFinalize: String = ''): IBSONObject;override;
   end;
 
 
@@ -274,7 +274,7 @@ begin
   Result := FMongoDatabase.DBName;
 end;
 
-function TMongoCollectionApiLayer.Distinct(AKey: String; const AQuery: IBSONObject): IBSONArray;
+function TMongoCollectionApiLayer.Distinct(AKey: String; const AQuery: IBSONObject): IBSONObject;
 var
   vCommand: IBSONObject;
   vCommandResult: ICommandResult;
@@ -288,7 +288,29 @@ begin
 
   vCommandResult := FMongoDatabase.RunCommand(vCommand);
 
-  Result := vCommandResult.Items['Values'].AsBSONArray;
+  Result := vCommandResult.Items['Values'].AsBSONObject;
+end;
+
+function TMongoCollectionApiLayer.Group(const AKey, AQuery, AInitial: IBSONObject; AReduce: String; AFinalize: String): IBSONObject;
+var
+  vGroup: IBSONObject;
+begin
+  vGroup := TBSONObject.NewFrom('ns', FCollectionName)
+                       .Put('key', AKey)
+                       .Put('$reduce', AReduce)
+                       .Put('initial', AInitial);
+
+  if AQuery <> nil then
+  begin
+    vGroup.Put('cond', AQuery);
+  end;
+
+  if (AFinalize <> '') then
+  begin
+    vGroup.Put('finalize', AFinalize);
+  end;
+
+  Result := FMongoDatabase.RunCommand(TBSONObject.NewFrom('group', vGroup)).Items['retval'].AsBSONObject;
 end;
 
 end.
