@@ -16,34 +16,35 @@ Usage:
 There are two main units to use to access a mongodb server: mongo.pas e BSONTypes.pas
 
 Code Example Insert:
-var
-  mongo: TMongo;
-  db: TMongoDB;
-  coll: TMongoCollection;
-  bson: IBSONObject;
-  item: IBSONArray;
-begin
-  mongo := TMongo.Create;
-  try
-    mongo.Connect(${server.host}, ${server.port});
-    db := mongo.getDB('testdb');
-    coll := db.GetCollection('testcoll');
 
-    bson := TBSONObject.NewFrom('code', 123)
-                       .Put('name', 'Fabricio')
-                       .Put('LocalDate', Date);
-
-    item := TBSONArray.NewFrom('awesome')
-                      .Put(43.29)
-                      .Put(2012);
-
-    bson.Put('items', item);
-
-    coll.Insert(bson);
-  finally
-    mongo.Free;
-  end;
-end;
+    var
+      mongo: TMongo;
+      db: TMongoDB;
+      coll: TMongoCollection;
+      bson: IBSONObject;
+      item: IBSONArray;
+    begin
+      mongo := TMongo.Create;
+      try
+        mongo.Connect(${server.host}, ${server.port});
+        db := mongo.getDB('testdb');
+        coll := db.GetCollection('testcoll');
+    
+        bson := TBSONObject.NewFrom('code', 123)
+                           .Put('name', 'Fabricio')
+                           .Put('LocalDate', Date);
+    
+        item := TBSONArray.NewFrom('awesome')
+                          .Put(43.29)
+                          .Put(2012);
+    
+        bson.Put('items', item);
+    
+        coll.Insert(bson);
+      finally
+        mongo.Free;
+      end;
+    end;
 
 Class Definition:
 -----------------	
