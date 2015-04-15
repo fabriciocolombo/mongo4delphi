@@ -25,10 +25,10 @@ unit MongoCollection;
 
 interface
 
-uses MongoDBCursorIntf, BSONTypes, WriteResult, CommandResult, MongoUtils;
+uses MongoDBCursorIntf, BSONTypes, WriteResult, CommandResult, MongoUtils, MongoNotification;
 
 type
-  TMongoCollection = class
+  TMongoCollection = class(TObjectNotification)
   private
   protected
     function GetCollectionName: String;virtual;abstract;

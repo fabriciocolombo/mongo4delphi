@@ -11,7 +11,10 @@ src/backup
 packages/fpc/backup
 unittest/unittest_MemoryManager_EventLog.txt
 unittest/unittest.res
+unittest/unittest.dproj.local
+unittest/unittest.dsk
 unittest/resource/out.jpg
+unittest/unittest_Icon.ico
 *.ddp
 *.~dfm
 *.~dsk

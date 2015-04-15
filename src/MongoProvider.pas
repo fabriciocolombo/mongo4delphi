@@ -628,7 +628,10 @@ begin
 
   Result := vCommandResult.Ok;
 
-  vCommandResult.RaiseOnError;
+  if not Result then
+  begin
+    raise EMongoAuthenticationFailed.Create(vCommandResult.GetCode, Format('Failed to authenticate as "%s" user.', [AUserName]));
+  end;
 end;
 
 procedure TDefaultMongoProvider.Logout(DB: String);
@@ -777,7 +780,7 @@ begin
 
     vMessage := Format('command failed [%s]' + sLineBreak{  + Self.ToString}, [cmdName]);
 
-    Result := ECommandFailure.Create(vMessage);
+    Result := ECommandFailure.Create(GetCode, vMessage);
   end
   else
   begin

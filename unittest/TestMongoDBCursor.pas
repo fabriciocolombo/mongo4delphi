@@ -160,7 +160,6 @@ begin
   CheckEquals(0, vExplain.Items['nChunkSkips'].AsInteger);
   CheckEquals(False, vExplain.Items['isMultiKey'].AsBoolean);
   CheckEquals(False, vExplain.Items['indexOnly'].AsBoolean);
-  CheckNotNull(vExplain.Items['indexBounds'].AsBSONObject);
 end;
 
 procedure TTestMongoDBCursor.TestHint;

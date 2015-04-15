@@ -38,6 +38,11 @@ type
     constructor Create(const Msg: string);overload;
   end;
 
+  EMongoAuthenticationFailed = class(EMongoException)
+  public
+    constructor Create(ACode: Integer; const Msg: string);reintroduce;
+  end;
+
   EIllegalArgumentException = class(EMongoException);
   EMongoConnectionFailureException = class(EMongoException);
   EMongoBufferIsNotConfigured = class(EMongoException);
@@ -99,6 +104,13 @@ end;
 constructor EMongoException.Create(const Msg: string);
 begin
   inherited Create(Msg);
+end;
+
+{ EMongoAuthenticationFailed }
+
+constructor EMongoAuthenticationFailed.Create(ACode: Integer; const Msg: string);
+begin
+  inherited Create(Format('%s [code:%d]', [Msg, ACode]));
 end;
 
 end.

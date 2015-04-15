@@ -4,13 +4,24 @@
 			<MainSource>unittest.dpr</MainSource>
 			<Base>True</Base>
 			<Config Condition="'$(Config)'==''">Debug</Config>
-			<Platform>Win32</Platform>
 			<AppType>Application</AppType>
 			<FrameworkType>VCL</FrameworkType>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-			<ProjectVersion>12.3</ProjectVersion>
+			<ProjectVersion>13.4</ProjectVersion>
+			<Platform Condition="'$(Platform)'==''">Win32</Platform>
+			<TargetedPlatforms>1</TargetedPlatforms>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+			<Base_Win64>true</Base_Win64>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+			<Base_Win32>true</Base_Win32>
+			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
@@ -24,16 +35,30 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+			<DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;System.Win;Web.Win;Winapi;$(DCC_Namespace)</DCC_Namespace>
+			<VerInfo_Locale>1046</VerInfo_Locale>
 			<DebugSourcePath>..\src;$(DebugSourcePath)</DebugSourcePath>
 			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
-			<DCC_UsePackage>vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;Rave50CLX;Rave50VCL;dclOfficeXP;SynEdit_R7;JclDeveloperTools;Jcl;JclVcl</DCC_UsePackage>
-			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;WinTypes=Windows;WinProcs=Windows;$(DCC_UnitAlias)</DCC_UnitAlias>
+			<DCC_UsePackage>vcl;rtl;vclx;indy;inet;xmlrtl;vclie;inetdbbde;inetdbxpress;dbrtl;dsnap;dsnapcon;vcldb;soaprtl;VclSmp;dbexpress;dbxcds;inetdb;bdertl;vcldbx;webdsnap;websnap;adortl;ibxpress;teeui;teedb;tee;dss;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;Rave50CLX;Rave50VCL;dclOfficeXP;SynEdit_R7;JclDeveloperTools;Jcl;JclVcl;$(DCC_UsePackage)</DCC_UsePackage>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<DCC_N>true</DCC_N>
 			<DCC_S>false</DCC_S>
 			<DCC_K>false</DCC_K>
 			<DCC_E>false</DCC_E>
 			<DCC_F>false</DCC_F>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base_Win64)'!=''">
+			<Icon_MainIcon>unittest_Icon.ico</Icon_MainIcon>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base_Win32)'!=''">
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+			<VerInfo_Locale>1033</VerInfo_Locale>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<DCC_Namespace>Data.Win;Datasnap.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+			<Icon_MainIcon>unittest_Icon.ico</Icon_MainIcon>
+			<Debugger_DebugSourcePath>..\src;$(Debugger_DebugSourcePath)</Debugger_DebugSourcePath>
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
 			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -47,11 +72,11 @@
 			<DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
 		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="unittest.dpr">
+			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="TestBSONItem.pas"/>
-			<DCCReference Include="TestBSONObject.pas"/>
+			<DCCReference Include="TestBSONTypes.pas"/>
 			<DCCReference Include="TestEncoder.pas"/>
 			<DCCReference Include="TestBsonStream.pas"/>
 			<DCCReference Include="TestDecoder.pas"/>
@@ -71,6 +96,30 @@
 			<DCCReference Include="..\src\MongoMD5.pas"/>
 			<DCCReference Include="..\src\ServerError.pas"/>
 			<DCCReference Include="TestServerError.pas"/>
+			<DCCReference Include="TestMongoDB.pas"/>
+			<DCCReference Include="BaseTestCaseMongo.pas"/>
+			<DCCReference Include="..\src\BSONDBRef.pas"/>
+			<DCCReference Include="..\src\MongoDB.pas"/>
+			<DCCReference Include="..\src\MongoCollection.pas"/>
+			<DCCReference Include="..\src\MongoConnector.pas"/>
+			<DCCReference Include="..\src\MongoDBApiLayer.pas"/>
+			<DCCReference Include="..\src\OutMessage.pas"/>
+			<DCCReference Include="..\src\WriteConcern.pas"/>
+			<DCCReference Include="..\src\WriteResult.pas"/>
+			<DCCReference Include="..\src\CommandResult.pas"/>
+			<DCCReference Include="..\src\MongoDBCursor.pas"/>
+			<DCCReference Include="..\src\MongoCollectionApiLayer.pas"/>
+			<DCCReference Include="..\src\MongoDBCursorIntf.pas"/>
+			<DCCReference Include="TestQueryBuilder.pas"/>
+			<DCCReference Include="..\src\QueryBuilder.pas"/>
+			<DCCReference Include="TestJsonWriter.pas"/>
+			<DCCReference Include="..\src\JsonWriter.pas"/>
+			<DCCReference Include="TestMongoUpdate.pas"/>
+			<DCCReference Include="..\src\BSONObjectIdGenerator.pas"/>
+			<DCCReference Include="..\src\GridFS.pas"/>
+			<DCCReference Include="TestGridFS.pas"/>
+			<DCCReference Include="TestMongoUtils.pas"/>
+			<DCCReference Include="..\src\MongoNotification.pas"/>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
@@ -125,6 +174,7 @@
 					</Parameters>
 				</Delphi.Personality>
 				<Platforms>
+					<Platform value="Win64">False</Platform>
 					<Platform value="Win32">True</Platform>
 				</Platforms>
 			</BorlandProject>

@@ -26,7 +26,7 @@ unit MongoDBApiLayer;
 interface
 
 uses Mongo, MongoDB, Contnrs, MongoConnector, MongoProvider, BSONTypes,
-     MongoCollection, CommandResult, MongoUtils;
+     MongoCollection, CommandResult, MongoUtils, Classes;
 
 type
   TMongoDBApiLayer = class(TMongoDB)
@@ -38,6 +38,7 @@ type
     FCollectionList: TObjectList;
 
     function DoGetCollections(AIncludeSystemCollections: Boolean): IBSONObject;
+    procedure OnFreeCollection(Sender: TObject);
   protected
     function GetDBName: String;override;
   public
@@ -100,7 +101,13 @@ begin
 end;
 
 destructor TMongoDBApiLayer.Destroy;
+var
+  i: Integer;
 begin
+  for i := 0 to FCollectionList.Count-1 do
+  begin
+    TMongoCollection(FCollectionList[i]).RemoveFreeNotification;
+  end;
   FProvider := nil;
   FConnector := nil;
   FCollectionList.Free;
@@ -116,6 +123,7 @@ end;
 function TMongoDBApiLayer.GetCollection(AName: String): TMongoCollection;
 begin
   Result := TMongoCollectionApiLayer.Create(Self, AName, FConnector, FProvider);
+  Result.FreeNotification(OnFreeCollection);
 
   FCollectionList.Add(Result);
 end;
@@ -181,6 +189,16 @@ end;
 procedure TMongoDBApiLayer.Logout;
 begin
   FProvider.RunCommand(FDBName, TBSONObject.NewFrom('logout', 1));
+end;
+
+procedure TMongoDBApiLayer.OnFreeCollection(Sender: TObject);
+begin
+  FCollectionList.OwnsObjects := False;
+  try
+    FCollectionList.Remove(Sender);
+  finally
+    FCollectionList.OwnsObjects := True;
+  end;
 end;
 
 function TMongoDBApiLayer.RunCommand(ACommand: IBSONObject): ICommandResult;

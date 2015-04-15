@@ -14,15 +14,27 @@ type
   private
   published
     procedure TestGetCollection;
+    procedure TestBulkGetCollection;
+    procedure TestFailedAuthentication;
     procedure TestCreateUser_Authentication_RemoveUser;
     procedure TestSerialization;
   end;
 
 implementation
 
-uses BSONTypes, TestFramework;
+uses BSONTypes, SysUtils, MongoException;
 
 { TTestMongoDB }
+
+procedure TTestMongoDB.TestBulkGetCollection;
+var
+  i: Integer;
+begin
+  for i := 1 to 1000000 do
+  begin
+    DB.GetCollection(IntToStr(i)).Free;
+  end;
+end;
 
 procedure TTestMongoDB.TestCreateUser_Authentication_RemoveUser;
 var
@@ -42,6 +54,12 @@ begin
   CheckNotNull(vWriteResult);
   CheckNotNull(vWriteResult.getLastError);
   CheckTrue(vWriteResult.getLastError.Ok);
+end;
+
+procedure TTestMongoDB.TestFailedAuthentication;
+begin
+  ExpectedException := EMongoAuthenticationFailed;
+  DB.Authenticate('non', 'existent');
 end;
 
 procedure TTestMongoDB.TestGetCollection;

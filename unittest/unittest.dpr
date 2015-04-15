@@ -62,7 +62,8 @@ uses
   BSONObjectIdGenerator in '..\src\BSONObjectIdGenerator.pas',
   GridFS in '..\src\GridFS.pas',
   TestGridFS in 'TestGridFS.pas',
-  TestMongoUtils in 'TestMongoUtils.pas';
+  TestMongoUtils in 'TestMongoUtils.pas',
+  MongoNotification in '..\src\MongoNotification.pas';
 
 {$R *.res}
 

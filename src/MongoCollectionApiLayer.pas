@@ -26,7 +26,7 @@ unit MongoCollectionApiLayer;
 interface
 
 uses MongoDBCursorIntf, BSONTypes, WriteResult, CommandResult, MongoDB, MongoCollection,
-     MongoConnector, MongoProvider, MongoUtils;
+     MongoConnector, MongoProvider, MongoUtils, Classes;
 
 type
   TMongoCollectionApiLayer = class(TMongoCollection)
@@ -43,6 +43,7 @@ type
     function GetFullName: String;override;
   public
     constructor Create(AMongoDB: TMongoDB; ACollectionName: String; AConnector: IMongoConnector; AProvider: IMongoProvider);
+    destructor Destroy; override;
 
     function Count(Limit: Integer = 0): Integer;overload;override;
     function Count(Query: IBSONObject; Limit: Integer = 0): Integer;overload;override;
@@ -272,6 +273,12 @@ end;
 function TMongoCollectionApiLayer.GetDBName: String;
 begin
   Result := FMongoDatabase.DBName;
+end;
+
+destructor TMongoCollectionApiLayer.Destroy;
+begin
+  NotifyDestruction;
+  inherited;
 end;
 
 function TMongoCollectionApiLayer.Distinct(AKey: String; const AQuery: IBSONObject): IBSONObject;
