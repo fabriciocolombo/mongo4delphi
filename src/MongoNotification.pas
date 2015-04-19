@@ -14,12 +14,19 @@ type
   public
     procedure FreeNotification(AEvent: TNotifyEvent);
     procedure RemoveFreeNotification;
+    destructor Destroy; override;
   end;
 
 
 implementation
 
 { TObjectNotification }
+
+destructor TObjectNotification.Destroy;
+begin
+  NotifyDestruction;
+  inherited;
+end;
 
 procedure TObjectNotification.FreeNotification(AEvent: TNotifyEvent);
 begin

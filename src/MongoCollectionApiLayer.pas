@@ -277,7 +277,6 @@ end;
 
 destructor TMongoCollectionApiLayer.Destroy;
 begin
-  NotifyDestruction;
   inherited;
 end;
 

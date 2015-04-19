@@ -14,6 +14,7 @@ type
   private
   published
     procedure TestGetCollection;
+    procedure TestBulkGetDB;
     procedure TestBulkGetCollection;
     procedure TestFailedAuthentication;
     procedure TestCreateUser_Authentication_RemoveUser;
@@ -33,6 +34,16 @@ begin
   for i := 1 to 1000000 do
   begin
     DB.GetCollection(IntToStr(i)).Free;
+  end;
+end;
+
+procedure TTestMongoDB.TestBulkGetDB;
+var
+  i: Integer;
+begin
+  for i := 1 to 1000000 do
+  begin
+    Mongo.getDB(IntToStr(i)).Free;
   end;
 end;
 

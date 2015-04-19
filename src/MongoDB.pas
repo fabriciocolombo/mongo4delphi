@@ -25,10 +25,10 @@ unit MongoDB;
 
 interface
 
-uses MongoCollection, BSONTypes, CommandResult, WriteResult, MongoUtils;
+uses MongoCollection, BSONTypes, CommandResult, WriteResult, MongoUtils, MongoNotification;
 
 type
-  TMongoDB = class
+  TMongoDB = class(TObjectNotification)
   private
   protected
     function GetDBName: String;virtual;abstract;

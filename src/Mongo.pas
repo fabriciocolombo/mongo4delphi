@@ -39,6 +39,7 @@ type
     FConnector: IMongoConnector;
     procedure SetEncoder(const Value: IMongoEncoder);
     procedure SetDecoder(const Value: IMongoDecoder);
+    procedure OnFreeDB(Sender: TObject);
   protected
     property Provider: IMongoProvider read FProvider;
   public
@@ -74,7 +75,13 @@ begin
 end;
 
 destructor TMongo.Destroy;
+var
+  i: Integer;
 begin
+  for i := 0 to FDBList .Count-1 do
+  begin
+    TMongoDB(FDBList[i]).RemoveFreeNotification;
+  end;
   FDBList.Free;
   inherited;
 end;
@@ -102,6 +109,7 @@ end;
 function TMongo.getDB(const ADBname: String): TMongoDB;
 begin
   Result := TMongoDBApiLayer.Create(Self, ADBname, FConnector, FProvider);
+  Result.FreeNotification(OnFreeDB);
 
   FDBList.Add(Result);
 end;
@@ -686,6 +694,16 @@ begin
     Result := FDecoder.Decode(vTempStream);
   finally
     vTempStream.Free;
+  end;
+end;
+
+procedure TMongo.OnFreeDB(Sender: TObject);
+begin
+  FDBList.OwnsObjects := False;
+  try
+    FDBList.Remove(Sender);
+  finally
+    FDBList.OwnsObjects := True;
   end;
 end;
 
