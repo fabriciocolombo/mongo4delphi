@@ -1,3 +1,10 @@
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
+No Maintenance Intended
+=======================
+
+This project is no longer actively maintained. It does its job, but there are no plans to extend or change it. I suggest you to pick up one of the Delphi's driver options available at [Community Supported Drivers](https://docs.mongodb.com/ecosystem/drivers/community-supported-drivers).
+
 MongoDB Driver for Delphi/FreePascal
 -------------------------
 
